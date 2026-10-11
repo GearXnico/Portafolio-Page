@@ -1,11 +1,8 @@
-"""Punto de entrada de la API. El esqueleto completo llega en la tarea 1.2 del plan."""
+"""Punto de entrada de la API."""
 
 from fastapi import FastAPI
 
+from app.routers import health
+
 app = FastAPI(title="API")
-
-
-@app.get("/api/health")
-def health() -> dict[str, str]:
-    """Indica que la API está arriba. En la tarea 1.2 también consulta la base."""
-    return {"status": "ok"}
+app.include_router(health.router)
