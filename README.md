@@ -8,7 +8,7 @@ Plantilla para empezar productos web con pruebas, CI/CD (integración y desplieg
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción (hito 1 del plan). Por ahora la API y la página están vacías.
+> Estado: en construcción (hito 1 del plan). La API tiene su esqueleto con `/api/health`; la página todavía está vacía.
 
 ## Requisitos
 
@@ -23,17 +23,43 @@ docker compose up -d      # db, api (:8000) y web (:5173)
 ```
 
 - Página: http://localhost:5173
-- API: http://localhost:8000/api/health
+- API: http://localhost:8000/api/health (responde 200 si la base contesta y 503 si no)
 - Documentación interactiva de la API: http://localhost:8000/docs
 
-Los cambios en `api/app/` y `web/` se recargan solos. Para apagar todo: `docker compose down` (agrega `-v` para borrar también la base local).
+Los cambios en `api/app/` y `web/` se recargan solos. Las migraciones de la base se aplican solas cada vez que arranca la API. Para apagar todo: `docker compose down` (agrega `-v` para borrar también la base local).
 
 Si cambias las dependencias (`api/pyproject.toml` o `web/package.json`), reconstruye con `docker compose up -d --build`.
+
+## API: tests, lint y migraciones
+
+Los tests van contra el Postgres del compose, sin mocks (objetos simulados) de la base, así que la `db` tiene que estar arriba. Puedes correrlos dentro del contenedor:
+
+```bash
+docker compose exec api pytest -q --cov=app --cov-fail-under=80
+docker compose exec api sh -c "ruff check . && ruff format --check . && mypy app"
+```
+
+O desde tu máquina, con Python 3.14 (toma `DATABASE_URL` del `.env` de la raíz):
+
+```bash
+cd api
+python -m venv .venv && . .venv/bin/activate
+pip install -e ".[dev]"
+pytest -q --cov=app --cov-fail-under=80
+ruff check . && ruff format --check . && mypy app
+```
+
+Migraciones con Alembic (herramienta de migraciones de SQLAlchemy):
+
+```bash
+alembic revision --autogenerate -m "agrega tabla x"   # después de cambiar app/models/
+alembic upgrade head                                   # aplicar
+```
 
 ## Estructura
 
 ```
-api/          FastAPI (app/; tests/ y alembic/ llegan en la tarea 1.2)
+api/          FastAPI: app/ (routers/, models/), tests/ y alembic/ (migraciones)
 web/          frontend (React y TypeScript llegan en la tarea 1.3)
 deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
 compose.yml   desarrollo local
