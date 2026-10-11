@@ -1,0 +1,9 @@
+# Imagen solo para desarrollo local (compose.yml). La de producción es la tarea 1.6.
+FROM node:24-alpine
+
+WORKDIR /code
+COPY package.json package-lock.json ./
+RUN npm ci
+
+EXPOSE 5173
+CMD ["npm", "run", "dev"]
