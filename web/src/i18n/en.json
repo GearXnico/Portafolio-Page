@@ -1,10 +1,15 @@
 {
   "app.title": "Product",
-  "apiStatus.label": "API status",
-  "apiStatus.loading": "checking…",
-  "apiStatus.ok": "ok",
-  "apiStatus.error": "no response",
   "lang.label": "Language",
   "lang.es": "Español",
-  "lang.en": "English"
+  "lang.en": "English",
+  "page.error": "The content could not be loaded. Please try again in a few minutes.",
+  "section.skills": "Skills",
+  "section.experience": "Experience",
+  "section.projects": "Projects",
+  "section.contact": "Contact",
+  "experience.present": "present",
+  "skills.language": "Languages",
+  "skills.framework": "Frameworks",
+  "skills.tool": "Tools"
 }

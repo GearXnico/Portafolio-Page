@@ -23,13 +23,12 @@ function stubApi(lang: string | null) {
 }
 
 describe("App", () => {
-  it("muestra el título y el estado de la API", async () => {
+  it("sin contenido muestra el título de la plantilla", async () => {
     stubApi("es");
 
     renderWithQuery(<App />);
 
     expect(await screen.findByRole("heading", { name: "Producto" })).toBeInTheDocument();
-    expect(await screen.findByText("ok")).toBeInTheDocument();
   });
 
   it("usa el idioma que decide la API", async () => {
@@ -62,7 +61,6 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Español" }));
 
     expect(screen.getByRole("heading", { name: "Producto" })).toBeInTheDocument();
-    expect(screen.getByText("Estado de la API", { exact: false })).toBeInTheDocument();
     expect(localStorage.getItem("lang")).toBe("es");
     expect(document.documentElement.lang).toBe("es");
   });

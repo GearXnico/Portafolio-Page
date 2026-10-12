@@ -24,7 +24,7 @@ test("la página no muestra errores en la consola", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(error.message));
 
   await page.goto("/");
-  await expect(page.getByTestId("api-status")).toHaveText("ok");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
   expect(errors).toEqual([]);
 });
