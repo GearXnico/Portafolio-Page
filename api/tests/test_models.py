@@ -235,3 +235,73 @@ def test_mensaje_rechaza_idioma_no_soportado(db_session: Session) -> None:
 
 def test_mensaje_exige_el_texto(db_session: Session) -> None:
     rechaza(db_session, nuevo_mensaje(message=None), "message")
+
+
+# Límites a lo que llega desde afuera (defensa en profundidad, además de la validación de la API)
+
+
+@pytest.mark.parametrize("campo", ["demo_url", "repo_url"])
+@pytest.mark.parametrize("url", ["javascript:alert(1)", "http://example.com", "//example.com"])
+def test_proyecto_solo_acepta_enlaces_https(db_session: Session, campo: str, url: str) -> None:
+    rechaza(db_session, nuevo_proyecto(**{campo: url}), f"ck_project_{campo}")
+
+
+def test_proyecto_acepta_enlaces_https(db_session: Session) -> None:
+    db_session.add(
+        nuevo_proyecto(demo_url="https://demo.example.com", repo_url="https://github.com/x/y")
+    )
+    db_session.flush()
+
+
+@pytest.mark.parametrize(
+    "ruta", ["../etc/passwd", "/etc/passwd", "capturas/../../x.webp", "a\\b.webp", ".oculto"]
+)
+def test_captura_rechaza_rutas_fuera_de_media(db_session: Session, ruta: str) -> None:
+    proyecto = nuevo_proyecto()
+    db_session.add(proyecto)
+    db_session.flush()
+
+    rechaza(db_session, ProjectImage(project_id=proyecto.id, path=ruta), "ck_project_image_path")
+
+
+def test_captura_acepta_ruta_relativa(db_session: Session) -> None:
+    db_session.add(nuevo_proyecto(images=[ProjectImage(path="proyectos/1/captura-1.webp")]))
+    db_session.flush()
+
+
+@pytest.mark.parametrize(
+    ("cambios", "restriccion"),
+    [
+        ({"name": ""}, "ck_contact_message_name_length"),
+        ({"name": "a" * 201}, "ck_contact_message_name_length"),
+        ({"email": "sin-arroba"}, "ck_contact_message_email"),
+        ({"email": "a@b" + "c" * 320}, "ck_contact_message_email"),
+        ({"message": ""}, "ck_contact_message_message_length"),
+        ({"message": "a" * 5001}, "ck_contact_message_message_length"),
+        ({"utm_source": "a" * 201}, "ck_contact_message_utm_length"),
+    ],
+)
+def test_mensaje_rechaza_campos_fuera_de_rango(
+    db_session: Session, cambios: dict[str, str], restriccion: str
+) -> None:
+    rechaza(db_session, nuevo_mensaje(**cambios), restriccion)
+
+
+@pytest.mark.parametrize(
+    ("cambios", "restriccion"),
+    [
+        ({"utm_medium": "a" * 201}, "ck_visit_utm_length"),
+        ({"referrer": "https://" + "a" * 2048}, "ck_visit_referrer_length"),
+        ({"country": "chile"}, "ck_visit_country"),
+        ({"country": "cl"}, "ck_visit_country"),
+    ],
+)
+def test_visita_rechaza_campos_fuera_de_rango(
+    db_session: Session, cambios: dict[str, str], restriccion: str
+) -> None:
+    rechaza(db_session, nueva_visita(**cambios), restriccion)
+
+
+def test_visita_acepta_pais_y_referrer_validos(db_session: Session) -> None:
+    db_session.add(nueva_visita(country="CL", referrer="https://www.linkedin.com/"))
+    db_session.flush()

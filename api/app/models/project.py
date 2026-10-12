@@ -15,6 +15,9 @@ class Project(Base):
         # El slug va en la URL: minúsculas, números y guiones simples.
         CheckConstraint("slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'", name="slug_format"),
         CheckConstraint("position >= 0", name="position"),
+        # Solo enlaces https: evita que un `javascript:` termine en un <a href> de la página.
+        CheckConstraint("demo_url ~ '^https://'", name="demo_url"),
+        CheckConstraint("repo_url ~ '^https://'", name="repo_url"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -45,7 +48,13 @@ class Project(Base):
 
 class ProjectImage(Base):
     __tablename__ = "project_image"
-    __table_args__ = (CheckConstraint("position >= 0", name="position"),)
+    __table_args__ = (
+        CheckConstraint("position >= 0", name="position"),
+        # Ruta relativa dentro de /media: sin "..", sin "/" inicial ni barras invertidas.
+        CheckConstraint(
+            r"path ~ '^[A-Za-z0-9_-][A-Za-z0-9_./-]*$' AND path !~ '\.\.'", name="path"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(

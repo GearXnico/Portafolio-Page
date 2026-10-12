@@ -18,6 +18,15 @@ class Visit(Base):
         CheckConstraint("lang IN ('es', 'en')", name="lang"),
         # sha256 en hexadecimal.
         CheckConstraint("visitor_hash ~ '^[0-9a-f]{64}$'", name="visitor_hash"),
+        # UTM y referrer vienen de la URL y de los headers del visitante: se limita su largo.
+        CheckConstraint(
+            "char_length(utm_source) <= 200 AND char_length(utm_medium) <= 200"
+            " AND char_length(utm_campaign) <= 200 AND char_length(utm_content) <= 200",
+            name="utm_length",
+        ),
+        CheckConstraint("char_length(referrer) <= 2048", name="referrer_length"),
+        # Código de país ISO 3166-1 de dos letras.
+        CheckConstraint("country ~ '^[A-Z]{2}$'", name="country"),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)

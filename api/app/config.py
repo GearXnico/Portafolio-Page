@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     # Las variables de entorno tienen prioridad sobre el archivo.
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
+    # Usuario de la API, con permisos mínimos: solo lee y escribe filas.
     database_url: str
+    # Dueño de las tablas: solo lo usa Alembic para las migraciones.
+    migration_database_url: str
 
 
 settings = Settings()
