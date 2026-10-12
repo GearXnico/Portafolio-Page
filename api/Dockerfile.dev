@@ -1,4 +1,4 @@
-# Imagen solo para desarrollo local (compose.yml). La de producción es la tarea 1.6.
+# Imagen solo para desarrollo local (compose.yml). La de producción es Dockerfile.
 FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
