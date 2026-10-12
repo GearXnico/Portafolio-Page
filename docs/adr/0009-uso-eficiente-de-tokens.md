@@ -51,7 +51,7 @@ B, con estas reglas.
 **Medición**
 
 - Cada tarea registra sus tokens (`/cost`) en `prompts/registro.md`.
-- Al cerrar cada hito se comparan los tokens y las horas con el plan, y se anota en `notas/` qué ajustar.
+- Al cerrar cada hito se comparan los tokens y las horas con el plan, y se anota en `docs/notas/` qué ajustar.
 - Si un hito consume más del doble que el anterior por tarea, se revisan los prompts antes de seguir.
 
 **Lo que nunca se recorta**

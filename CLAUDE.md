@@ -36,7 +36,7 @@ compose.yml desarrollo local
 
 ## Comandos
 
-El detalle está en el README. `pre-commit` todavía no está configurado (llega con las tareas de CI y seguridad del hito 1). Actualiza esta sección si cambian.
+El detalle está en el README. `pre-commit` todavía no está configurado: llega con la tarea 1.4; hasta entonces, sáltate ese paso. Actualiza esta sección si cambian.
 
 ```bash
 # Todo en local
@@ -61,7 +61,7 @@ npm run test:coverage                      # mínimo 60 %
 npm run lint && npm run typecheck
 npm run e2e                                # Playwright, con el compose arriba
 
-# Antes de cada commit (también corre como hook)
+# Antes de cada commit, desde la tarea 1.4 (también correrá como hook)
 pre-commit run --all-files
 ```
 
@@ -152,7 +152,7 @@ pre-commit run --all-files
 
 ## Al terminar cada tarea
 
-1. Corre tests, lint, typecheck y `pre-commit`, y confirma que todo está en verde.
+1. Corre tests, lint y typecheck (y `pre-commit`, desde la tarea 1.4), y confirma que todo está en verde.
 2. Abre el PR a `dev` y entrega el enlace.
 3. Agrega una fila en `docs/prompts/registro.md` con la tarea, el modelo, los tokens de `/cost`, las sesiones y el PR. Completa "Resultado" y "Lecciones" en el archivo del prompt.
 4. Si cambió un comando o una convención, actualiza este archivo en el mismo PR.
