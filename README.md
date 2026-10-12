@@ -151,4 +151,4 @@ Respuesta:
 - **Visitante único por día**: no se guarda la IP. Se guarda un HMAC-SHA256 (hash con clave) de IP y user agent, cuya clave es una sal al azar que se crea cada día (UTC) en la tabla `visitor_salt` y se borra al día siguiente. Sin la sal, ni con un respaldo de la base se puede volver a la IP.
 - Si falla el registro de la visita, la página igual carga.
 
-En producción la API está detrás de Caddy, así que Uvicorn tiene que leer la IP real del header `X-Forwarded-For` solo cuando viene de Caddy (`--proxy-headers --forwarded-allow-ips=<IP de Caddy>`, tarea 1.6). Sin eso, todos los visitantes comparten la IP de Caddy y el conteo de únicos baja.
+En producción la API está detrás de Caddy: `TRUSTED_PROXIES` tiene que incluir la red interna de Docker donde está Caddy (llega con el formulario de contacto, PR #9), para que la API lea la IP real de `X-Forwarded-For`. Sin eso, todos los visitantes comparten la IP de Caddy y el conteo de únicos baja.
