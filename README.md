@@ -112,7 +112,7 @@ web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwrig
 deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
 compose.yml   desarrollo local
 docs/         brief, arquitectura, ADR (registros de decisión), plan y prompts; CLAUDE.md los indexa
-.github/      plantilla de PR (pull request); los workflows llegan en las tareas 1.4 a 1.8
+.github/      plantilla de PR (pull request) y workflows (ci.yml, ai-review.yml)
 ```
 
 ## Cómo se trabaja
@@ -164,3 +164,24 @@ Respuesta:
 - Si falla el registro de la visita, la página igual carga.
 
 En producción la API está detrás de Caddy: `TRUSTED_PROXIES` tiene que incluir la red interna de Docker donde está Caddy, para que la API lea la IP real de `X-Forwarded-For`. Sin eso, todos los visitantes comparten la IP de Caddy y el conteo de únicos baja.
+
+## CI (integración continua) y pre-commit
+
+El workflow `.github/workflows/ci.yml` corre en cada PR y en cada push a `dev` y `main`, con cuatro jobs en paralelo:
+
+| Job | Qué revisa |
+|---|---|
+| pre-commit | `ruff` (lint y formato), Prettier y que no se suba una llave privada |
+| API | `mypy` y `pytest` contra el Postgres del compose, con cobertura mínima del 80 % |
+| Web | ESLint, `tsc`, Vitest con cobertura mínima del 60 % y `vite build` |
+| E2E | Playwright contra `npm run dev`, con la base, las migraciones y la API del compose |
+
+Usa caché de pip, npm y pre-commit. No usa secretos y el token solo puede leer el código, así que corre igual de seguro en PR desde forks. Las acciones están fijadas por SHA. Un push nuevo al mismo PR cancela la corrida anterior.
+
+Los mismos hooks de pre-commit corren en tu máquina antes de cada commit:
+
+```bash
+pip install "pre-commit==4.6.*"
+pre-commit install              # una vez por clon
+pre-commit run --all-files      # a mano, sobre todo el repo
+```
