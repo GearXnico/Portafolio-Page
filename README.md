@@ -247,3 +247,31 @@ Para correr las auditorías en tu máquina:
 cd api && pip install "pip-audit==2.10.*" && pip-audit --skip-editable
 cd web && npm audit --audit-level=high
 ```
+
+## Reglas de ramas
+
+`dev` y `main` están protegidas con tres rulesets de GitHub (ADR 0007). Su configuración exacta está en `.github/rulesets/`, porque GitHub no los copia al crear un repo desde la plantilla: en el repo nuevo se importan en Settings > Rules > Rulesets > New ruleset > Import a ruleset.
+
+| Ruleset | Rama | Reglas | Quién se lo salta |
+|---|---|---|---|
+| `main` | `main` | Sin borrado ni force push, historial lineal, PR obligatorio, solo rebase & merge y los 11 checks de `ci.yml` y `security.yml` en verde con la rama al día | Nadie |
+| `dev` | `dev` | Las mismas | La deploy key de `sync-dev.yml` |
+| `aprobacion` | `dev` y `main` | 1 aprobación; un push nuevo la descarta | El rol admin (solo Nicolas) al mergear un PR, con bypass registrado, y la deploy key |
+
+La aprobación va en un ruleset aparte para que el bypass salte solo la aprobación y no los checks. En Settings > General, el único método de merge habilitado es rebase & merge, y está activo "Always suggest updating pull request branches" para poner la rama al día con rebase desde el PR.
+
+Si un job cambia de nombre o se agrega uno nuevo, se actualiza su JSON y el ruleset en GitHub en el mismo PR; si no, el check queda esperando y bloquea el merge.
+
+### `sync-dev.yml`
+
+Después de cada push a `main` (un PR de versión o un hotfix), rebasa `dev` sobre `main` y la publica con force push. Así `dev` descarta las copias de commits que el rebase & merge dejó en `main` con otro SHA, y recibe los hotfix. Si el rebase choca, el job falla sin publicar nada y el conflicto se resuelve a mano.
+
+Necesita una deploy key con permiso de escritura, que se crea una vez:
+
+```bash
+ssh-keygen -t ed25519 -N "" -C sync-dev -f sync-dev
+```
+
+1. Settings > Deploy keys > Add deploy key: título `sync-dev`, el contenido de `sync-dev.pub` y "Allow write access".
+2. Settings > Secrets and variables > Actions > New repository secret: `SYNC_DEV_SSH_KEY`, con el contenido de `sync-dev` (la llave privada).
+3. Borra los dos archivos de tu equipo.

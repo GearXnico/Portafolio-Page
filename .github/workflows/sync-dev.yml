@@ -1,0 +1,39 @@
+# Después de cada push a main, rebasa dev sobre main y la publica con force push. ADR 0007.
+# El rebase & merge copia los commits a main con otro SHA; sin esto, el siguiente PR de versión
+# mostraría commits repetidos. Git descarta los que ya están en main y conserva los nuevos.
+# Usa la deploy key del secreto SYNC_DEV_SSH_KEY, la única excepción del ruleset de dev.
+name: sync-dev
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+# Dos versiones seguidas se sincronizan en orden, sin cancelar la anterior.
+concurrency:
+  group: sync-dev
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Rebasar dev sobre main
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: dev
+          fetch-depth: 0
+          ssh-key: ${{ secrets.SYNC_DEV_SSH_KEY }}
+
+      # Si el rebase choca (por ejemplo, un hotfix que toca lo mismo que dev), el job falla sin
+      # publicar nada y el conflicto se resuelve a mano en una rama.
+      - name: Rebasar y publicar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rebase origin/main
+          git push --force-with-lease=dev:origin/dev origin HEAD:dev
