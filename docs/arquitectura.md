@@ -248,7 +248,7 @@ La plantilla es este mismo esqueleto, con una API y una página vacías y los mi
 | Migraciones | Respaldo con `pg_dump`, después `alembic upgrade head` y después el cambio de contenedores. Las migraciones solo agregan (columnas nuevas opcionales) y nunca borran en el mismo despliegue. | Postgres revierte una migración fallida completa, y como la migración no borra nada, el código anterior sigue funcionando con la base nueva si hay rollback. |
 | Verificación y rollback | `GET /api/health` (que también consulta la base) debe responder 200 en menos de 60 s. Si no, el mismo job vuelve al SHA anterior y queda en rojo. | No dejar el sitio caído esperando a que lo revises. |
 | Avisos | El correo de GitHub cuando falla un workflow. | Es gratis y ya existe. |
-| Dependencias | Dependabot semanal para pip, npm, Docker y Actions, agrupado en un PR por ecosistema. El CI decide si se mergea. | Parches de seguridad sin revisar a mano. |
+| Dependencias | Dependabot semanal para pip, npm, Docker y Actions, agrupado en un PR por ecosistema de paquetes (pip, npm, Docker, Actions). El CI decide si se mergea. | Parches de seguridad sin revisar a mano. |
 | Ambientes | Local, staging (ambiente de prueba que replica producción) y producción. La opción de staging está en la ADR 0008. | Lo pediste en la revisión del 2026-10-11, para probar antes de producción. |
 
 Las versiones de las Actions revisadas hoy son `actions/checkout@v7`, `actions/setup-python@v7`, `actions/setup-node@v7`, `docker/login-action@v4`, `docker/setup-buildx-action@v4` y `docker/build-push-action@v7`.

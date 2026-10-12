@@ -4,7 +4,7 @@ Estado: aceptada · Fecha: 2026-10-11 · Decidió: Nicolas
 
 ## Contexto
 
-El sitio necesita un frontend, una API (interfaz de programación) y Postgres siempre disponibles, porque la primera visita de un reclutador no puede tardar en cargar. El despliegue es un área que Nicolas quiere reforzar y también algo que piden las ofertas de trabajo revisadas. Además, el servidor debería servir para los próximos productos del ecosistema sin multiplicar el costo.
+El sitio necesita un frontend, una API (interfaz de programación) y Postgres siempre disponibles, porque la primera visita de un reclutador no puede tardar en cargar. El despliegue es un área que Nicolas quiere reforzar y también algo que piden las ofertas de trabajo revisadas. Además, el servidor debería servir para los próximos productos sin multiplicar el costo.
 
 ## Opciones consideradas
 
