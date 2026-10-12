@@ -8,7 +8,7 @@ Sitio web de portafolio: una página pública bilingüe (español e inglés) con
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel.
+> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel. La web tiene la ruta `/admin` con login y logout (las pantallas de edición vienen en el hito 4).
 
 ## Requisitos
 
@@ -50,8 +50,8 @@ api/                    La API (interfaz de programación), en Python con FastAP
   tests/                Tests con pytest contra Postgres real (uno por área: test_<área>.py)
 web/                    La página, en React y TypeScript
   src/
-    main.tsx, App.tsx   Arranque de la página e idioma
-    pages/              Páginas completas (hoy, la página de inicio)
+    main.tsx, App.tsx   Arranque de la web y sus rutas (`/admin` y la página pública)
+    pages/              Páginas completas: la página pública, el login y el panel
     components/         Secciones de la página, un componente por archivo
     api/                Llamadas a la API
     i18n/               Textos de la interfaz en es.json y en.json
