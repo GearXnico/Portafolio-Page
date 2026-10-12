@@ -54,7 +54,8 @@ python -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"                    # instalar dependencias
 pytest -q --maxfail=1               # tests (necesita la db del compose)
 pytest --cov=app --cov-fail-under=80
-ruff check . && ruff format --check . && mypy app
+ruff check . && ruff format --check . && mypy app   # ruff incluye las reglas de seguridad (S)
+pip install "pip-audit==2.10.*" && pip-audit --skip-editable
 alembic revision --autogenerate -m "<cambio>"
 alembic upgrade head
 
@@ -64,6 +65,7 @@ npm ci
 npm run test -- --run                      # Vitest
 npm run test:coverage                      # mínimo 60 %
 npm run lint && npm run typecheck
+npm audit --audit-level=high
 npm run e2e                                # Playwright, con el compose arriba
 
 # pre-commit: ruff, Prettier y llaves privadas; también corre en el CI

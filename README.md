@@ -207,7 +207,7 @@ El workflow `.github/workflows/ci.yml` corre en cada PR y en cada push a `dev` y
 
 | Job | Qué revisa |
 |---|---|
-| pre-commit | `ruff` (lint y formato), Prettier y que no se suba una llave privada |
+| pre-commit | `ruff` (lint, formato y reglas de seguridad de Bandit), Prettier y que no se suba una llave privada |
 | API | `mypy` y `pytest` contra el Postgres del compose, con cobertura mínima del 80 % |
 | Web | ESLint, `tsc`, Vitest con cobertura mínima del 60 % y `vite build` |
 | E2E | Playwright contra `npm run dev`, con la base, las migraciones y la API del compose |
@@ -220,4 +220,28 @@ Los mismos hooks de pre-commit corren en tu máquina antes de cada commit:
 pip install "pre-commit==4.6.*"
 pre-commit install              # una vez por clon
 pre-commit run --all-files      # a mano, sobre todo el repo
+```
+
+## Seguridad en CI
+
+El workflow `.github/workflows/security.yml` corre en cada PR, en cada push a `dev` y `main`, y los lunes a las 09:00 UTC (ADR 0007):
+
+| Job | Qué revisa | Falla si |
+|---|---|---|
+| CodeQL | Análisis estático de GitHub sobre Python, TypeScript y los propios workflows | Hay un hallazgo de severidad alta o crítica (umbral del repo) |
+| pip-audit | Las dependencias de la API, incluidas las de desarrollo | Hay cualquier vulnerabilidad conocida (pip-audit no filtra por severidad) |
+| npm audit | Las dependencias de web, según `package-lock.json` | Hay una vulnerabilidad alta o crítica |
+| Trivy | Las imágenes Docker construidas (hoy las de desarrollo; las de producción desde la tarea 1.6), salvo las librerías que pip y npm traen copiadas dentro de sí mismos | Hay una vulnerabilidad alta o crítica que ya tiene corrección |
+
+Las reglas de seguridad de `ruff` (`S`, las de Bandit) corren en el job pre-commit de `ci.yml`. En los tests se permiten `assert` y claves de mentira; en `app/` no se usa `assert`, porque Python lo omite al correr con `-O`.
+
+`.github/dependabot.yml` revisa cada semana pip, npm, las imágenes base y las acciones. Las versiones menores y de parche llegan en un PR por ecosistema y las mayores en uno aparte cada una. Espera 7 días desde que sale una versión antes de proponerla (por si era maliciosa y la retiran); las alertas de seguridad no esperan. Esos PR pasan por los mismos checks.
+
+Secret scanning y push protection (que bloquea un push con un secreto) son ajustes del repo en Settings > Code security, no de un workflow.
+
+Para correr las auditorías en tu máquina:
+
+```bash
+cd api && pip install "pip-audit==2.10.*" && pip-audit --skip-editable
+cd web && npm audit --audit-level=high
 ```
