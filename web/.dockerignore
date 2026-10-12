@@ -3,3 +3,6 @@ dist/
 coverage/
 playwright-report/
 test-results/
+# Variables locales: nunca entran a la imagen (Vite incrusta las VITE_* en el build).
+.env
+.env.*

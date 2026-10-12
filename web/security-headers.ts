@@ -1,5 +1,6 @@
-// Cabeceras HTTP de seguridad de la página. En local las pone Vite; en producción las pondrá
-// Caddy con estos mismos valores (tarea 1.6). El E2E (e2e/security.spec.ts) las verifica.
+// Cabeceras HTTP de seguridad de la página. En local las pone Vite; en producción las pone
+// Caddy con estos mismos valores (deploy/Caddyfile). El E2E (e2e/security.spec.ts) las verifica,
+// también contra Caddy en el job deploy-check de CI.
 
 /** CSP (política de seguridad de contenido): solo se carga lo que viene del mismo dominio. */
 export const contentSecurityPolicy = [

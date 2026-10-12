@@ -1,4 +1,4 @@
-# Imagen solo para desarrollo local (compose.yml). La de producción es la tarea 1.6.
+# Imagen solo para desarrollo local (compose.yml). La de producción es Dockerfile (Caddy).
 FROM node:24-alpine
 
 # Corre con el usuario sin privilegios que trae la imagen, no como root.
