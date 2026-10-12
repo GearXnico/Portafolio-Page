@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { t } from "../i18n";
+import { useLang } from "../i18n";
 
 type Status = "loading" | "ok" | "error";
 
@@ -12,6 +12,7 @@ const labels = {
 
 /** Muestra si la API (y su base) responde en /api/health. */
 export function ApiStatus() {
+  const { t } = useLang();
   const [status, setStatus] = useState<Status>("loading");
 
   useEffect(() => {
