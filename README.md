@@ -94,7 +94,7 @@ alembic upgrade head                                   # aplicar
 ## Estructura
 
 ```
-api/          FastAPI: app/ (routers/, models/, schemas/), tests/ y alembic/ (migraciones)
+api/          FastAPI: app/ (routers/, models/, schemas/, services/), tests/ y alembic/ (migraciones)
 db/init/      scripts que corren al crear la base (usuario de la API)
 web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwright)
 deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
@@ -146,7 +146,7 @@ Respuesta:
 }
 ```
 
-- **Idioma** (`app/idioma.py`, ADR 0002): el primero de `Accept-Language`, que el navegador pone como preferido. Español si es `es`; si no, o si no viene el header, inglés.
+- **Idioma** (`app/services/locale.py`, ADR 0002): el primero de `Accept-Language`, que el navegador pone como preferido. Español si es `es`; si no, o si no viene el header, inglés.
 - **Contenido**: textos en los dos idiomas, para que el selector cambie sin otra llamada. `profile` es `null` mientras no se cargue el perfil. Solo salen los proyectos con `visible = true`. No salen ids, orden, visibilidad, fechas de edición ni el correo de contacto.
 - **Visitante único por día**: no se guarda la IP. Se guarda un HMAC-SHA256 (hash con clave) de IP y user agent, cuya clave es una sal al azar que se crea cada día (UTC) en la tabla `visitor_salt` y se borra al día siguiente. Sin la sal, ni con un respaldo de la base se puede volver a la IP.
 - Si falla el registro de la visita, la página igual carga.

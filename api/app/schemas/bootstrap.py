@@ -9,14 +9,14 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict
 
-from app.idioma import Idioma
+from app.services.locale import Lang
 
 
-class _DesdeModelo(BaseModel):
+class _FromModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class PerfilPublico(_DesdeModelo):
+class PublicProfile(_FromModel):
     headline_es: str
     headline_en: str
     about_es: str
@@ -24,12 +24,12 @@ class PerfilPublico(_DesdeModelo):
     links: dict[str, str]
 
 
-class HabilidadPublica(_DesdeModelo):
+class PublicSkill(_FromModel):
     name: str
     category: str
 
 
-class ExperienciaPublica(_DesdeModelo):
+class PublicExperience(_FromModel):
     company: str
     role_es: str
     role_en: str
@@ -39,13 +39,13 @@ class ExperienciaPublica(_DesdeModelo):
     end_date: date | None
 
 
-class CapturaPublica(BaseModel):
+class PublicImage(BaseModel):
     url: str
     alt_es: str
     alt_en: str
 
 
-class ProyectoPublico(BaseModel):
+class PublicProject(BaseModel):
     slug: str
     title_es: str
     title_en: str
@@ -56,13 +56,13 @@ class ProyectoPublico(BaseModel):
     stack: list[str]
     demo_url: str | None
     repo_url: str | None
-    images: list[CapturaPublica]
+    images: list[PublicImage]
 
 
 class Bootstrap(BaseModel):
-    lang: Idioma
+    lang: Lang
     # None mientras no se haya cargado el perfil desde el panel.
-    profile: PerfilPublico | None
-    skills: list[HabilidadPublica]
-    experience: list[ExperienciaPublica]
-    projects: list[ProyectoPublico]
+    profile: PublicProfile | None
+    skills: list[PublicSkill]
+    experience: list[PublicExperience]
+    projects: list[PublicProject]

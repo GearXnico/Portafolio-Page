@@ -27,30 +27,30 @@ USER_AGENT_MAX_LENGTH = 512
 
 # Unicode: control, formato (invisibles), sustitutos, uso privado, sin asignar, y separadores
 # de línea y de párrafo.
-_CATEGORIAS_QUITADAS = frozenset({"Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp"})
+_REMOVED_CATEGORIES = frozenset({"Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp"})
 
-_HOST_VALIDO = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$")
+_VALID_HOST = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$")
 
 
-def limpiar_texto(valor: str | None, largo_maximo: int) -> str | None:
+def clean_text(value: str | None, max_length: int) -> str | None:
     """Quita caracteres de control e invisibles, recorta espacios y largo. Vacío pasa a None.
 
     Las categorías quitadas incluyen el byte nulo (Postgres no lo acepta en un `text`), los
     saltos de línea (también U+2028 y U+2029) y los caracteres que invierten la dirección del
     texto, que podrían disfrazar un valor en el panel o romper un export CSV.
     """
-    if valor is None:
+    if value is None:
         return None
     # Se recorta antes de filtrar, para no recorrer un valor de muchos KB (kilobytes). El margen
     # deja espacio a los caracteres que el filtro quita.
-    limpio = "".join(
-        c for c in valor[: largo_maximo * 4] if unicodedata.category(c) not in _CATEGORIAS_QUITADAS
+    cleaned = "".join(
+        c for c in value[: max_length * 4] if unicodedata.category(c) not in _REMOVED_CATEGORIES
     )
-    limpio = limpio.strip()[:largo_maximo].strip()
-    return limpio or None
+    cleaned = cleaned.strip()[:max_length].strip()
+    return cleaned or None
 
 
-def origen_del_referrer(referrer: str | None) -> str | None:
+def referrer_origin(referrer: str | None) -> str | None:
     """Deja solo el origen (`https://dominio`) de la página de la que vino el visitante.
 
     La URL completa puede traer datos personales (búsquedas, correos, tokens); para saber de
@@ -59,36 +59,36 @@ def origen_del_referrer(referrer: str | None) -> str | None:
     if not referrer or len(referrer) > REFERRER_MAX_LENGTH:
         return None
     try:
-        partes = urlsplit(referrer.strip())
-        host = partes.hostname
-        puerto = partes.port
+        parts = urlsplit(referrer.strip())
+        host = parts.hostname
+        port = parts.port
     except ValueError:
         return None
-    if partes.scheme not in ("http", "https") or not host or not _HOST_VALIDO.match(host):
+    if parts.scheme not in ("http", "https") or not host or not _VALID_HOST.match(host):
         return None
-    return f"{partes.scheme}://{host}" + (f":{puerto}" if puerto else "")
+    return f"{parts.scheme}://{host}" + (f":{port}" if port else "")
 
 
-def sal_del_dia(session: Session, dia: date) -> bytes:
-    """Devuelve la sal de `dia`, creándola si no existe, y borra las de días anteriores.
+def daily_salt(session: Session, day: date) -> bytes:
+    """Devuelve la sal de `day`, creándola si no existe, y borra las de días anteriores.
 
     Lo normal es que ya exista y basta con leerla. Solo la primera visita del día escribe; si
     dos llegan a la vez, `ON CONFLICT DO NOTHING` deja una sola sal.
     """
-    consulta = select(VisitorSalt.salt).where(VisitorSalt.day == dia)
-    sal = session.scalars(consulta).one_or_none()
-    if sal is not None:
-        return sal
+    query = select(VisitorSalt.salt).where(VisitorSalt.day == day)
+    salt = session.scalars(query).one_or_none()
+    if salt is not None:
+        return salt
     session.execute(
         insert(VisitorSalt)
-        .values(day=dia, salt=secrets.token_bytes(SALT_BYTES))
+        .values(day=day, salt=secrets.token_bytes(SALT_BYTES))
         .on_conflict_do_nothing(index_elements=[VisitorSalt.day])
     )
-    session.execute(delete(VisitorSalt).where(VisitorSalt.day < dia))
-    return session.scalars(consulta).one()
+    session.execute(delete(VisitorSalt).where(VisitorSalt.day < day))
+    return session.scalars(query).one()
 
 
-def hash_visitante(sal: bytes, ip: str, user_agent: str) -> str:
+def visitor_hash(salt: bytes, ip: str, user_agent: str) -> str:
     """HMAC-SHA256 (hash con clave) de IP y user agent, en hexadecimal de 64 caracteres."""
-    mensaje = f"{ip}\n{user_agent[:USER_AGENT_MAX_LENGTH]}".encode()
-    return hmac.new(sal, mensaje, hashlib.sha256).hexdigest()
+    message = f"{ip}\n{user_agent[:USER_AGENT_MAX_LENGTH]}".encode()
+    return hmac.new(salt, message, hashlib.sha256).hexdigest()
