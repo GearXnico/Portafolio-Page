@@ -36,6 +36,7 @@ Regla práctica para elegir el nivel: **un caso se prueba una vez, en el nivel m
 | Lo que no debe salir no sale: correo del perfil, IP del visitante, ids internos | Una fuga de datos personales no se ve en la página | `test_bootstrap.py` y `test_admin_content.py` |
 | El usuario de la API no puede cambiar tablas | Limita el daño de una inyección de SQL | `test_permisos_db.py` |
 | Las migraciones se aplican, se revierten y calzan con los modelos | Una migración rota tumba el despliegue | `test_migrations.py` |
+| Un mensaje enviado desde el formulario de contacto llega a la API y se guarda | Es la única forma de contacto; si el formulario y la API dejan de calzar, nadie avisa | `web/e2e/contact.spec.ts` (el 201 llega solo después de guardar, como prueba `test_contact.py`) |
 | La página carga, cambia de idioma y no tiene errores de consola ni le faltan cabeceras de seguridad | Es lo que ve cualquier visitante | `web/e2e/` |
 
 Cada `fix/*` empieza con un test que reproduce el error y falla antes de la corrección.
