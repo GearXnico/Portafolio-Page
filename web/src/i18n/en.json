@@ -3,5 +3,8 @@
   "apiStatus.label": "API status",
   "apiStatus.loading": "checking…",
   "apiStatus.ok": "ok",
-  "apiStatus.error": "no response"
+  "apiStatus.error": "no response",
+  "lang.label": "Language",
+  "lang.es": "Español",
+  "lang.en": "English"
 }

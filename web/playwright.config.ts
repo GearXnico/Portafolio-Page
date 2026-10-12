@@ -9,7 +9,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
-  use: { baseURL, trace: "on-first-retry" },
+  // Navegador en español por defecto; los tests de idioma cambian el locale.
+  use: { baseURL, locale: "es-CL", trace: "on-first-retry" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: "npm run dev",

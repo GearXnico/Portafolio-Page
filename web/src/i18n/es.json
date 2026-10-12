@@ -3,5 +3,8 @@
   "apiStatus.label": "Estado de la API",
   "apiStatus.loading": "consultando…",
   "apiStatus.ok": "ok",
-  "apiStatus.error": "sin respuesta"
+  "apiStatus.error": "sin respuesta",
+  "lang.label": "Idioma",
+  "lang.es": "Español",
+  "lang.en": "English"
 }
