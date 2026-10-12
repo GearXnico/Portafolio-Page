@@ -10,6 +10,7 @@ from app.models.profile import Profile
 from app.models.project import Project, ProjectImage
 from app.models.skill import Skill
 from app.models.visit import Visit
+from app.models.visitor_salt import VisitorSalt
 
 __all__ = [
     "Base",
@@ -20,4 +21,5 @@ __all__ = [
     "ProjectImage",
     "Skill",
     "Visit",
+    "VisitorSalt",
 ]

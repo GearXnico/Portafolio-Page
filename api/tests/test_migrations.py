@@ -12,6 +12,7 @@ TABLAS = {
     "project_image",
     "visit",
     "contact_message",
+    "visitor_salt",
 }
 
 

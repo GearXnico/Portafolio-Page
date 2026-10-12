@@ -94,7 +94,7 @@ alembic upgrade head                                   # aplicar
 ## Estructura
 
 ```
-api/          FastAPI: app/ (routers/, models/), tests/ y alembic/ (migraciones)
+api/          FastAPI: app/ (routers/, models/, schemas/), tests/ y alembic/ (migraciones)
 db/init/      scripts que corren al crear la base (usuario de la API)
 web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwright)
 deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
@@ -121,3 +121,34 @@ Necesita el secreto `CLAUDE_CODE_OAUTH_TOKEN` en el repositorio (se genera con `
 - Las cabeceras HTTP de seguridad están en `web/security-headers.ts`: `nosniff`, sin iframes, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`. La CSP solo deja cargar scripts, estilos y datos del mismo dominio, y se aplica al build (en `npm run dev` no, porque Vite necesita un script en línea para recargar). En producción, Caddy usará estos mismos valores (tarea 1.6).
 - El build no publica source maps (el código fuente original).
 - El contenedor de desarrollo de la web corre con el usuario `node`, no como root.
+
+## Primera carga y visitas: `GET /api/bootstrap`
+
+La página llama a `GET /api/bootstrap` al abrirse. La API registra la visita, decide el idioma y devuelve todo el contenido visible en una sola respuesta, con `Cache-Control: no-store`.
+
+Parámetros (todos opcionales; el frontend los pasa en la tarea 3.5):
+
+| Parámetro | Qué es | Cómo se guarda |
+|---|---|---|
+| `utm_source`, `utm_medium`, `utm_campaign`, `utm_content` | UTM (parámetros de origen del enlace) | Sin caracteres de control ni invisibles y recortados a 200 caracteres. Nunca hacen fallar la página. |
+| `referrer` | `document.referrer` de la página | Solo el dominio (`https://www.linkedin.com`); la URL completa puede traer datos personales. |
+| `lang` | Idioma elegido en el selector | Manda sobre el navegador. Si no es `es` ni `en`, se ignora. |
+
+Respuesta:
+
+```json
+{
+  "lang": "es",
+  "profile": {"headline_es": "", "headline_en": "", "about_es": "", "about_en": "", "links": {"github": "https://…"}},
+  "skills": [{"name": "Python", "category": "language"}],
+  "experience": [{"company": "", "role_es": "", "role_en": "", "description_es": "", "description_en": "", "start_date": "2024-01-01", "end_date": null}],
+  "projects": [{"slug": "", "title_es": "", "title_en": "", "summary_es": "", "summary_en": "", "body_es": "", "body_en": "", "stack": [], "demo_url": null, "repo_url": null, "images": [{"url": "/media/…", "alt_es": "", "alt_en": ""}]}]
+}
+```
+
+- **Idioma** (`app/idioma.py`, ADR 0002): el idioma preferido de `Accept-Language` (por calidad `q` y luego por orden). Español si es `es`; si no, o si no viene el header, inglés.
+- **Contenido**: textos en los dos idiomas, para que el selector cambie sin otra llamada. `profile` es `null` mientras no se cargue el perfil. Solo salen los proyectos con `visible = true`. No salen ids, orden, visibilidad, fechas de edición ni el correo de contacto.
+- **Visitante único por día**: no se guarda la IP. Se guarda un HMAC-SHA256 (hash con clave) de IP y user agent, cuya clave es una sal al azar que se crea cada día (UTC) en la tabla `visitor_salt` y se borra al día siguiente. Sin la sal, ni con un respaldo de la base se puede volver a la IP.
+- Si falla el registro de la visita, la página igual carga.
+
+En producción la API está detrás de Caddy, así que Uvicorn tiene que leer la IP real del header `X-Forwarded-For` solo cuando viene de Caddy (`--proxy-headers --forwarded-allow-ips=<IP de Caddy>`, tarea 1.6). Sin eso, todos los visitantes comparten la IP de Caddy y el conteo de únicos baja.
