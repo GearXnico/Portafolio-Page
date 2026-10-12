@@ -39,7 +39,7 @@ A, con estas reglas:
   3. Cambio de contenedores.
   4. `GET /api/health` en menos de 60 s. Si falla, vuelve al SHA anterior y el job queda en rojo.
 - **Migraciones:** solo agregan; nada se borra en el mismo despliegue que lo deja de usar.
-- **Dependabot:** semanal, agrupado por ecosistema.
+- **Dependabot:** semanal, agrupado por ecosistema de paquetes.
 
 ## Consecuencias
 
