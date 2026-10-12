@@ -147,7 +147,7 @@ alembic upgrade head                                   # aplicar
 api/          FastAPI: app/ (routers/, models/, schemas/, services/), tests/ y alembic/ (migraciones)
 db/init/      scripts que corren al crear la base (usuario de la API)
 web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwright)
-deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
+deploy/       compose.prod.yml y Caddyfile de producción (ver deploy/README.md)
 compose.yml   desarrollo local
 docs/         brief, arquitectura, ADR (registros de decisión), plan y prompts; CLAUDE.md los indexa
 .github/      plantilla de PR (pull request) y workflows (ci.yml, ai-review.yml)
@@ -168,9 +168,9 @@ Necesita el secreto `CLAUDE_CODE_OAUTH_TOKEN` en el repositorio (se genera con `
 
 ## Seguridad de la web
 
-- Las cabeceras HTTP de seguridad están en `web/security-headers.ts`: `nosniff`, sin iframes, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`. La CSP solo deja cargar scripts, estilos y datos del mismo dominio, y se aplica al build (en `npm run dev` no, porque Vite necesita un script en línea para recargar). En producción, Caddy usará estos mismos valores (tarea 1.6).
+- Las cabeceras HTTP de seguridad están en `web/security-headers.ts`: `nosniff`, sin iframes, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`. La CSP solo deja cargar scripts, estilos y datos del mismo dominio, y se aplica al build (en `npm run dev` no, porque Vite necesita un script en línea para recargar). En producción, `deploy/Caddyfile` pone estos mismos valores más HSTS (solo HTTPS), y el job `deploy-check` lo comprueba.
 - El build no publica source maps (el código fuente original).
-- El contenedor de desarrollo de la web corre con el usuario `node`, no como root.
+- El contenedor de desarrollo de la web corre con el usuario `node`, no como root. En producción ningún contenedor corre como root (ver `deploy/README.md`).
 
 ## Primera carga y visitas: `GET /api/bootstrap`
 
@@ -201,11 +201,11 @@ Respuesta:
 - **Visitante único por día**: no se guarda la IP. Se guarda un HMAC-SHA256 (hash con clave) de IP y user agent, cuya clave es una sal al azar que se crea cada día (UTC) en la tabla `visitor_salt` y se borra al día siguiente. Sin la sal, ni con un respaldo de la base se puede volver a la IP.
 - Si falla el registro de la visita, la página igual carga.
 
-En producción la API está detrás de Caddy: `TRUSTED_PROXIES` tiene que incluir la red interna de Docker donde está Caddy, para que la API lea la IP real de `X-Forwarded-For`. Sin eso, todos los visitantes comparten la IP de Caddy y el conteo de únicos baja.
+En producción la API está detrás de Caddy: `deploy/compose.prod.yml` fija `TRUSTED_PROXIES` en la red interna de Docker donde está Caddy, para que la API lea la IP real de `X-Forwarded-For`. Sin eso, todos los visitantes compartirían la IP de Caddy y el conteo de únicos bajaría.
 
 ## CI (integración continua) y pre-commit
 
-El workflow `.github/workflows/ci.yml` corre en cada PR y en cada push a `dev` y `main`, con cuatro jobs en paralelo:
+El workflow `.github/workflows/ci.yml` corre en cada PR y en cada push a `dev` y `main`, con cinco jobs en paralelo:
 
 | Job | Qué revisa |
 |---|---|
@@ -213,6 +213,7 @@ El workflow `.github/workflows/ci.yml` corre en cada PR y en cada push a `dev` y
 | API | `mypy` y `pytest` contra el Postgres del compose, con cobertura mínima del 80 % |
 | Web | ESLint, `tsc`, Vitest con cobertura mínima del 60 % y `vite build` |
 | E2E | Playwright contra `npm run dev`, con la base, las migraciones y la API del compose |
+| Despliegue (`deploy-check`) | Levanta `deploy/compose.prod.yml` con las imágenes de producción, respalda la base con `pg_dump`, aplica las migraciones, revisa que ningún contenedor corra como root y pasa el E2E contra Caddy. Es el staging efímero de cada PR (ADR 0008) |
 
 Usa caché de pip, npm y pre-commit. No usa secretos y el token solo puede leer el código, así que corre igual de seguro en PR desde forks. Las acciones están fijadas por SHA. Un push nuevo al mismo PR cancela la corrida anterior.
 
@@ -233,13 +234,13 @@ El workflow `.github/workflows/security.yml` corre en cada PR, en cada push a `d
 | CodeQL | Análisis estático de GitHub sobre Python, TypeScript y los propios workflows | Hay un hallazgo de severidad alta o crítica (umbral del repo) |
 | pip-audit | Las dependencias de la API, incluidas las de desarrollo | Hay cualquier vulnerabilidad conocida (pip-audit no filtra por severidad) |
 | npm audit | Las dependencias de web, según `package-lock.json` | Hay una vulnerabilidad alta o crítica |
-| Trivy | Las imágenes Docker construidas (hoy las de desarrollo; las de producción desde la tarea 1.6) | Hay una vulnerabilidad alta o crítica que ya tiene corrección y no está aceptada en `.trivyignore` |
+| Trivy | Las imágenes de producción (`api/Dockerfile` y `web/Dockerfile`) | Hay una vulnerabilidad alta o crítica que ya tiene corrección y no está aceptada en `.trivyignore` |
 
 Las reglas de seguridad de `ruff` (`S`, las de Bandit) corren en el job pre-commit de `ci.yml`. En los tests se permiten `assert` y claves de mentira; en `app/` no se usa `assert`, porque Python lo omite al correr con `-O`.
 
 `.github/dependabot.yml` revisa cada semana pip, npm, las imágenes base y las acciones. Las versiones menores y de parche llegan en un PR por ecosistema y las mayores en uno aparte cada una. Espera 7 días desde que sale una versión antes de proponerla (por si era maliciosa y la retiran); las alertas de seguridad no esperan. Esos PR pasan por los mismos checks.
 
-`.trivyignore` lista los hallazgos aceptados, cada uno con fecha de vencimiento (`exp:`). Hoy son solo los de las librerías que pip y npm traen copiadas dentro de sí mismos en las imágenes base, que no se corrigen desde este repo. Al vencer, el job vuelve a fallar y se revisan de nuevo. Cada ID se ignora en toda la imagen; si una dependencia propia cae en uno de esos mismos CVE, la detectan igual `pip-audit` y `npm audit`, que no leen ese archivo.
+`.trivyignore` lista los hallazgos aceptados, cada uno con fecha de vencimiento (`exp:`). Hoy son solo tres de Caddy 2.11.7 (denegación de servicio en HTTP/2 y TLS), que corrige la próxima versión de Caddy. Las imágenes de producción no llevan pip ni npm. Al vencer, el job vuelve a fallar y se revisan de nuevo. Cada ID se ignora en toda la imagen; si una dependencia propia cae en uno de esos mismos CVE, la detectan igual `pip-audit` y `npm audit`, que no leen ese archivo.
 
 Secret scanning y push protection (que bloquea un push con un secreto) son ajustes del repo en Settings > Code security, no de un workflow. Ahí mismo, el "default setup" de CodeQL tiene que quedar desactivado, porque este workflow es la configuración avanzada y GitHub no acepta las dos a la vez.
 

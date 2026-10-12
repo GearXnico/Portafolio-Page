@@ -68,6 +68,11 @@ npm run lint && npm run typecheck
 npm audit --audit-level=high
 npm run e2e                                # Playwright, con el compose arriba
 
+# Producción en local (lo mismo que el job deploy-check); detalle en deploy/README.md
+cp .env.example deploy/.env                 # y completa SITE_ADDRESS, ADMIN_* y JWT_SECRET
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --build --wait caddy
+cd web && E2E_BASE_URL=http://localhost npm run e2e
+
 # pre-commit: ruff, Prettier y llaves privadas; también corre en el CI
 pip install "pre-commit==4.6.*" && pre-commit install   # una vez
 pre-commit run --all-files
