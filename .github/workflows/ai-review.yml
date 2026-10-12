@@ -15,10 +15,8 @@ on:
   issue_comment:
     types: [created]
 
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write
+# Sin permisos por defecto; el job pide solo lo que usa.
+permissions: {}
 
 concurrency:
   group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
@@ -26,6 +24,7 @@ concurrency:
 
 jobs:
   review:
+    name: Revisión con IA
     if: >-
       (github.event_name == 'pull_request'
         && !github.event.pull_request.draft
@@ -37,11 +36,29 @@ jobs:
         && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read # leer el código del PR
+      pull-requests: write # comentar; nunca aprueba (gh pr review está bloqueado)
+      id-token: write # la acción lo cambia por un token de la app de Claude (OIDC, OpenID Connect)
     env:
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
     steps:
+      # En pull_request GitHub ya no entrega secretos a forks, y el `if` del job los salta.
+      # En issue_comment sí habría secretos, así que se rechazan los PR que vienen de un fork.
+      - name: Rechazar PR desde forks (revisión a pedido)
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cross="$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json isCrossRepository --jq .isCrossRepository)"
+          if [ "$cross" != "false" ]; then
+            echo "::error::La revisión con IA no corre en PR desde forks."
+            exit 1
+          fi
+
+      # Acciones fijadas por SHA (hash del commit) para que un tag movido no cambie el código que corre.
       - name: Checkout del PR
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           # En issue_comment el evento apunta a dev; hay que traer la cabeza del PR.
           ref: refs/pull/${{ env.PR_NUMBER }}/head
@@ -49,14 +66,19 @@ jobs:
           persist-credentials: false
 
       - name: Revisión con Claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Valores por defecto, escritos para que nadie los active sin querer: el log completo
+          # puede incluir salidas de herramientas, y los logs de Actions de un repo público son públicos.
+          show_full_output: false
+          display_report: false
           # Sonnet para la revisión (ADR 0009); el tope de turnos acota el consumo.
           claude_args: |
             --model sonnet
             --max-turns 30
             --allowedTools "Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"
+            --disallowedTools "Bash(gh pr review:*),Bash(gh pr merge:*),Bash(gh api:*),Edit,Write,WebFetch,WebSearch"
           prompt: |
             REPO: ${{ github.repository }}
             PR: ${{ env.PR_NUMBER }}
