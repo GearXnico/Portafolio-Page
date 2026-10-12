@@ -1,0 +1,58 @@
+# Actualizaciones semanales de dependencias (ADR 0007). Los PR pasan por los mismos checks
+# que cualquier otro y no los revisa la IA (ai-review.yml se salta a Dependabot).
+# Las actualizaciones menores y de parche llegan en un PR por ecosistema; las mayores, en un PR
+# aparte cada una, porque pueden romper cosas y conviene revisarlas una a una.
+# cooldown: espera 7 días desde que sale una versión antes de proponerla, por si era maliciosa y
+# la retiran. Las alertas de seguridad de Dependabot no esperan.
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /api
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+    groups:
+      pip:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+    groups:
+      npm:
+        update-types: [minor, patch]
+
+  # Imágenes base de los Dockerfile.
+  - package-ecosystem: docker
+    directories: [/api, /web]
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+    groups:
+      docker:
+        update-types: [minor, patch]
+
+  # Mantiene al día los SHA fijados en .github/workflows/.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+    groups:
+      actions:
+        update-types: [minor, patch]
