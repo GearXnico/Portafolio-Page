@@ -69,7 +69,7 @@ jobs:
       - name: pytest (cobertura mínima 80 %)
         run: pytest -q --cov=app --cov-report=term-missing:skip-covered --cov-fail-under=80
 
-  # ESLint, tsc, Vitest con cobertura mínima (60 %, en vite.config.ts) y build.
+  # ESLint, tsc, Vitest con cobertura mínima (80 %, en vite.config.ts) y build.
   web:
     name: Web
     runs-on: ubuntu-latest
@@ -91,7 +91,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
-      - name: Vitest (cobertura mínima 60 %)
+      - name: Vitest (cobertura mínima 80 %)
         run: npm run test:coverage
       - run: npm run build
 

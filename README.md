@@ -108,7 +108,7 @@ Desde `web/`, con Node 24:
 ```bash
 npm ci
 npm run test -- --run          # Vitest (pruebas unitarias)
-npm run test:coverage          # con el mínimo de 60 % de líneas
+npm run test:coverage          # con el mínimo de 80 % de líneas
 npm run lint && npm run typecheck && npm run format:check
 npx playwright install chromium   # solo la primera vez
 npm run e2e                    # Playwright, con el compose arriba
@@ -253,7 +253,7 @@ El workflow `.github/workflows/ci.yml` corre en cada PR y en cada push a `dev` y
 |---|---|
 | pre-commit | `ruff` (lint, formato y reglas de seguridad de Bandit), Prettier y que no se suba una llave privada |
 | API | `mypy` y `pytest` contra el Postgres del compose, con cobertura mínima del 80 % |
-| Web | ESLint, `tsc`, Vitest con cobertura mínima del 60 % y `vite build` |
+| Web | ESLint, `tsc`, Vitest con cobertura mínima del 80 % y `vite build` |
 | E2E | Playwright contra `npm run dev`, con la base, las migraciones y la API del compose |
 | Despliegue (`deploy-check`) | Levanta `deploy/compose.prod.yml` con las imágenes de producción, respalda la base con `pg_dump`, aplica las migraciones, revisa que ningún contenedor corra como root y pasa el E2E contra Caddy. Es el staging efímero de cada PR (ADR 0008) |
 

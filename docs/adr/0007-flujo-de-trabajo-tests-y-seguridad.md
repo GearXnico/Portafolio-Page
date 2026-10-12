@@ -78,7 +78,7 @@ Los nombres van en minúsculas, separados con guiones, en español y de 2 a 4 pa
 | Nivel | Herramienta | Qué cubre | Regla |
 |---|---|---|---|
 | API | pytest 9 con Postgres real en CI y `pytest-cov` | Endpoints, reglas de negocio, permisos de `/api/admin/*` | Cobertura mínima del 80 % de las líneas; si baja, el check falla |
-| Frontend | Vitest 5 con Testing Library | Componentes con lógica: selector de idioma, formularios, panel | Cobertura mínima del 60 % |
+| Frontend | Vitest 5 con Testing Library | Componentes con lógica: selector de idioma, formularios, panel | Cobertura mínima del 80 % (era 60 %; Nicolas la subió el 2026-10-12) |
 | E2E (de punta a punta) | Playwright 1.64 | La página carga en los dos idiomas, el formulario de contacto, y el login más crear un proyecto en el panel | Corre en cada PR, contra el `compose` levantado en el runner |
 | Tipos y estilo | `ruff`, `mypy`, `tsc --strict`, ESLint y Prettier | Formato, errores comunes y tipos | Sin errores |
 
