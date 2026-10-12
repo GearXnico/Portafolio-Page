@@ -1,8 +1,8 @@
 """modelos base: perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes
 
-Revision ID: 76b4564b39d3
+Revision ID: a9c47c1ef041
 Revises: d69c5687c820
-Create Date: 2026-10-12 00:23:24.130407
+Create Date: 2026-10-12 00:27:54.020501
 """
 
 from collections.abc import Sequence
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "76b4564b39d3"
+revision: str = "a9c47c1ef041"
 down_revision: str | Sequence[str] | None = "d69c5687c820"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -35,7 +35,22 @@ def upgrade() -> None:
         sa.Column("utm_campaign", sa.Text(), nullable=True),
         sa.Column("read", sa.Boolean(), server_default=sa.text("false"), nullable=False),
         sa.Column("emailed", sa.Boolean(), server_default=sa.text("false"), nullable=False),
+        sa.CheckConstraint(
+            "char_length(email) <= 320 AND email ~ '^[^@\\s]+@[^@\\s]+$'",
+            name=op.f("ck_contact_message_email"),
+        ),
         sa.CheckConstraint("lang IN ('es', 'en')", name=op.f("ck_contact_message_lang")),
+        sa.CheckConstraint(
+            "char_length(message) BETWEEN 1 AND 5000",
+            name=op.f("ck_contact_message_message_length"),
+        ),
+        sa.CheckConstraint(
+            "char_length(name) BETWEEN 1 AND 200", name=op.f("ck_contact_message_name_length")
+        ),
+        sa.CheckConstraint(
+            "char_length(utm_source) <= 200 AND char_length(utm_campaign) <= 200",
+            name=op.f("ck_contact_message_utm_length"),
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_contact_message")),
     )
     op.create_table(
@@ -107,6 +122,8 @@ def upgrade() -> None:
             server_default=sa.text("now()"),
             nullable=False,
         ),
+        sa.CheckConstraint("demo_url ~ '^https://'", name=op.f("ck_project_demo_url")),
+        sa.CheckConstraint("repo_url ~ '^https://'", name=op.f("ck_project_repo_url")),
         sa.CheckConstraint(
             "slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'", name=op.f("ck_project_slug_format")
         ),
@@ -143,8 +160,15 @@ def upgrade() -> None:
         sa.Column("lang", sa.Text(), nullable=False),
         sa.Column("referrer", sa.Text(), nullable=True),
         sa.Column("visitor_hash", sa.Text(), nullable=False),
+        sa.CheckConstraint("country ~ '^[A-Z]{2}$'", name=op.f("ck_visit_country")),
         sa.CheckConstraint("lang IN ('es', 'en')", name=op.f("ck_visit_lang")),
         sa.CheckConstraint("visitor_hash ~ '^[0-9a-f]{64}$'", name=op.f("ck_visit_visitor_hash")),
+        sa.CheckConstraint("char_length(referrer) <= 2048", name=op.f("ck_visit_referrer_length")),
+        sa.CheckConstraint(
+            "char_length(utm_source) <= 200 AND char_length(utm_medium) <= 200"
+            " AND char_length(utm_campaign) <= 200 AND char_length(utm_content) <= 200",
+            name=op.f("ck_visit_utm_length"),
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_visit")),
     )
     op.create_index(op.f("ix_visit_created_at"), "visit", ["created_at"], unique=False)
@@ -156,6 +180,10 @@ def upgrade() -> None:
         sa.Column("alt_es", sa.Text(), server_default="", nullable=False),
         sa.Column("alt_en", sa.Text(), server_default="", nullable=False),
         sa.Column("position", sa.Integer(), server_default="0", nullable=False),
+        sa.CheckConstraint(
+            "path ~ '^[A-Za-z0-9_-][A-Za-z0-9_./-]*$' AND path !~ '\\.\\.'",
+            name=op.f("ck_project_image_path"),
+        ),
         sa.CheckConstraint("position >= 0", name=op.f("ck_project_image_position")),
         sa.ForeignKeyConstraint(
             ["project_id"],

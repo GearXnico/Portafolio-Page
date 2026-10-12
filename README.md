@@ -39,7 +39,7 @@ docker compose exec api pytest -q --cov=app --cov-fail-under=80
 docker compose exec api sh -c "ruff check . && ruff format --check . && mypy app"
 ```
 
-O desde tu máquina, con Python 3.14 (toma `DATABASE_URL` del `.env` de la raíz):
+O desde tu máquina, con Python 3.14 (toma `DATABASE_URL` y `MIGRATION_DATABASE_URL` del `.env` de la raíz):
 
 ```bash
 cd api
@@ -71,6 +71,17 @@ E2E_BASE_URL=http://localhost:4173 npm run e2e
 
 El E2E abre la página en Chromium y espera que el estado de la API diga "ok", así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
 
+## Base de datos: dos usuarios
+
+La API no se conecta como dueña de las tablas. Hay dos usuarios de Postgres:
+
+| Usuario | Variable | Puede | Lo usa |
+|---|---|---|---|
+| Dueño (`POSTGRES_USER`) | `MIGRATION_DATABASE_URL` | Crear, cambiar y borrar tablas | Solo Alembic, para las migraciones |
+| API (`APP_DB_USER`) | `DATABASE_URL` | Leer, insertar, actualizar y borrar filas | La API |
+
+Así, un error o una inyección de SQL en la API no puede borrar ni cambiar tablas. El usuario de la API lo crea `db/init/01-usuario-api.sh` la primera vez que arranca la base. Si tu base local es anterior a ese script, recréala con `docker compose down -v && docker compose up -d` (borra los datos locales). Los tests de `tests/test_permisos_db.py` comprueban estos límites.
+
 ## Migraciones de la API
 
 Migraciones con Alembic (herramienta de migraciones de SQLAlchemy):
@@ -84,6 +95,7 @@ alembic upgrade head                                   # aplicar
 
 ```
 api/          FastAPI: app/ (routers/, models/), tests/ y alembic/ (migraciones)
+db/init/      scripts que corren al crear la base (usuario de la API)
 web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwright)
 deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
 compose.yml   desarrollo local
