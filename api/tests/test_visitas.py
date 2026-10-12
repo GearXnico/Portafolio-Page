@@ -20,6 +20,8 @@ from app.visitas import hash_visitante, limpiar_texto, origen_del_referrer, sal_
         ("link\x00ed\nin\t", "linkedin"),
         # Caracteres invisibles y de dirección del texto (U+202E invierte lo que sigue).
         ("‮nideknil​", "nideknil"),
+        # Separadores de línea y de párrafo de Unicode.
+        ("linked\u2028in\u2029", "linkedin"),
         ("correo de otoño", "correo de otoño"),
     ],
 )
@@ -29,6 +31,11 @@ def test_limpiar_texto(valor: str | None, esperado: str | None) -> None:
 
 def test_limpiar_texto_recorta_al_largo_maximo() -> None:
     assert limpiar_texto("a" * 500, 200) == "a" * 200
+
+
+def test_limpiar_texto_no_recorre_todo_un_valor_enorme() -> None:
+    # Solo se mira el comienzo: lo que viene después del margen no entra al resultado.
+    assert limpiar_texto("\x00" * 10 + "a" * 10 + "b" * 100_000, 5) == "aaaaa"
 
 
 @pytest.mark.parametrize(

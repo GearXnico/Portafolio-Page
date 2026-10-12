@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.db import get_session
@@ -13,7 +13,13 @@ from app.models import Experience, Profile, Project, ProjectImage, Skill, Visit,
 
 @pytest.fixture
 def api(client: TestClient, db_session: Session) -> TestClient:
-    """Cliente cuya API usa la sesión del test: todo lo que escribe se revierte al final."""
+    """Cliente cuya API usa la sesión del test: todo lo que escribe se revierte al final.
+
+    Parte con las tablas vacías (dentro de la transacción del test), para que los datos que
+    tengas en tu base local no cambien el resultado.
+    """
+    for modelo in (Visit, ProjectImage, Project, Skill, Experience, Profile):
+        db_session.execute(delete(modelo))
 
     def sesion_del_test() -> Iterator[Session]:
         yield db_session
@@ -39,7 +45,7 @@ def proyecto(slug: str, *, visible: bool, position: int = 0) -> Project:
 
 
 @pytest.fixture
-def contenido(db_session: Session) -> None:
+def contenido(api: TestClient, db_session: Session) -> None:
     db_session.add(
         Profile(
             headline_es="Desarrollador",

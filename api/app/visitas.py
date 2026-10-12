@@ -25,19 +25,27 @@ REFERRER_MAX_LENGTH = 2048
 # El user agent solo entra al hash; se recorta para no hashear megabytes.
 USER_AGENT_MAX_LENGTH = 512
 
+# Unicode: control, formato (invisibles), sustitutos, uso privado, sin asignar, y separadores
+# de línea y de párrafo.
+_CATEGORIAS_QUITADAS = frozenset({"Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp"})
+
 _HOST_VALIDO = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$")
 
 
 def limpiar_texto(valor: str | None, largo_maximo: int) -> str | None:
     """Quita caracteres de control e invisibles, recorta espacios y largo. Vacío pasa a None.
 
-    Los caracteres de las categorías Unicode "C" incluyen el byte nulo (Postgres no lo acepta
-    en un `text`), saltos de línea y los que invierten la dirección del texto, que podrían
-    disfrazar un valor en el panel.
+    Las categorías quitadas incluyen el byte nulo (Postgres no lo acepta en un `text`), los
+    saltos de línea (también U+2028 y U+2029) y los caracteres que invierten la dirección del
+    texto, que podrían disfrazar un valor en el panel o romper un export CSV.
     """
     if valor is None:
         return None
-    limpio = "".join(c for c in valor if not unicodedata.category(c).startswith("C"))
+    # Se recorta antes de filtrar, para no recorrer un valor de muchos KB (kilobytes). El margen
+    # deja espacio a los caracteres que el filtro quita.
+    limpio = "".join(
+        c for c in valor[: largo_maximo * 4] if unicodedata.category(c) not in _CATEGORIAS_QUITADAS
+    )
     limpio = limpio.strip()[:largo_maximo].strip()
     return limpio or None
 
@@ -64,15 +72,20 @@ def origen_del_referrer(referrer: str | None) -> str | None:
 def sal_del_dia(session: Session, dia: date) -> bytes:
     """Devuelve la sal de `dia`, creándola si no existe, y borra las de días anteriores.
 
-    Si dos visitas llegan a la vez, `ON CONFLICT DO NOTHING` deja una sola sal.
+    Lo normal es que ya exista y basta con leerla. Solo la primera visita del día escribe; si
+    dos llegan a la vez, `ON CONFLICT DO NOTHING` deja una sola sal.
     """
+    consulta = select(VisitorSalt.salt).where(VisitorSalt.day == dia)
+    sal = session.scalars(consulta).one_or_none()
+    if sal is not None:
+        return sal
     session.execute(
         insert(VisitorSalt)
         .values(day=dia, salt=secrets.token_bytes(SALT_BYTES))
         .on_conflict_do_nothing(index_elements=[VisitorSalt.day])
     )
     session.execute(delete(VisitorSalt).where(VisitorSalt.day < dia))
-    return session.scalars(select(VisitorSalt.salt).where(VisitorSalt.day == dia)).one()
+    return session.scalars(consulta).one()
 
 
 def hash_visitante(sal: bytes, ip: str, user_agent: str) -> str:
