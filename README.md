@@ -116,11 +116,12 @@ Toda ruta nueva de `/api/admin/*` va en `router` de `app/routers/admin.py`, que 
 
 ## Contenido desde el panel
 
-Rutas para editar lo que muestra la página. Todas exigen la sesión del administrador (sin ella, 401 antes de mirar el cuerpo) y usan JSON. Los cambios se ven en la siguiente carga de `GET /api/bootstrap`.
+Rutas para editar lo que muestra la página. Todas exigen la sesión del administrador (sin ella, 401 antes de mirar el cuerpo) y usan JSON, salvo la subida de capturas, que es un formulario (multipart). Los cambios se ven en la siguiente carga de `GET /api/bootstrap`.
 
 | Recurso | Rutas |
 |---|---|
 | Proyectos | `GET` y `POST /api/admin/projects`; `GET`, `PUT` y `DELETE /api/admin/projects/{id}` |
+| Capturas | `POST /api/admin/projects/{id}/images` (campos `file`, `alt_es` y `alt_en`); `DELETE /api/admin/projects/{id}/images/{image_id}` |
 | Perfil | `GET` y `PUT /api/admin/profile` (el primer `PUT` lo crea; antes, `GET` responde 404) |
 | Habilidades | `GET` y `POST /api/admin/skills`; `PUT` y `DELETE /api/admin/skills/{id}` |
 | Experiencia | `GET` y `POST /api/admin/experience`; `PUT` y `DELETE /api/admin/experience/{id}` |
@@ -128,7 +129,8 @@ Rutas para editar lo que muestra la página. Todas exigen la sesión del adminis
 - **Orden y visibilidad:** cada elemento tiene `position` (el menor va primero). Un proyecto nuevo queda oculto (`visible: false`) hasta que se publica con un `PUT`. El panel ve también los ocultos.
 - **`PUT` reemplaza todo:** manda el objeto completo; lo que no llega toma su valor por defecto.
 - **Validación:** campos de más (como `id`), caracteres de control, largos sobre el máximo y enlaces que no sean `https://` responden 422. Un slug repetido responde 409 y un id que no existe, 404.
-- **Al borrar un proyecto** se borran sus capturas en la base. Los archivos en `/media` los maneja la tarea 2.5.
+- **Capturas:** JPEG, PNG o WebP de hasta 5 MB, reconocidos por su contenido y no por la extensión. La API las vuelve a codificar como WebP (máximo 2560 px por lado, sin metadatos como el GPS de una foto), con un nombre al azar, en `MEDIA_DIR/projects/` (por defecto `media/`, un volumen en Docker). Cada proyecto las trae en `images`, con su `url` en `/media/...`. Responde 413 si pesa más de 5 MB, 415 si no es una imagen aceptada y 422 si está dañada o pasa los 40 megapíxeles.
+- **Al borrar un proyecto o una captura** se borran las filas y los archivos.
 
 ## Migraciones de la API
 
