@@ -30,6 +30,58 @@ Los cambios en `api/app/` y `web/` se recargan solos. Las migraciones de la base
 
 Si cambias las dependencias (`api/pyproject.toml` o `web/package.json`), reconstruye con `docker compose up -d --build`.
 
+## Mapa del repositorio
+
+Qué hay en cada carpeta y para qué sirve. Para entender una funcionalidad, sigue el camino de un pedido: `web/src/api/` llama a una ruta de `api/app/routers/`, que usa la lógica de `api/app/services/` y las tablas de `api/app/models/`.
+
+```
+api/                    La API (interfaz de programación), en Python con FastAPI
+  app/
+    main.py             Arma la app: middlewares y rutas
+    config.py           Lee las variables de entorno (.env)
+    db.py               Conexión a Postgres
+    middleware.py       Límite de tamaño de los pedidos
+    hash_password.py    Comando para generar el hash de la clave del administrador
+    routers/            Rutas: reciben el pedido, llaman a un servicio y responden
+    services/           Lógica: login, contenido, capturas, contacto, correo, idioma, visitas y límites
+    schemas/            Qué datos entran y salen de cada ruta, validados con Pydantic
+    models/             Tablas de la base, con SQLAlchemy
+  alembic/versions/     Migraciones: cada cambio a las tablas, en orden
+  tests/                Tests con pytest contra Postgres real (uno por área: test_<área>.py)
+web/                    La página, en React y TypeScript
+  src/
+    main.tsx, App.tsx   Arranque de la página e idioma
+    pages/              Páginas completas (hoy, la página de inicio)
+    components/         Secciones de la página, un componente por archivo
+    api/                Llamadas a la API
+    i18n/               Textos de la interfaz en es.json y en.json
+  tests/                Tests de componentes con Vitest
+  e2e/                  Pruebas de punta a punta con Playwright
+  security-headers.ts   Cabeceras de seguridad (las mismas que usa Caddy)
+db/init/                Script que crea el usuario de la API al crear la base
+deploy/                 Producción: compose.prod.yml y Caddyfile (ver deploy/README.md)
+docs/                   Documentación del proyecto (tabla de abajo)
+.github/
+  workflows/            ci.yml (tests), security.yml (escaneos), ai-review.yml (revisión con IA) y sync-dev.yml
+  rulesets/             Protección de dev y main, para importar en GitHub
+  dependabot.yml        Actualización semanal de dependencias
+  pull_request_template.md
+compose.yml             Desarrollo local: db, migrate, api y web
+.env.example            Variables de entorno de ejemplo; el .env real nunca se sube
+CLAUDE.md               Instrucciones para Claude Code
+```
+
+| Documento | Para qué leerlo |
+|---|---|
+| `docs/desarrollo.md` | Reglas de desarrollo: qué se construye, cuándo no agregar capas, ramas, commits y cómo se revisa |
+| `docs/testing.md` | Qué se prueba, qué no y por qué existe cada tipo de prueba |
+| `docs/brief.md` | Qué problema resuelve el sitio y qué queda fuera |
+| `docs/arquitectura.md` | Componentes, modelo de datos, seguridad y despliegue |
+| `docs/adr/` | El porqué de cada decisión, una ADR (registro de decisión de arquitectura) por archivo |
+| `docs/plan.md` | Hitos y tareas, con su criterio de terminado |
+| `docs/guia-despliegue-local.md` | Cómo completar el `.env`, levantar todo en local y comprobar que funciona |
+| `docs/prompts/` y `docs/notas/` | Registro de prompts por tarea y notas de cierre de cada hito |
+
 ## API: tests y lint
 
 Los tests van contra el Postgres del compose, sin mocks (objetos simulados) de la base, así que la `db` tiene que estar arriba. Como aplican migraciones, corren en el servicio `migrate`, el único con la clave del dueño de las tablas:
@@ -141,19 +193,9 @@ alembic revision --autogenerate -m "agrega tabla x"   # después de cambiar app/
 alembic upgrade head                                   # aplicar
 ```
 
-## Estructura
-
-```
-api/          FastAPI: app/ (routers/, models/, schemas/, services/), tests/ y alembic/ (migraciones)
-db/init/      scripts que corren al crear la base (usuario de la API)
-web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwright)
-deploy/       compose.prod.yml y Caddyfile de producción (ver deploy/README.md)
-compose.yml   desarrollo local
-docs/         brief, arquitectura, ADR (registros de decisión), plan y prompts; CLAUDE.md los indexa
-.github/      plantilla de PR (pull request) y workflows (ci.yml, ai-review.yml)
-```
-
 ## Cómo se trabaja
+
+El detalle está en `docs/desarrollo.md` y `docs/testing.md`. En corto:
 
 - Se parte desde `dev`, en una rama `feature/<nombre>`, `fix/<nombre>`, `docs/<nombre>` o `chore/<nombre>`.
 - Commits con Conventional Commits en español, por ejemplo `feat: agrega formulario de contacto`.
