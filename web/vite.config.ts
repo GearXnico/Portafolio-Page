@@ -29,7 +29,7 @@ export default defineConfig({
     coverage: {
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/main.tsx"],
-      thresholds: { lines: 60 },
+      thresholds: { lines: 80 },
     },
   },
 });

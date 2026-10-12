@@ -50,7 +50,9 @@ Cada `fix/*` empieza con un test que reproduce el error y falla antes de la corr
 
 ## Cobertura
 
-CI exige un piso de cobertura: 80 % de las líneas en la API y 60 % en web (ADR 0007). Es un piso, no la meta: sirve para notar código que quedó sin ningún test, no para decidir qué probar. **No se escriben tests para subir el número.** Si el piso molesta a una tarea, se conversa, porque cambiarlo es cambiar la ADR.
+**Los tests tienen que cubrir como mínimo el 80 % de las líneas del código**, en la API y en web (ADR 0007). Si un PR baja de ese mínimo, el CI falla y no se puede mergear.
+
+El mínimo es obligatorio, pero no es la meta: asegura que no quede código sin probar, no que se haya probado lo importante. Para eso están las tablas de arriba. Si falta cobertura, se agregan tests de lo que importa del código nuevo, no tests vacíos que solo suben el número.
 
 ## Cómo se escribe un test
 

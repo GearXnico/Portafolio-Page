@@ -65,7 +65,7 @@ alembic upgrade head
 cd web
 npm ci
 npm run test -- --run                      # Vitest
-npm run test:coverage                      # mínimo 60 %
+npm run test:coverage                      # mínimo 80 %
 npm run lint && npm run typecheck
 npm audit --audit-level=high
 npm run e2e                                # Playwright, con el compose arriba
@@ -105,7 +105,7 @@ pre-commit run --all-files
 
 - Toda `feature/*` trae tests.
 - Todo `fix/*` trae primero un test que reproduce el error.
-- Cobertura mínima: 80 % en la API y 60 % en web.
+- Cobertura mínima: 80 % de las líneas, en la API y en web.
 - Los tests de la API van contra Postgres real, sin mocks (objetos simulados) de la base.
 - Cada ruta de `/api/admin/*` tiene un test de acceso sin sesión.
 - Nunca saltes, desactives ni borres un test para dejar el CI en verde.
