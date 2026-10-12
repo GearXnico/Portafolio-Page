@@ -8,7 +8,7 @@ Plantilla para empezar productos web con pruebas, CI/CD (integración y desplieg
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap` y recibe mensajes de contacto.
+> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto y tiene el login del administrador.
 
 ## Requisitos
 
@@ -93,6 +93,24 @@ Contra el spam y los abusos:
 - **Límite por IP:** 5 mensajes por hora; después responde 429 con `Retry-After`. Vive en memoria del proceso, así que la API corre con un solo proceso de Uvicorn. En producción, `TRUSTED_PROXIES` tiene que incluir a Caddy para que el límite vea la IP real y no la del proxy.
 - **Tamaño:** la API rechaza cuerpos de más de 64 KB (413) y los que no declaran su largo (411).
 - **Al mostrarlo:** la API guarda el texto tal cual y nunca lo interpreta. El correo va en texto plano y la web lo muestra como texto (React lo escapa); nunca con `dangerouslySetInnerHTML`.
+
+## Login del administrador
+
+El panel tiene un solo usuario (ADR 0004), sin tabla: sus credenciales van en el `.env`.
+
+1. Genera el hash de la contraseña (mínimo 12 caracteres): `docker compose run --rm api python -m app.hash_password`. Copia la línea `ADMIN_PASSWORD_HASH='...'` al `.env` tal cual, con las comillas simples.
+2. Completa `ADMIN_EMAIL` y `JWT_SECRET` (al menos 32 caracteres al azar: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`).
+3. Reinicia la API: `docker compose up -d api`.
+
+| Ruta | Qué hace |
+|---|---|
+| `POST /api/admin/login` | Recibe `email` y `password`. Si calzan, deja la cookie `admin_session` y responde 200; si no, 401. Sin configuración, 503. |
+| `POST /api/admin/logout` | Borra la cookie (204). |
+| `GET /api/admin/session` | 200 con sesión, 401 sin ella. Toda ruta nueva de `/api/admin/*` usa la misma dependencia `require_admin`. |
+
+- **Contraseña:** hash Argon2 (`argon2-cffi`). La contraseña se verifica aunque el correo esté mal, para que el tiempo de respuesta no diga cuál falló.
+- **Sesión:** JWT (JSON Web Token) firmado con HS256 y `JWT_SECRET`, de 7 días, en una cookie `httpOnly`, `Secure`, `SameSite=Strict` y con `path=/api/admin`. Cambiar `JWT_SECRET` cierra todas las sesiones; cambiar `ADMIN_EMAIL` también.
+- **Límite:** 5 intentos fallidos cada 15 minutos por IP; después responde 429 con `Retry-After`. Un login correcto borra los intentos de esa IP. Usa el mismo límite en memoria y `TRUSTED_PROXIES` que el formulario de contacto.
 
 ## Migraciones de la API
 
