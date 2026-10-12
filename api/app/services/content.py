@@ -4,8 +4,10 @@ from collections.abc import Sequence
 from typing import Any
 
 from fastapi import HTTPException, status
+from psycopg.errors import UniqueViolation
 from pydantic import BaseModel
-from sqlalchemy import ColumnExpressionArgument, select
+from sqlalchemy import ColumnExpressionArgument, func, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -49,12 +51,21 @@ def delete(session: Session, item: Base) -> None:
 
 
 def save_profile(session: Session, data: BaseModel) -> Profile:
-    """Crea el perfil la primera vez y después lo reemplaza. Siempre es la fila 1."""
-    profile = session.get(Profile, 1) or Profile(id=1)
-    for field, value in data.model_dump().items():
-        setattr(profile, field, value)
-    session.add(profile)
-    _commit(session)
+    """Crea el perfil la primera vez y después lo reemplaza. Siempre es la fila 1.
+
+    Un solo `INSERT ... ON CONFLICT`: dos guardados seguidos (doble clic) no chocan.
+    """
+    values = data.model_dump()
+    statement = (
+        insert(Profile)
+        .values(id=1, **values)
+        .on_conflict_do_update(
+            index_elements=[Profile.id], set_=values | {"updated_at": func.now()}
+        )
+        .returning(Profile)
+    )
+    profile = session.scalars(statement).one()
+    session.commit()
     return profile
 
 
@@ -64,7 +75,8 @@ def _commit(session: Session) -> None:
         session.commit()
     except IntegrityError as exc:
         session.rollback()
-        if _SLUG_CONSTRAINT in str(exc.orig):
+        orig = exc.orig
+        if isinstance(orig, UniqueViolation) and orig.diag.constraint_name == _SLUG_CONSTRAINT:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Ya existe un proyecto con ese slug.",
