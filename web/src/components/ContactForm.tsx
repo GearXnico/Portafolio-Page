@@ -36,7 +36,7 @@ export function ContactForm() {
         name: field("name"),
         email: field("email"),
         message: field("message"),
-        website: field("website"),
+        website: field("hp_field"),
         lang,
       },
       {
@@ -64,11 +64,12 @@ export function ContactForm() {
         {t("contact.message")}
         <textarea name="message" required maxLength={MAX.message} rows={6} />
       </label>
-      {/* Campo trampa: fuera de la pantalla, sin foco ni autocompletar, para que solo un bot lo llene. */}
+      {/* Campo trampa: fuera de la pantalla y sin foco, para que solo un bot lo llene. El nombre y
+          la etiqueta no son comunes para que el autocompletado del navegador no lo llene. Viaja como `website`. */}
       <div className="trap" aria-hidden="true">
         <label>
           {t("contact.website")}
-          <input name="website" tabIndex={-1} autoComplete="off" />
+          <input name="hp_field" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
       <button type="submit" disabled={send.isPending}>
