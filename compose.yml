@@ -48,6 +48,12 @@ services:
     environment:
       # Solo el usuario de permisos mínimos: la API no conoce la clave del dueño.
       DATABASE_URL: postgresql+psycopg://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      CONTACT_NOTIFY_TO: ${CONTACT_NOTIFY_TO:-}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
     ports:
       - "${API_PORT:-8000}:8000"
     volumes:
