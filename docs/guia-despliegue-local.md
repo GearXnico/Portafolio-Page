@@ -1,6 +1,6 @@
 # Guía: despliegue local y secretos
 
-Cómo completar el `.env`, levantar todo con Docker Compose, comprobar que funciona y ver el resultado del E2E (prueba de punta a punta) del CI (integración continua) sin desplegar nada. Para el detalle de cada pieza, el README.
+Cómo completar el `.env`, levantar todo con Docker Compose, comprobar que funciona y ver el resultado del E2E (prueba de punta a punta) del CI (integración continua) sin desplegar nada. Para el detalle de cada pieza, el README y `docs/api.md`.
 
 > El `.env` nunca se sube al repo (está en `.gitignore`). Los valores de `.env.example` son de ejemplo: sirven en local, pero no se reutilizan en ningún servidor.
 
