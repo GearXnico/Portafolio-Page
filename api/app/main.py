@@ -5,7 +5,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.config import settings
 from app.middleware import BodySizeLimitMiddleware
-from app.routers import bootstrap, contact, health
+from app.routers import admin, bootstrap, contact, health
 
 # Los JSON de la API son chicos: el más grande es un mensaje de contacto (~20 KB).
 # La subida de capturas (tarea 2.5) tendrá su propio límite.
@@ -15,6 +15,7 @@ app = FastAPI(title="API")
 app.include_router(health.router)
 app.include_router(bootstrap.router)
 app.include_router(contact.router)
+app.include_router(admin.router)
 app.add_middleware(BodySizeLimitMiddleware, max_bytes=MAX_BODY_BYTES)
 # Va por fuera (se agrega al final) para que todo lo demás vea la IP real del visitante.
 if settings.trusted_proxies:

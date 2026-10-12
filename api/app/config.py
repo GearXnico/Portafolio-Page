@@ -1,13 +1,16 @@
 """Configuración de la API, leída de variables de entorno."""
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     # Busca un .env en la carpeta actual o en la raíz del repo (si corres desde api/).
     # Las variables de entorno tienen prioridad sobre el archivo.
-    model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
+    # Una variable vacía (ADMIN_EMAIL=) cuenta como no definida y toma el valor por defecto.
+    model_config = SettingsConfigDict(
+        env_file=(".env", "../.env"), extra="ignore", env_ignore_empty=True
+    )
 
     # Usuario de la API, con permisos mínimos: solo lee y escribe filas.
     database_url: str
@@ -27,6 +30,14 @@ class Settings(BaseSettings):
     smtp_user: str | None = None
     smtp_password: SecretStr | None = None
     contact_notify_to: str | None = None
+
+    # Administrador único (ADR 0004). Si falta alguno, el login responde 503 y el panel no
+    # se puede usar. El hash se genera con `python -m app.hash_password`.
+    admin_email: str | None = None
+    admin_password_hash: SecretStr | None = None
+    # Firma la cookie de sesión (JWT). Al menos 32 caracteres al azar; cambiarla cierra todas
+    # las sesiones abiertas.
+    jwt_secret: SecretStr | None = Field(default=None, min_length=32)
 
 
 settings = Settings()
