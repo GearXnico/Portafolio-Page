@@ -78,9 +78,8 @@ def bootstrap(
             )
         session.commit()
     except SQLAlchemyError:
-        # Si falla el registro, la página igual se muestra. No se registran los datos del
-        # visitante en el log.
-        session.rollback()
+        # Si falla el registro, la página igual se muestra. `begin_nested` ya deshizo la visita
+        # y la sesión se cierra al terminar el request. El log no lleva datos del visitante.
         logger.exception("No se pudo registrar la visita")
 
     # Cada carga es una visita: ningún caché intermedio debe guardar esta respuesta.
