@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import VisitorSalt
-from app.visitas import hash_visitante, limpiar_texto, origen_del_referrer, sal_del_dia
+from app.services.visits import clean_text, daily_salt, referrer_origin, visitor_hash
 
 
 @pytest.mark.parametrize(
@@ -26,16 +26,16 @@ from app.visitas import hash_visitante, limpiar_texto, origen_del_referrer, sal_
     ],
 )
 def test_limpiar_texto(valor: str | None, esperado: str | None) -> None:
-    assert limpiar_texto(valor, 200) == esperado
+    assert clean_text(valor, 200) == esperado
 
 
 def test_limpiar_texto_recorta_al_largo_maximo() -> None:
-    assert limpiar_texto("a" * 500, 200) == "a" * 200
+    assert clean_text("a" * 500, 200) == "a" * 200
 
 
 def test_limpiar_texto_no_recorre_todo_un_valor_enorme() -> None:
     # Solo se mira el comienzo: lo que viene después del margen no entra al resultado.
-    assert limpiar_texto("\x00" * 10 + "a" * 10 + "b" * 100_000, 5) == "aaaaa"
+    assert clean_text("\x00" * 10 + "a" * 10 + "b" * 100_000, 5) == "aaaaa"
 
 
 @pytest.mark.parametrize(
@@ -59,34 +59,34 @@ def test_limpiar_texto_no_recorre_todo_un_valor_enorme() -> None:
     ],
 )
 def test_origen_del_referrer(referrer: str | None, esperado: str | None) -> None:
-    assert origen_del_referrer(referrer) == esperado
+    assert referrer_origin(referrer) == esperado
 
 
 def test_el_hash_es_estable_en_el_dia_y_no_contiene_la_ip() -> None:
     sal = b"s" * 32
-    hash_1 = hash_visitante(sal, "203.0.113.7", "Firefox")
+    hash_1 = visitor_hash(sal, "203.0.113.7", "Firefox")
 
-    assert hash_1 == hash_visitante(sal, "203.0.113.7", "Firefox")
+    assert hash_1 == visitor_hash(sal, "203.0.113.7", "Firefox")
     assert len(hash_1) == 64
     assert "203.0.113.7" not in hash_1
-    assert hash_1 != hash_visitante(sal, "203.0.113.8", "Firefox")
-    assert hash_1 != hash_visitante(sal, "203.0.113.7", "Chrome")
-    assert hash_1 != hash_visitante(b"t" * 32, "203.0.113.7", "Firefox")
+    assert hash_1 != visitor_hash(sal, "203.0.113.8", "Firefox")
+    assert hash_1 != visitor_hash(sal, "203.0.113.7", "Chrome")
+    assert hash_1 != visitor_hash(b"t" * 32, "203.0.113.7", "Firefox")
 
 
 def test_la_sal_se_crea_una_vez_por_dia(db_session: Session) -> None:
     dia = date(2030, 1, 15)
 
-    sal = sal_del_dia(db_session, dia)
+    sal = daily_salt(db_session, dia)
 
     assert len(sal) == 32
-    assert sal_del_dia(db_session, dia) == sal
+    assert daily_salt(db_session, dia) == sal
 
 
 def test_al_cambiar_el_dia_la_sal_cambia_y_la_anterior_se_borra(db_session: Session) -> None:
-    sal_ayer = sal_del_dia(db_session, date(2030, 1, 15))
+    sal_ayer = daily_salt(db_session, date(2030, 1, 15))
 
-    sal_hoy = sal_del_dia(db_session, date(2030, 1, 16))
+    sal_hoy = daily_salt(db_session, date(2030, 1, 16))
 
     assert sal_hoy != sal_ayer
     dias = db_session.scalars(select(VisitorSalt.day)).all()

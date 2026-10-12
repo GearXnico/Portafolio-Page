@@ -81,7 +81,7 @@ def contenido(api: TestClient, db_session: Session) -> None:
     db_session.expire_all()
 
 
-# --- Idioma ---
+# --- Lang ---
 
 
 @pytest.mark.parametrize(
@@ -288,7 +288,7 @@ def test_si_falla_el_registro_la_pagina_igual_carga(
     def falla(*_: object, **__: object) -> None:
         raise OperationalError("INSERT", {}, Exception("la base no responde"))
 
-    monkeypatch.setattr(bootstrap, "_registrar_visita", falla)
+    monkeypatch.setattr(bootstrap, "daily_salt", falla)
 
     response = api.get("/api/bootstrap")
 

@@ -1,6 +1,6 @@
 import pytest
 
-from app.idioma import decidir_idioma, es_idioma
+from app.services.locale import decide_locale, parse_lang
 
 
 @pytest.mark.parametrize(
@@ -20,16 +20,16 @@ from app.idioma import decidir_idioma, es_idioma
         (",,;;", "en"),
     ],
 )
-def test_decidir_idioma(accept_language: str | None, esperado: str) -> None:
-    assert decidir_idioma(accept_language) == esperado
+def test_decide_locale(accept_language: str | None, esperado: str) -> None:
+    assert decide_locale(None, accept_language) == esperado
 
 
 def test_el_pais_todavia_no_cambia_el_idioma() -> None:
-    assert decidir_idioma("en-US", pais="CL") == "en"
+    assert decide_locale("CL", "en-US") == "en"
 
 
 @pytest.mark.parametrize(
     ("valor", "esperado"), [("es", "es"), ("en", "en"), ("fr", None), ("ES", None), (None, None)]
 )
-def test_es_idioma(valor: str | None, esperado: str | None) -> None:
-    assert es_idioma(valor) == esperado
+def test_parse_lang(valor: str | None, esperado: str | None) -> None:
+    assert parse_lang(valor) == esperado

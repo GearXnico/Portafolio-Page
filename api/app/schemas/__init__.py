@@ -1,1 +1,1 @@
-"""Esquemas de Pydantic de las respuestas de la API: solo lo que el visitante puede ver."""
+"""Esquemas Pydantic de entrada y salida de la API."""
