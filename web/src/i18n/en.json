@@ -14,5 +14,16 @@
   "skills.tool": "Tools",
   "project.stack": "Stack",
   "project.demo": "Live demo",
-  "project.repo": "Source code"
+  "project.repo": "Source code",
+  "contact.intro": "Write to me and I will reply by email.",
+  "contact.name": "Name",
+  "contact.email": "Email",
+  "contact.message": "Message",
+  "contact.send": "Send",
+  "contact.sending": "Sending…",
+  "contact.success": "Thank you! Your message arrived and I will reply soon.",
+  "contact.error.invalid": "Please check your details: the email must be valid and no field can be empty.",
+  "contact.error.rateLimit": "You sent several messages in a row. Please try again later.",
+  "contact.error.generic": "The message could not be sent. Please try again in a few minutes.",
+  "contact.website": "Website"
 }

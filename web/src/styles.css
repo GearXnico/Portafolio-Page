@@ -172,3 +172,62 @@ a {
   background: var(--text);
   color: #fff;
 }
+
+.contact-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 36rem;
+}
+
+.contact-form label {
+  display: grid;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.contact-form input,
+.contact-form textarea {
+  font: inherit;
+  font-weight: normal;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+}
+
+.contact-form textarea {
+  resize: vertical;
+}
+
+.contact-form button {
+  justify-self: start;
+  font: inherit;
+  padding: 0.5rem 1.25rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.contact-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.contact-form p {
+  margin: 0;
+}
+
+.contact-form [role="alert"] {
+  color: #b3261e;
+}
+
+/* Campo trampa: fuera de la pantalla (no `display: none`, que algunos bots detectan). */
+.trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
