@@ -34,6 +34,8 @@ jobs:
     timeout-minutes: 15
     # A nivel de job, no de workflow: así los comentarios que no piden revisión (como el resumen
     # que deja el propio Claude) no entran al grupo. Sin cancelar: una revisión empezada termina.
+    # GitHub guarda a lo más una corrida en cola por grupo: si llega otro pedido mientras hay una
+    # revisión en curso y otra en cola, la de la cola se descarta y aparece como "cancelada" (esperado).
     concurrency:
       group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
       cancel-in-progress: false
