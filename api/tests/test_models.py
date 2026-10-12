@@ -95,6 +95,30 @@ def test_perfil_exige_los_textos_en_los_dos_idiomas(db_session: Session) -> None
     rechaza(db_session, nuevo_perfil(headline_en=None), "headline_en")
 
 
+@pytest.mark.parametrize(
+    "links",
+    [
+        {"github": "javascript:alert(1)"},
+        {"cv": "http://example.com/cv.pdf"},
+        {"linkedin": 123},
+        {"github": ["https://github.com/x"]},
+        {"github": "https://"},
+        {"github": "https://github.com/x y"},
+        ["https://github.com/x"],
+    ],
+)
+def test_perfil_solo_acepta_enlaces_https(db_session: Session, links: object) -> None:
+    rechaza(db_session, nuevo_perfil(links=links), "ck_profile_links_https")
+
+
+def test_perfil_acepta_enlaces_https(db_session: Session) -> None:
+    links = {"github": "https://github.com/x", "cv": "https://example.com/cv.pdf"}
+    db_session.add(nuevo_perfil(links=links))
+    db_session.flush()
+
+    assert db_session.get_one(Profile, 1).links == links
+
+
 # Habilidades
 
 
@@ -121,6 +145,11 @@ def test_experiencia_actual_sin_fecha_de_termino(db_session: Session) -> None:
     db_session.flush()
 
     assert db_session.scalars(select(Experience.end_date)).one() is None
+
+
+def test_experiencia_de_un_solo_dia(db_session: Session) -> None:
+    db_session.add(nueva_experiencia(start_date=date(2024, 1, 1), end_date=date(2024, 1, 1)))
+    db_session.flush()
 
 
 def test_experiencia_rechaza_termino_antes_del_inicio(db_session: Session) -> None:
@@ -241,7 +270,19 @@ def test_mensaje_exige_el_texto(db_session: Session) -> None:
 
 
 @pytest.mark.parametrize("campo", ["demo_url", "repo_url"])
-@pytest.mark.parametrize("url", ["javascript:alert(1)", "http://example.com", "//example.com"])
+@pytest.mark.parametrize(
+    "url",
+    [
+        "javascript:alert(1)",
+        "http://example.com",
+        "//example.com",
+        "https://",
+        "https:///ruta",
+        "https://example.com/con espacio",
+        "https://example.com/\njavascript:alert(1)",
+        "https://example.com/" + "a" * 2048,
+    ],
+)
 def test_proyecto_solo_acepta_enlaces_https(db_session: Session, campo: str, url: str) -> None:
     rechaza(db_session, nuevo_proyecto(**{campo: url}), f"ck_project_{campo}")
 

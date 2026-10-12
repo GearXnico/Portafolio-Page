@@ -15,6 +15,11 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s",
 }
 
+# Enlaces que la página muestra en un <a href>: solo https, con host y sin espacios, para que
+# un `javascript:` no llegue a la página (XSS). Usa clases POSIX en vez de escapes con "\\".
+URL_HTTPS_REGEX = "^https://[^[:space:]/]+[^[:space:]]*$"
+URL_MAX_LENGTH = 2048
+
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)

@@ -6,7 +6,7 @@ from sqlalchemy import CheckConstraint, ForeignKey, Text, func, text
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base
+from app.models.base import URL_HTTPS_REGEX, URL_MAX_LENGTH, Base
 
 
 class Project(Base):
@@ -15,9 +15,14 @@ class Project(Base):
         # El slug va en la URL: minúsculas, números y guiones simples.
         CheckConstraint("slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'", name="slug_format"),
         CheckConstraint("position >= 0", name="position"),
-        # Solo enlaces https: evita que un `javascript:` termine en un <a href> de la página.
-        CheckConstraint("demo_url ~ '^https://'", name="demo_url"),
-        CheckConstraint("repo_url ~ '^https://'", name="repo_url"),
+        CheckConstraint(
+            f"char_length(demo_url) <= {URL_MAX_LENGTH} AND demo_url ~ '{URL_HTTPS_REGEX}'",
+            name="demo_url",
+        ),
+        CheckConstraint(
+            f"char_length(repo_url) <= {URL_MAX_LENGTH} AND repo_url ~ '{URL_HTTPS_REGEX}'",
+            name="repo_url",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
