@@ -1,22 +1,12 @@
 # Hallazgos de Trivy aceptados a conciencia (security.yml). Cada línea vence en su fecha `exp:`;
 # después vuelve a fallar el job y hay que revisarla de nuevo.
 #
-# Todos están en librerías que pip y npm traen copiadas dentro de sí mismos en las imágenes base
-# (python:3.14-slim y node:24-alpine). No se corrigen desde este repo: pip 26.2.1 es la última
-# versión y la app no usa esas copias. La imagen de producción de web (tarea 1.6) no lleva npm.
-# Revisado: 2026-10-12.
+# Trivy revisa las imágenes de producción (api/Dockerfile y web/Dockerfile), que no llevan pip
+# ni npm. Revisado: 2026-10-12.
 
-# pip (dentro de python:3.14-slim)
-CVE-2025-47273 exp:2027-01-12
-CVE-2026-97687 exp:2027-01-12
-CVE-2026-97689 exp:2027-01-12
-GHSA-6v7p-g79w-8964 exp:2027-01-12
-
-# npm (dentro de node:24-alpine)
-CVE-2026-14257 exp:2027-01-12
-CVE-2026-19534 exp:2027-01-12
-CVE-2026-69152 exp:2027-01-12
-CVE-2026-69192 exp:2027-01-12
-CVE-2026-73566 exp:2027-01-12
-CVE-2026-102276 exp:2027-01-12
-CVE-2026-102278 exp:2027-01-12
+# Caddy 2.11.7 (web/Dockerfile), compilado con Go 1.26.8 y golang.org/x/net 0.59.0. Son
+# denegaciones de servicio en HTTP/2 y TLS; las corrige la próxima versión de Caddy, que la
+# imagen toma sola al reconstruirse porque usa la etiqueta 2.11-alpine.
+CVE-2026-78667 exp:2026-11-12
+CVE-2026-78669 exp:2026-11-12
+CVE-2026-97031 exp:2026-11-12
