@@ -1,0 +1,126 @@
+# Seguridad de cada PR (pull request), de cada push a dev y main, y una vez por semana. ADR 0007.
+# Las reglas de seguridad de ruff (S, las de Bandit) corren en el job pre-commit de ci.yml.
+# Secret scanning y push protection son ajustes del repo en GitHub, no de este workflow.
+name: seguridad
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+  # Los lunes a las 09:00 UTC, para ver vulnerabilidades nuevas aunque nadie haga push.
+  schedule:
+    - cron: "0 9 * * 1"
+
+# Sin permisos por defecto; cada job pide solo lo que usa.
+permissions: {}
+
+concurrency:
+  group: seguridad-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Análisis estático de GitHub. El check "CodeQL" del PR falla con hallazgos de severidad alta
+  # o crítica (el umbral por defecto del repo, en Settings > Code security).
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # actions revisa los propios workflows (inyección en `run:`, permisos de más).
+        language: [actions, python, javascript-typescript]
+    steps:
+      # Acciones fijadas por SHA (hash del commit) para que un tag movido no cambie el código que corre.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        with:
+          languages: ${{ matrix.language }}
+          # Ninguno de los tres lenguajes necesita compilar para el análisis.
+          build-mode: none
+      - uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        with:
+          category: /language:${{ matrix.language }}
+
+  # Vulnerabilidades conocidas en las dependencias de Python, incluidas las de desarrollo.
+  # pip-audit no filtra por severidad: falla con cualquier vulnerabilidad conocida.
+  pip-audit:
+    name: pip-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: api/pyproject.toml
+      - run: pip install -e ".[dev]" "pip-audit==2.10.*"
+      # --skip-editable: el paquete `api` es este repo, no está publicado en PyPI.
+      - run: pip-audit --skip-editable
+
+  # Vulnerabilidades altas o críticas en las dependencias de web. Lee solo package-lock.json.
+  npm-audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - run: npm audit --audit-level=high
+
+  # Trivy sobre las imágenes construidas: vulnerabilidades altas o críticas que ya tienen corrección.
+  # Hoy escanea las imágenes de desarrollo; la tarea 1.6 cambia a las de producción.
+  trivy:
+    name: Trivy (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [api, web]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Construir la imagen
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: docker build -t "producto-$IMAGE:ci" -f "$IMAGE/Dockerfile.dev" "$IMAGE"
+      # v0.36.0 es posterior al compromiso de los tags de esta acción (marzo de 2026), y el SHA
+      # fijo evita que un tag movido cambie lo que corre.
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.75.0
+          image-ref: producto-${{ matrix.image }}:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          # Se salta las librerías que pip y npm traen copiadas dentro de sí mismos en la imagen
+          # base: hoy tienen hallazgos sin versión corregida de pip o npm, la app no las usa y la
+          # imagen de producción (tarea 1.6) no llevará npm. Lo demás de la imagen sí se revisa.
+          skip-dirs: /usr/local/lib/node_modules/npm,/usr/local/lib/python3.14/site-packages/pip
