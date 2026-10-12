@@ -3,24 +3,31 @@
 Contra el Postgres real: cada test corre en una transacción que se revierte al final.
 """
 
+import io
+import os
+import re
 from collections.abc import Iterator
 from datetime import date
+from pathlib import Path
 from typing import Any, get_args
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx2 import Response
+from PIL import ExifTags, Image
 from pydantic import SecretStr
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.db import get_session
-from app.main import MAX_BODY_BYTES, app
+from app.main import MAX_BODY_BYTES, MAX_UPLOAD_BYTES, app
 from app.models import Experience, Profile, Project, ProjectImage, Skill
 from app.models.skill import SKILL_CATEGORIES
 from app.routers.admin import COOKIE_NAME
 from app.schemas.content import SkillCategory
-from app.services import auth
+from app.services import auth, images
+from app.services.images import MAX_IMAGE_BYTES
 
 PROYECTO: dict[str, Any] = {
     "slug": "mi-proyecto",
@@ -105,14 +112,17 @@ def test_las_rutas_del_contenido_estan_en_la_lista() -> None:
     """Si alguien cambia los prefijos, la lista de abajo no puede quedar vacía sin avisar."""
     assert ("DELETE", "/api/admin/projects/project_id") in RUTAS_PROTEGIDAS
     assert ("PUT", "/api/admin/profile") in RUTAS_PROTEGIDAS
-    assert len(RUTAS_PROTEGIDAS) == 16
+    assert ("POST", "/api/admin/projects/project_id/images") in RUTAS_PROTEGIDAS
+    assert len(RUTAS_PROTEGIDAS) == 18
 
 
 @pytest.mark.parametrize(("metodo", "ruta"), RUTAS_PROTEGIDAS)
 def test_sin_sesion_responde_401(anonimo: TestClient, metodo: str, ruta: str) -> None:
     # Con un id que no existe y un cuerpo vacío: el 401 llega antes que el 404 o el 422,
     # así que sin sesión no se aprende nada del contenido ni del esquema.
-    url = ruta.replace("project_id", "1").replace("skill_id", "1").replace("experience_id", "1")
+    url = ruta
+    for parametro in ("project_id", "image_id", "skill_id", "experience_id"):
+        url = url.replace(parametro, "1")
     response = anonimo.request(metodo, url, json={})
 
     assert response.status_code == 401
@@ -148,6 +158,7 @@ def test_crear_un_proyecto_lo_deja_oculto_y_con_valores_por_defecto(admin: TestC
         "repo_url": None,
         "visible": False,
         "position": 0,
+        "images": [],
         "created_at": creado["created_at"],
         "updated_at": creado["updated_at"],
     }
@@ -460,3 +471,302 @@ def test_la_fecha_se_guarda_como_fecha(admin: TestClient, db_session: Session) -
 def test_un_id_fuera_de_rango_responde_422(admin: TestClient, ruta: str, item_id: str) -> None:
     """Postgres usa `integer`: un id más grande no debe llegar a la base (sería un 500)."""
     assert admin.delete(f"/api/admin/{ruta}/{item_id}").status_code == 422
+
+
+# Capturas de los proyectos
+
+
+@pytest.fixture(autouse=True)
+def media(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Cada test guarda las capturas en su propia carpeta temporal."""
+    monkeypatch.setattr(settings, "media_dir", tmp_path)
+    return tmp_path
+
+
+def imagen(
+    formato: str = "PNG",
+    tamano: tuple[int, int] = (40, 30),
+    modo: str = "RGB",
+    color: str | tuple[int, ...] = "red",
+) -> bytes:
+    salida = io.BytesIO()
+    Image.new(modo, tamano, color).save(salida, format=formato)
+    return salida.getvalue()
+
+
+def subir(
+    cliente: TestClient,
+    project_id: int,
+    contenido: bytes,
+    nombre: str = "captura.png",
+    tipo: str = "image/png",
+    **textos: str,
+) -> Response:
+    return cliente.post(
+        f"/api/admin/projects/{project_id}/images",
+        files={"file": (nombre, contenido, tipo)},
+        data=textos,
+    )
+
+
+def archivos(carpeta: Path) -> list[Path]:
+    return [ruta for ruta in carpeta.rglob("*") if ruta.is_file()]
+
+
+@pytest.fixture
+def proyecto(admin: TestClient) -> Any:
+    return crear(admin, "/api/admin/projects", PROYECTO)
+
+
+@pytest.mark.parametrize("formato", ["PNG", "JPEG", "WEBP"])
+def test_una_imagen_valida_se_guarda_como_webp(
+    admin: TestClient, proyecto: Any, media: Path, formato: str
+) -> None:
+    response = subir(admin, proyecto["id"], imagen(formato), alt_es="Inicio", alt_en="Home")
+
+    assert response.status_code == 201, response.text
+    captura = response.json()
+    assert captura == {
+        "id": captura["id"],
+        "url": captura["url"],
+        "alt_es": "Inicio",
+        "alt_en": "Home",
+        "position": 0,
+    }
+    assert re.fullmatch(r"/media/projects/[0-9a-f]{32}\.webp", captura["url"])
+    [guardado] = archivos(media)
+    assert guardado == media / captura["url"].removeprefix("/media/")
+    with Image.open(guardado) as webp:
+        assert (webp.format, webp.size) == ("WEBP", (40, 30))
+    assert admin.get(f"/api/admin/projects/{proyecto['id']}").json()["images"] == [captura]
+
+
+def test_la_captura_sale_en_la_pagina_publica(admin: TestClient, proyecto: Any) -> None:
+    admin.put(f"/api/admin/projects/{proyecto['id']}", json=PROYECTO | {"visible": True})
+    captura = subir(admin, proyecto["id"], imagen(), alt_es="Inicio").json()
+
+    [publico] = admin.get("/api/bootstrap").json()["projects"]
+    assert publico["images"] == [{"url": captura["url"], "alt_es": "Inicio", "alt_en": ""}]
+
+
+def test_el_nombre_del_archivo_lo_pone_el_servidor(
+    admin: TestClient, proyecto: Any, media: Path
+) -> None:
+    response = subir(admin, proyecto["id"], imagen(), nombre="../../app/main.py")
+
+    assert response.status_code == 201
+    assert "main" not in response.json()["url"]
+    assert [ruta.parent for ruta in archivos(media)] == [media / "projects"]
+
+
+def test_las_capturas_quedan_al_final_en_orden(admin: TestClient, proyecto: Any) -> None:
+    for _ in range(3):
+        subir(admin, proyecto["id"], imagen())
+
+    capturas = admin.get(f"/api/admin/projects/{proyecto['id']}").json()["images"]
+    assert [c["position"] for c in capturas] == [0, 1, 2]
+
+
+@pytest.mark.parametrize(
+    "contenido",
+    [
+        b"esto es texto, no una imagen",
+        b"",
+        b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+        b"<?php system($_GET['c']); ?>",
+        imagen("GIF"),
+        imagen("BMP"),
+    ],
+    ids=["texto", "vacio", "svg", "php", "gif", "bmp"],
+)
+def test_un_archivo_que_no_es_imagen_aceptada_responde_415(
+    admin: TestClient, proyecto: Any, media: Path, db_session: Session, contenido: bytes
+) -> None:
+    # El nombre y el tipo dicen PNG: solo cuenta el contenido.
+    response = subir(admin, proyecto["id"], contenido)
+
+    assert response.status_code == 415
+    assert response.json() == {"detail": "El archivo no es una imagen JPEG, PNG o WebP."}
+    assert archivos(media) == []
+    assert db_session.scalars(select(ProjectImage)).all() == []
+
+
+def test_una_imagen_de_mas_de_5_mb_responde_413(
+    admin: TestClient, proyecto: Any, media: Path
+) -> None:
+    # Cabe en el límite del cuerpo (5 MB más el formulario), pero la imagen pasa los 5 MB.
+    contenido = imagen() + b"\0" * MAX_IMAGE_BYTES
+
+    response = subir(admin, proyecto["id"], contenido)
+
+    assert response.status_code == 413
+    assert response.json() == {"detail": "La captura supera los 5 MB."}
+    assert archivos(media) == []
+
+
+def test_una_imagen_de_5_mb_justos_se_acepta(admin: TestClient, proyecto: Any) -> None:
+    # Pillow ignora los bytes que sobran después del final del PNG.
+    contenido = imagen()
+    contenido += b"\0" * (MAX_IMAGE_BYTES - len(contenido))
+
+    assert subir(admin, proyecto["id"], contenido).status_code == 201
+
+
+def test_un_cuerpo_mas_grande_que_el_limite_de_subida_responde_413(
+    admin: TestClient, proyecto: Any
+) -> None:
+    response = subir(admin, proyecto["id"], b"\0" * MAX_UPLOAD_BYTES)
+
+    assert response.status_code == 413
+    assert response.json() == {"detail": "El cuerpo es demasiado grande"}
+
+
+def test_el_limite_de_subida_no_aplica_a_las_demas_rutas(admin: TestClient) -> None:
+    response = admin.post(
+        "/api/admin/projects",
+        content=b"{}" + b" " * MAX_BODY_BYTES,
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 413
+
+
+def test_una_imagen_danada_responde_422(admin: TestClient, proyecto: Any, media: Path) -> None:
+    ruido = Image.frombytes("RGB", (200, 200), os.urandom(200 * 200 * 3))
+    salida = io.BytesIO()
+    ruido.save(salida, format="PNG")
+    cortada = salida.getvalue()[: len(salida.getvalue()) // 2]
+
+    response = subir(admin, proyecto["id"], cortada)
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": "La imagen está dañada o no se puede leer."}
+    assert archivos(media) == []
+
+
+@pytest.mark.parametrize("tamano", [(8000, 5001), (20_000, 20_000)], ids=["40mp", "bomba"])
+def test_una_imagen_con_demasiados_pixeles_responde_422(
+    admin: TestClient, proyecto: Any, media: Path, tamano: tuple[int, int]
+) -> None:
+    # En blanco y negro pesa pocos KB, pero abierta ocuparía cientos de MB.
+    response = subir(admin, proyecto["id"], imagen(tamano=tamano, modo="1"))
+
+    assert response.status_code == 422
+    assert "demasiados píxeles" in response.json()["detail"]
+    assert archivos(media) == []
+
+
+def test_una_imagen_grande_se_achica_a_2560_px(
+    admin: TestClient, proyecto: Any, media: Path
+) -> None:
+    subir(admin, proyecto["id"], imagen(tamano=(5120, 100)))
+
+    with Image.open(archivos(media)[0]) as webp:
+        assert webp.size == (2560, 50)
+
+
+def test_la_transparencia_se_conserva(admin: TestClient, proyecto: Any, media: Path) -> None:
+    subir(admin, proyecto["id"], imagen(modo="RGBA", color=(255, 0, 0, 128)))
+
+    with Image.open(archivos(media)[0]) as webp:
+        assert webp.mode == "RGBA"
+
+
+def test_los_metadatos_se_descartan_y_se_respeta_la_rotacion(
+    admin: TestClient, proyecto: Any, media: Path
+) -> None:
+    exif = Image.Exif()
+    exif[ExifTags.Base.Orientation] = 6  # Girada 90°, como las fotos de celular.
+    exif[ExifTags.Base.Make] = "Celular"
+    salida = io.BytesIO()
+    Image.new("RGB", (40, 30), "red").save(salida, format="JPEG", exif=exif)
+
+    subir(admin, proyecto["id"], salida.getvalue())
+
+    with Image.open(archivos(media)[0]) as webp:
+        assert webp.size == (30, 40)
+        assert "exif" not in webp.info
+        assert len(webp.getexif()) == 0
+
+
+@pytest.mark.parametrize(
+    "textos",
+    [{"alt_es": "a" * 301}, {"alt_en": "dos\nlíneas"}, {"alt_es": "\x00"}],
+    ids=["largo", "salto", "control"],
+)
+def test_texto_alternativo_invalido_responde_422(
+    admin: TestClient, proyecto: Any, media: Path, textos: dict[str, str]
+) -> None:
+    assert subir(admin, proyecto["id"], imagen(), **textos).status_code == 422
+    assert archivos(media) == []
+
+
+def test_subir_sin_archivo_responde_422(admin: TestClient, proyecto: Any) -> None:
+    response = admin.post(f"/api/admin/projects/{proyecto['id']}/images", data={"alt_es": "x"})
+
+    assert response.status_code == 422
+
+
+def test_subir_a_un_proyecto_que_no_existe_responde_404(admin: TestClient, media: Path) -> None:
+    assert subir(admin, 999_999, imagen()).status_code == 404
+    assert archivos(media) == []
+
+
+def test_subir_sin_sesion_no_guarda_el_archivo(
+    anonimo: TestClient, db_session: Session, media: Path
+) -> None:
+    proyecto = Project(**PROYECTO)
+    db_session.add(proyecto)
+    db_session.flush()
+
+    assert subir(anonimo, proyecto.id, imagen()).status_code == 401
+    assert archivos(media) == []
+
+
+def test_borrar_una_captura_borra_su_archivo(
+    admin: TestClient, proyecto: Any, media: Path, db_session: Session
+) -> None:
+    captura = subir(admin, proyecto["id"], imagen()).json()
+
+    url = f"/api/admin/projects/{proyecto['id']}/images/{captura['id']}"
+    assert admin.delete(url).status_code == 204
+
+    assert archivos(media) == []
+    assert db_session.scalars(select(ProjectImage)).all() == []
+    assert admin.delete(url).status_code == 404
+
+
+def test_borrar_la_captura_de_otro_proyecto_responde_404(
+    admin: TestClient, proyecto: Any, media: Path
+) -> None:
+    otro = crear(admin, "/api/admin/projects", PROYECTO, slug="otro")
+    captura = subir(admin, proyecto["id"], imagen()).json()
+
+    response = admin.delete(f"/api/admin/projects/{otro['id']}/images/{captura['id']}")
+
+    assert response.status_code == 404
+    assert len(archivos(media)) == 1
+
+
+def test_borrar_un_proyecto_borra_los_archivos_de_sus_capturas(
+    admin: TestClient, proyecto: Any, media: Path
+) -> None:
+    otro = crear(admin, "/api/admin/projects", PROYECTO, slug="otro")
+    subir(admin, proyecto["id"], imagen())
+    subir(admin, proyecto["id"], imagen())
+    queda = subir(admin, otro["id"], imagen()).json()
+
+    assert admin.delete(f"/api/admin/projects/{proyecto['id']}").status_code == 204
+
+    assert archivos(media) == [media / queda["url"].removeprefix("/media/")]
+
+
+def test_un_archivo_que_no_se_puede_borrar_queda_en_el_log(
+    media: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    # Una carpeta en lugar del archivo: unlink falla con un OSError.
+    (media / "projects" / "carpeta.webp").mkdir(parents=True)
+
+    images.remove_files(["projects/carpeta.webp", "projects/no-existe.webp"])
+
+    assert "No se pudo borrar la captura projects/carpeta.webp" in caplog.text

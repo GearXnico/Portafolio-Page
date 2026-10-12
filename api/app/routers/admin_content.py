@@ -7,15 +7,17 @@ Los cambios se ven en la página pública en la siguiente carga de `GET /api/boo
 from collections.abc import Sequence
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Path, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.models import Experience, Profile, Project, Skill
+from app.models import Experience, Profile, Project, ProjectImage, Skill
 from app.routers.admin import require_admin
 from app.schemas.content import (
+    AltText,
     ExperienceIn,
     ExperienceOut,
+    ImageOut,
     ProfileIn,
     ProfileOut,
     ProjectIn,
@@ -23,7 +25,7 @@ from app.schemas.content import (
     SkillIn,
     SkillOut,
 )
-from app.services import content
+from app.services import content, images
 
 router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
@@ -60,8 +62,41 @@ def update_project(project_id: ItemId, payload: ProjectIn, session: DbSession) -
 
 @router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(project_id: ItemId, session: DbSession) -> None:
-    """Borra el proyecto y sus capturas (en la base)."""
-    content.delete(session, content.get_or_404(session, Project, project_id))
+    """Borra el proyecto, sus capturas en la base y sus archivos."""
+    project = content.get_or_404(session, Project, project_id)
+    paths = [image.path for image in project.images]
+    content.delete(session, project)
+    images.remove_files(paths)
+
+
+# Capturas de un proyecto: se suben como formulario (multipart) y se guardan en WebP.
+
+
+@router.post(
+    "/projects/{project_id}/images", status_code=status.HTTP_201_CREATED, response_model=ImageOut
+)
+def upload_image(
+    project_id: ItemId,
+    file: UploadFile,
+    session: DbSession,
+    alt_es: Annotated[AltText, Form()] = "",
+    alt_en: Annotated[AltText, Form()] = "",
+) -> ProjectImage:
+    """JPEG, PNG o WebP de hasta 5 MB, detectado por su contenido. Queda al final del proyecto.
+
+    413 si pesa más de 5 MB, 415 si no es una imagen aceptada y 422 si está dañada.
+    """
+    project = content.get_or_404(session, Project, project_id)
+    return images.add_image(session, project, file.file, file.size, alt_es, alt_en)
+
+
+@router.delete("/projects/{project_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_image(project_id: ItemId, image_id: ItemId, session: DbSession) -> None:
+    """Borra la captura de la base y su archivo."""
+    image = session.get(ProjectImage, image_id)
+    if image is None or image.project_id != project_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe.")
+    images.delete_image(session, image)
 
 
 # Perfil: una sola fila, que se crea con el primer PUT.

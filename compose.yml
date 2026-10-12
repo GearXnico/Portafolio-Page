@@ -61,6 +61,8 @@ services:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./api/app:/code/app
+      # Capturas de los proyectos (MEDIA_DIR); en producción también las monta Caddy.
+      - media:/code/media
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -81,3 +83,4 @@ services:
 
 volumes:
   db-data:
+  media:

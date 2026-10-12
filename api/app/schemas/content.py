@@ -48,6 +48,8 @@ Text5000 = Annotated[str, _strip(5000), AfterValidator(multiline)]
 OptionalText5000 = Annotated[str, _strip(5000, min_length=0), AfterValidator(multiline)]
 # Cuerpo en Markdown de un proyecto.
 OptionalText10000 = Annotated[str, _strip(10_000, min_length=0), AfterValidator(multiline)]
+# Texto alternativo de una captura (para lectores de pantalla); vacío si es decorativa.
+AltText = Annotated[str, _strip(300, min_length=0), AfterValidator(single_line)]
 
 Url = Annotated[
     str,
@@ -97,6 +99,14 @@ class ProjectIn(_In):
     position: Position = 0
 
 
+class ImageOut(_Out):
+    id: int
+    url: str
+    alt_es: str
+    alt_en: str
+    position: int
+
+
 class ProjectOut(_Out):
     id: int
     slug: str
@@ -111,6 +121,7 @@ class ProjectOut(_Out):
     repo_url: str | None
     visible: bool
     position: int
+    images: list[ImageOut]
     created_at: datetime
     updated_at: datetime
 
