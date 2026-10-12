@@ -18,10 +18,6 @@ on:
 # Sin permisos por defecto; el job pide solo lo que usa.
 permissions: {}
 
-concurrency:
-  group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
-
 jobs:
   review:
     name: Revisión con IA
@@ -36,6 +32,11 @@ jobs:
         && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association))
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # A nivel de job, no de workflow: así los comentarios que no piden revisión (como el resumen
+    # que deja el propio Claude) no entran al grupo. Sin cancelar: una revisión empezada termina.
+    concurrency:
+      group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: false
     permissions:
       contents: read # leer el código del PR
       pull-requests: write # comentar; nunca aprueba (gh pr review está bloqueado)
