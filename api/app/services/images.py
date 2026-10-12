@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 from PIL import Image, ImageOps, UnidentifiedImageError
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -63,18 +64,27 @@ def add_image(
     with file_path.open("xb") as output:
         output.write(data)
 
-    image = ProjectImage(
-        project_id=project.id,
-        path=relative_path,
-        alt_es=alt_es,
-        alt_en=alt_en,
-        position=max((i.position for i in project.images), default=-1) + 1,
-    )
-    session.add(image)
     try:
+        # Bloquea el proyecto hasta el commit: dos subidas simultáneas no toman la misma
+        # posición. Se bloquea después de convertir, para no frenar a nadie durante la conversión.
+        session.execute(select(Project.id).where(Project.id == project.id).with_for_update())
+        position = session.scalar(
+            select(func.coalesce(func.max(ProjectImage.position), -1) + 1).where(
+                ProjectImage.project_id == project.id
+            )
+        )
+        image = ProjectImage(
+            project_id=project.id,
+            path=relative_path,
+            alt_es=alt_es,
+            alt_en=alt_en,
+            position=position,
+        )
+        session.add(image)
         session.commit()
     except Exception:
         # Sin fila en la base, el archivo quedaría huérfano.
+        session.rollback()
         file_path.unlink(missing_ok=True)
         raise
     return image
