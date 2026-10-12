@@ -27,11 +27,11 @@ Regla práctica para elegir el nivel: **un caso se prueba una vez, en el nivel m
 
 | Regla | Por qué | Dónde se prueba hoy |
 |---|---|---|
-| Toda ruta de `/api/admin/*` responde 401 sin sesión | Una ruta nueva fuera del router protegido dejaría el panel abierto | `test_admin_login.py` (recorre todas las rutas) y `test_admin_content.py` |
+| Toda ruta de `/api/admin/*` responde 401 sin sesión | Una ruta nueva fuera del router protegido dejaría el panel abierto | `test_admin_login.py` (recorre todas las rutas). `test_admin_content.py` lo repite para las rutas de contenido con un cuerpo vacío, para comprobar además que el 401 llega antes que el 422; el PR #24 propone unirlos |
 | Login: clave correcta, incorrecta, bloqueo tras 5 intentos, sesión inválida o vencida | Es la única puerta del panel | `test_admin_login.py` |
 | Validación de capturas: tipo real del archivo, 5 MB, píxeles, metadatos | Un archivo subido es la entrada más peligrosa | `test_admin_content.py` |
 | Límites de envío: 5 mensajes por hora por IP, honeypot (campo trampa), tamaño del cuerpo | Sin ellos el formulario se llena de spam | `test_contact.py` y `test_rate_limit.py` |
-| La IP real detrás de Caddy, y que `X-Forwarded-For` no se crea sin proxy de confianza | Si falla, un atacante se salta los límites cambiando un header | `test_contact.py` y `test_admin_login.py` |
+| La IP real detrás de Caddy, y que `X-Forwarded-For` no se crea sin proxy de confianza | Si falla, un atacante se salta los límites cambiando un header | `test_contact.py` (contacto) y `test_admin_login.py` (login): son dos casos, uno por ruta, porque cada una puede quedar mal configurada por separado |
 | Toda entrada inválida responde 422 | Pydantic valida, pero el test confirma que el esquema es el correcto | Un test por recurso |
 | Lo que no debe salir no sale: correo del perfil, IP del visitante, ids internos | Una fuga de datos personales no se ve en la página | `test_bootstrap.py` y `test_admin_content.py` |
 | El usuario de la API no puede cambiar tablas | Limita el daño de una inyección de SQL | `test_permisos_db.py` |
