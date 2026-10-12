@@ -7,12 +7,20 @@ from sqlalchemy import CheckConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base
+from app.models.base import URL_HTTPS_REGEX, Base
 
 
 class Profile(Base):
     __tablename__ = "profile"
-    __table_args__ = (CheckConstraint("id = 1", name="single_row"),)
+    __table_args__ = (
+        CheckConstraint("id = 1", name="single_row"),
+        # Un objeto cuyos valores son todos enlaces https (ver URL_HTTPS_REGEX).
+        CheckConstraint(
+            "jsonb_typeof(links) = 'object' AND NOT jsonb_path_exists(links, "
+            f'\'strict $.* ? (@.type() != "string" || !(@ like_regex "{URL_HTTPS_REGEX}"))\')',
+            name="links_https",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False, default=1)
     headline_es: Mapped[str]

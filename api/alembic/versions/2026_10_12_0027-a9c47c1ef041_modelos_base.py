@@ -91,6 +91,11 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint("id = 1", name=op.f("ck_profile_single_row")),
+        sa.CheckConstraint(
+            "jsonb_typeof(links) = 'object' AND NOT jsonb_path_exists("
+            'links, \'strict $.* ? (@.type() != "string" || !(@ like_regex "^https://[^[:space:]/]+[^[:space:]]*$"))\')',
+            name=op.f("ck_profile_links_https"),
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_profile")),
     )
     op.create_table(
@@ -122,8 +127,14 @@ def upgrade() -> None:
             server_default=sa.text("now()"),
             nullable=False,
         ),
-        sa.CheckConstraint("demo_url ~ '^https://'", name=op.f("ck_project_demo_url")),
-        sa.CheckConstraint("repo_url ~ '^https://'", name=op.f("ck_project_repo_url")),
+        sa.CheckConstraint(
+            "char_length(demo_url) <= 2048 AND demo_url ~ '^https://[^[:space:]/]+[^[:space:]]*$'",
+            name=op.f("ck_project_demo_url"),
+        ),
+        sa.CheckConstraint(
+            "char_length(repo_url) <= 2048 AND repo_url ~ '^https://[^[:space:]/]+[^[:space:]]*$'",
+            name=op.f("ck_project_repo_url"),
+        ),
         sa.CheckConstraint(
             "slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'", name=op.f("ck_project_slug_format")
         ),

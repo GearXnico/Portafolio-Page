@@ -26,17 +26,17 @@ docker compose up -d      # db, api (:8000) y web (:5173)
 - API: http://localhost:8000/api/health (responde 200 si la base contesta y 503 si no)
 - Documentación interactiva de la API: http://localhost:8000/docs
 
-Los cambios en `api/app/` y `web/` se recargan solos. Las migraciones de la base se aplican solas cada vez que arranca la API. Para apagar todo: `docker compose down` (agrega `-v` para borrar también la base local).
+Los cambios en `api/app/` y `web/` se recargan solos. Las migraciones de la base se aplican solas en cada `docker compose up`, con el servicio `migrate`, antes de que arranque la API. Para apagar todo: `docker compose down` (agrega `-v` para borrar también la base local).
 
 Si cambias las dependencias (`api/pyproject.toml` o `web/package.json`), reconstruye con `docker compose up -d --build`.
 
 ## API: tests y lint
 
-Los tests van contra el Postgres del compose, sin mocks (objetos simulados) de la base, así que la `db` tiene que estar arriba. Puedes correrlos dentro del contenedor:
+Los tests van contra el Postgres del compose, sin mocks (objetos simulados) de la base, así que la `db` tiene que estar arriba. Como aplican migraciones, corren en el servicio `migrate`, el único con la clave del dueño de las tablas:
 
 ```bash
-docker compose exec api pytest -q --cov=app --cov-fail-under=80
-docker compose exec api sh -c "ruff check . && ruff format --check . && mypy app"
+docker compose run --rm migrate pytest -q --cov=app --cov-fail-under=80
+docker compose run --rm migrate sh -c "ruff check . && ruff format --check . && mypy app"
 ```
 
 O desde tu máquina, con Python 3.14 (toma `DATABASE_URL` y `MIGRATION_DATABASE_URL` del `.env` de la raíz):
@@ -77,7 +77,7 @@ La API no se conecta como dueña de las tablas. Hay dos usuarios de Postgres:
 
 | Usuario | Variable | Puede | Lo usa |
 |---|---|---|---|
-| Dueño (`POSTGRES_USER`) | `MIGRATION_DATABASE_URL` | Crear, cambiar y borrar tablas | Solo Alembic, para las migraciones |
+| Dueño (`POSTGRES_USER`) | `MIGRATION_DATABASE_URL` | Crear, cambiar y borrar tablas | Solo el servicio `migrate` (Alembic y los tests) |
 | API (`APP_DB_USER`) | `DATABASE_URL` | Leer, insertar, actualizar y borrar filas | La API |
 
 Así, un error o una inyección de SQL en la API no puede borrar ni cambiar tablas. El usuario de la API lo crea `db/init/01-usuario-api.sh` la primera vez que arranca la base. Si tu base local es anterior a ese script, recréala con `docker compose down -v && docker compose up -d` (borra los datos locales). Los tests de `tests/test_permisos_db.py` comprueban estos límites.

@@ -14,5 +14,5 @@ COPY alembic ./alembic
 COPY tests ./tests
 
 EXPOSE 8000
-# En local, las migraciones se aplican al arrancar (arquitectura, sección de datos).
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+# Las migraciones las aplica el servicio `migrate` de compose.yml antes de que arranque la API.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
