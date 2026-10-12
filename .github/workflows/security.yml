@@ -16,7 +16,9 @@ on:
 permissions: {}
 
 concurrency:
-  group: seguridad-${{ github.event.pull_request.number || github.ref }}
+  # En un PR, un push nuevo cancela el escaneo anterior. En dev y main el grupo es el SHA de cada
+  # commit, así que ningún escaneo se cancela ni queda descartado en la cola.
+  group: seguridad-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -120,7 +122,5 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
-          # Se salta las librerías que pip y npm traen copiadas dentro de sí mismos en la imagen
-          # base: hoy tienen hallazgos sin versión corregida de pip o npm, la app no las usa y la
-          # imagen de producción (tarea 1.6) no llevará npm. Lo demás de la imagen sí se revisa.
-          skip-dirs: /usr/local/lib/node_modules/npm,/usr/local/lib/python3.14/site-packages/pip
+          # Hallazgos aceptados uno a uno, con fecha de vencimiento: un CVE nuevo sigue fallando.
+          trivyignores: .trivyignore
