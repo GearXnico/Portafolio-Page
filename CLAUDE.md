@@ -4,6 +4,11 @@ Portafolio personal de Nicolas: una página pública bilingüe (español e ingl�
 
 Responde en español y deja en inglés los términos técnicos que se usan así en la industria. Cuando uses una sigla, agrega su significado entre paréntesis la primera vez.
 
+## Principios (Nicolas, 2026-10-12)
+
+- **No overengineer.** Haz lo mínimo que resuelve la tarea; nada de capas, abstracciones o configuraciones "por si acaso".
+- **Keep it simple and secure.** Ante dos opciones seguras, elige la más simple. La seguridad no se recorta, pero se resuelve con lo más directo que funcione.
+
 ## Documentos (leer solo lo que la tarea necesite)
 
 | Documento | Para qué |

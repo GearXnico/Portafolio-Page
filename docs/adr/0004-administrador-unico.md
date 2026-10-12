@@ -16,7 +16,7 @@ El panel de administración tiene un solo usuario, Nicolas. Varios administrador
 
 ## Decisión
 
-A. La cookie es `httpOnly`, `Secure` y `SameSite=Strict`, y dura 7 días. El login permite como máximo 5 intentos fallidos cada 15 minutos por IP (dirección de red).
+A. La cookie es `httpOnly`, `Secure` y `SameSite=Strict`, y dura 7 días. El login permite como máximo 5 intentos fallidos cada 15 minutos por IP (dirección de red). La IP real del visitante sale de `X-Forwarded-For` solo cuando la conexión viene de Caddy: `TRUSTED_PROXIES` en el `.env` de producción con la red interna de Docker (decisión de Nicolas, 2026-10-12, por ser lo más simple y seguro). Lo mismo vale para el límite del formulario de contacto.
 
 ## Consecuencias
 

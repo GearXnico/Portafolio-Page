@@ -116,6 +116,7 @@ Nicolas pidió, el 2026-10-11, que un agente revise los PR para que no se le pas
 - **Cuándo corre:** al abrir un PR hacia `dev` y al marcarlo listo para revisión, no en cada push. También se puede pedir de nuevo comentando `@claude revisa`.
 - **Cuándo no corre:** en los PR que solo cambian documentación (`docs/**`, `*.md`), en los de Dependabot y en los borradores.
 - **Qué revisa:** el diff, contra las reglas de `docs/` (ADR, arquitectura) y de `CLAUDE.md`: errores, seguridad, tests faltantes y reglas no cumplidas.
+- **Criterio (Nicolas, 2026-10-12):** "no overengineer" y "keep it simple and secure". Marca como importante solo lo que sea un riesgo real, y no propone capas ni abstracciones extra si lo simple ya es seguro.
 - **Cómo responde:** solo con comentarios, como máximo unos 10, ordenados por severidad. **Nunca aprueba**, para que la aprobación de la ADR 0007 (tu bypass registrado) siga siendo una decisión tuya y no la active un bot.
 - **No bloquea el merge:** es una ayuda para tu revisión, no un check obligatorio.
 
