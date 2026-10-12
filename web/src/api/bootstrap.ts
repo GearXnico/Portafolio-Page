@@ -11,9 +11,12 @@ export interface PublicProfile {
   links: Record<string, string>;
 }
 
+// Las categorías posibles las fija la base (ck_skill_category).
+export type SkillCategory = "language" | "framework" | "tool";
+
 export interface PublicSkill {
   name: string;
-  category: string;
+  category: SkillCategory;
 }
 
 export interface PublicExperience {

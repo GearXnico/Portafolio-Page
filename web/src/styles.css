@@ -1,0 +1,160 @@
+/* Estilos de la página pública: una columna en el celular y más aire en pantallas anchas. */
+:root {
+  --text: #1c1c1e;
+  --muted: #55555c;
+  --accent: #0b57d0;
+  --surface: #f3f4f6;
+  --border: #d9dbe0;
+  color-scheme: light;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  background: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  line-height: 1.2;
+  margin: 0 0 1rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 3rem 0 1rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid var(--border);
+}
+
+h3 {
+  font-size: 1.125rem;
+  margin: 0 0 0.25rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+.about {
+  color: var(--muted);
+  font-size: 1.125rem;
+  white-space: pre-line;
+  max-width: 45rem;
+}
+
+.projects,
+.experience,
+.tags,
+.links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.projects {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+
+.projects article {
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.experience li + li {
+  margin-top: 1.5rem;
+}
+
+.experience p {
+  margin: 0.25rem 0;
+  white-space: pre-line;
+}
+
+.dates {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.skills {
+  margin: 0;
+}
+
+.skills dt {
+  font-weight: 600;
+}
+
+.skills dd {
+  margin: 0.25rem 0 1rem;
+}
+
+.tags,
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tags li {
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.875rem;
+}
+
+.links {
+  gap: 1.5rem;
+}
+
+.links a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  text-transform: capitalize;
+}
+
+@media (min-width: 48rem) {
+  .page {
+    padding: 4rem 2rem;
+  }
+}
+
+.top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.top button {
+  font: inherit;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.top button[aria-pressed="true"] {
+  background: var(--text);
+  color: #fff;
+}

@@ -1,20 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useBootstrap } from "./api/bootstrap";
-import { ApiStatus } from "./components/ApiStatus";
-import { LanguageSwitcher } from "./components/LanguageSwitcher";
-import {
-  DEFAULT_LANG,
-  isLang,
-  LangContext,
-  storedLang,
-  storeLang,
-  translate,
-  type Lang,
-} from "./i18n";
+import { DEFAULT_LANG, isLang, LangContext, storedLang, storeLang, type Lang } from "./i18n";
+import { HomePage } from "./pages/HomePage";
 
 export function App() {
-  const { data, isPending } = useBootstrap();
+  const { data, isPending, isError } = useBootstrap();
   const [chosen, setChosen] = useState<Lang | null>(storedLang);
 
   // Manda la elección del selector; si no hay, el idioma que decidió la API.
@@ -41,11 +32,7 @@ export function App() {
 
   return (
     <LangContext value={value}>
-      <main>
-        <LanguageSwitcher />
-        <h1>{translate(lang, "app.title")}</h1>
-        <ApiStatus />
-      </main>
+      <HomePage data={data} isError={isError} />
     </LangContext>
   );
 }

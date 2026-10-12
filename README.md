@@ -69,7 +69,7 @@ npm run build && npx vite preview &
 E2E_BASE_URL=http://localhost:4173 npm run e2e
 ```
 
-El E2E abre la página en Chromium y espera que el estado de la API diga "ok", así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
+El E2E abre la página en Chromium y espera que `/api/bootstrap` responda bien y se vea el título, así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
 
 ## Base de datos: dos usuarios
 
