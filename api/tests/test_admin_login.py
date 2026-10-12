@@ -1,6 +1,7 @@
 """Login del administrador (ADR 0004): credenciales, cookie, límite por IP y acceso sin sesión."""
 
 import getpass
+import re
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
@@ -182,6 +183,21 @@ def test_sin_sesion_responde_401(client: TestClient) -> None:
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Inicia sesión."}
+
+
+def test_toda_ruta_admin_salvo_login_y_logout_exige_sesion(client: TestClient) -> None:
+    # Atrapa una ruta nueva de /api/admin/* que quede fuera del router protegido.
+    publicas = {"/api/admin/login", "/api/admin/logout"}
+    rutas = {p: m for p, m in app.openapi()["paths"].items() if p.startswith("/api/admin")}
+
+    assert rutas.keys() >= publicas | {"/api/admin/session"}
+    for ruta, metodos in rutas.items():
+        if ruta in publicas:
+            continue
+        for metodo in metodos:
+            # Los parámetros de ruta ({id}) se reemplazan por un valor cualquiera.
+            response = client.request(metodo, re.sub(r"\{[^}]+\}", "1", ruta))
+            assert response.status_code == 401, (metodo, ruta)
 
 
 def _token(clave: str = SECRETO, **cambios: Any) -> str:

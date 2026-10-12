@@ -15,6 +15,7 @@ app = FastAPI(title="API")
 app.include_router(health.router)
 app.include_router(bootstrap.router)
 app.include_router(contact.router)
+app.include_router(admin.public_router)
 app.include_router(admin.router)
 app.add_middleware(BodySizeLimitMiddleware, max_bytes=MAX_BODY_BYTES)
 # Va por fuera (se agrega al final) para que todo lo demás vea la IP real del visitante.
