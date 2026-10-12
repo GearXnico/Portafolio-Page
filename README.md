@@ -231,13 +231,15 @@ El workflow `.github/workflows/security.yml` corre en cada PR, en cada push a `d
 | CodeQL | Análisis estático de GitHub sobre Python, TypeScript y los propios workflows | Hay un hallazgo de severidad alta o crítica (umbral del repo) |
 | pip-audit | Las dependencias de la API, incluidas las de desarrollo | Hay cualquier vulnerabilidad conocida (pip-audit no filtra por severidad) |
 | npm audit | Las dependencias de web, según `package-lock.json` | Hay una vulnerabilidad alta o crítica |
-| Trivy | Las imágenes Docker construidas (hoy las de desarrollo; las de producción desde la tarea 1.6), salvo las librerías que pip y npm traen copiadas dentro de sí mismos | Hay una vulnerabilidad alta o crítica que ya tiene corrección |
+| Trivy | Las imágenes Docker construidas (hoy las de desarrollo; las de producción desde la tarea 1.6) | Hay una vulnerabilidad alta o crítica que ya tiene corrección y no está aceptada en `.trivyignore` |
 
 Las reglas de seguridad de `ruff` (`S`, las de Bandit) corren en el job pre-commit de `ci.yml`. En los tests se permiten `assert` y claves de mentira; en `app/` no se usa `assert`, porque Python lo omite al correr con `-O`.
 
 `.github/dependabot.yml` revisa cada semana pip, npm, las imágenes base y las acciones. Las versiones menores y de parche llegan en un PR por ecosistema y las mayores en uno aparte cada una. Espera 7 días desde que sale una versión antes de proponerla (por si era maliciosa y la retiran); las alertas de seguridad no esperan. Esos PR pasan por los mismos checks.
 
-Secret scanning y push protection (que bloquea un push con un secreto) son ajustes del repo en Settings > Code security, no de un workflow.
+`.trivyignore` lista los hallazgos aceptados, cada uno con fecha de vencimiento (`exp:`). Hoy son solo los de las librerías que pip y npm traen copiadas dentro de sí mismos en las imágenes base, que no se corrigen desde este repo. Al vencer, el job vuelve a fallar y se revisan de nuevo. Cada ID se ignora en toda la imagen; si una dependencia propia cae en uno de esos mismos CVE, la detectan igual `pip-audit` y `npm audit`, que no leen ese archivo.
+
+Secret scanning y push protection (que bloquea un push con un secreto) son ajustes del repo en Settings > Code security, no de un workflow. Ahí mismo, el "default setup" de CodeQL tiene que quedar desactivado, porque este workflow es la configuración avanzada y GitHub no acepta las dos a la vez.
 
 Para correr las auditorías en tu máquina:
 
