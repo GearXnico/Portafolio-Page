@@ -25,5 +25,14 @@
   "contact.error.invalid": "Revisa los datos: el correo debe ser válido y ningún campo puede ir vacío.",
   "contact.error.rateLimit": "Enviaste varios mensajes seguidos. Intenta de nuevo más tarde.",
   "contact.error.generic": "No se pudo enviar el mensaje. Intenta de nuevo en unos minutos.",
-  "contact.website": "Deja este campo vacío"
+  "contact.website": "Deja este campo vacío",
+  "admin.title": "Panel de administración",
+  "admin.login.title": "Iniciar sesión",
+  "admin.login.email": "Correo",
+  "admin.login.password": "Contraseña",
+  "admin.login.submit": "Entrar",
+  "admin.login.invalid": "Correo o contraseña incorrectos.",
+  "admin.login.tooMany": "Demasiados intentos. Intenta de nuevo en 15 minutos.",
+  "admin.error": "No se pudo conectar con el servidor. Intenta de nuevo en unos minutos.",
+  "admin.logout": "Cerrar sesión"
 }

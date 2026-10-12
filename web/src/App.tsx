@@ -1,38 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { Route, Routes } from "react-router";
 
-import { useBootstrap } from "./api/bootstrap";
-import { DEFAULT_LANG, isLang, LangContext, storedLang, storeLang, type Lang } from "./i18n";
-import { HomePage } from "./pages/HomePage";
+import { AdminLayout } from "./components/AdminLayout";
+import { RequireAdmin } from "./components/RequireAdmin";
+import { AdminLoginPage } from "./pages/AdminLoginPage";
+import { AdminPage } from "./pages/AdminPage";
+import { PublicSite } from "./pages/PublicSite";
 
+/** Rutas de la web: el panel en `/admin` y la página pública en todo lo demás. */
 export function App() {
-  const { data, isPending, isError } = useBootstrap();
-  const [chosen, setChosen] = useState<Lang | null>(storedLang);
-
-  // Manda la elección del selector; si no hay, el idioma que decidió la API.
-  const apiLang = isLang(data?.lang) ? data.lang : null;
-  const lang = chosen ?? apiLang ?? DEFAULT_LANG;
-
-  useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
-
-  const value = useMemo(
-    () => ({
-      lang,
-      setLang: (next: Lang) => {
-        storeLang(next);
-        setChosen(next);
-      },
-    }),
-    [lang],
-  );
-
-  // Sin elección guardada, se espera a la API para no mostrar un idioma y luego cambiarlo.
-  if (chosen === null && isPending) return null;
-
   return (
-    <LangContext value={value}>
-      <HomePage data={data} isError={isError} />
-    </LangContext>
+    <Routes>
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="login" element={<AdminLoginPage />} />
+        {/* Todo lo que va dentro de RequireAdmin exige sesión; sin ella, redirige al login. */}
+        <Route element={<RequireAdmin />}>
+          <Route index element={<AdminPage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<PublicSite />} />
+    </Routes>
   );
 }
