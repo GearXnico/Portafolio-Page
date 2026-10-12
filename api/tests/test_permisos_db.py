@@ -1,7 +1,7 @@
 """La API se conecta con un usuario de permisos mínimos: puede tocar filas, no el esquema.
 
 Si estos tests fallan, DATABASE_URL probablemente apunta al dueño de las tablas
-en vez de al usuario de la API (ver README, "Base de datos: dos usuarios").
+en vez de al usuario de la API (ver docs/api.md, "Base de datos: dos usuarios").
 """
 
 import pytest
