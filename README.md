@@ -8,7 +8,7 @@ Plantilla para empezar productos web con pruebas, CI/CD (integración y desplieg
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), y la base tiene las tablas del contenido: perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes.
+> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap` y recibe mensajes de contacto.
 
 ## Requisitos
 
@@ -82,6 +82,18 @@ La API no se conecta como dueña de las tablas. Hay dos usuarios de Postgres:
 
 Así, un error o una inyección de SQL en la API no puede borrar ni cambiar tablas. El usuario de la API lo crea `db/init/01-usuario-api.sh` la primera vez que arranca la base. Si tu base local es anterior a ese script, recréala con `docker compose down -v && docker compose up -d` (borra los datos locales). Los tests de `tests/test_permisos_db.py` comprueban estos límites.
 
+## Formulario de contacto
+
+`POST /api/contact` recibe `name`, `email`, `message`, `lang` (`es` o `en`) y, si vienen, `utm_source` y `utm_campaign`. Guarda el mensaje y responde 201; después, en segundo plano, avisa por correo con SMTP (`app/services/mail.py`, ADR 0005) y marca `emailed`. Si el correo falla o no está configurado, el mensaje igual queda guardado y el log lo anota, solo con el id del mensaje.
+
+Contra el spam y los abusos:
+
+- **Validación:** largos máximos iguales a los de la tabla (200, 320 y 5.000 caracteres), correo con formato válido, sin caracteres de control ni saltos de línea fuera del mensaje (así nadie puede inyectar cabeceras en el correo) y sin campos extra. Responde 422 si algo no calza.
+- **Honeypot (campo trampa):** el formulario debe incluir un campo `website` oculto. Si llega con algo, es un bot: la API responde 201 igual, pero no guarda nada.
+- **Límite por IP:** 5 mensajes por hora; después responde 429 con `Retry-After`. Vive en memoria del proceso, así que la API corre con un solo proceso de Uvicorn. En producción, `TRUSTED_PROXIES` tiene que incluir a Caddy para que el límite vea la IP real y no la del proxy.
+- **Tamaño:** la API rechaza cuerpos de más de 64 KB (413) y los que no declaran su largo (411).
+- **Al mostrarlo:** la API guarda el texto tal cual y nunca lo interpreta. El correo va en texto plano y la web lo muestra como texto (React lo escapa); nunca con `dangerouslySetInnerHTML`.
+
 ## Migraciones de la API
 
 Migraciones con Alembic (herramienta de migraciones de SQLAlchemy):
@@ -151,4 +163,4 @@ Respuesta:
 - **Visitante único por día**: no se guarda la IP. Se guarda un HMAC-SHA256 (hash con clave) de IP y user agent, cuya clave es una sal al azar que se crea cada día (UTC) en la tabla `visitor_salt` y se borra al día siguiente. Sin la sal, ni con un respaldo de la base se puede volver a la IP.
 - Si falla el registro de la visita, la página igual carga.
 
-En producción la API está detrás de Caddy: `TRUSTED_PROXIES` tiene que incluir la red interna de Docker donde está Caddy (llega con el formulario de contacto, PR #9), para que la API lea la IP real de `X-Forwarded-For`. Sin eso, todos los visitantes comparten la IP de Caddy y el conteo de únicos baja.
+En producción la API está detrás de Caddy: `TRUSTED_PROXIES` tiene que incluir la red interna de Docker donde está Caddy, para que la API lea la IP real de `X-Forwarded-For`. Sin eso, todos los visitantes comparten la IP de Caddy y el conteo de únicos baja.
