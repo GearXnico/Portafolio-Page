@@ -18,6 +18,7 @@ from PIL import ExifTags, Image
 from pydantic import SecretStr
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
+from starlette.requests import Request as StarletteRequest
 
 from app.config import settings
 from app.db import get_session
@@ -721,6 +722,23 @@ def test_subir_sin_sesion_no_guarda_el_archivo(
 
     assert subir(anonimo, proyecto.id, imagen()).status_code == 401
     assert archivos(media) == []
+
+
+@pytest.mark.parametrize("cookie", [None, "no-es-un-jwt"], ids=["sin-cookie", "invalida"])
+def test_sin_sesion_la_subida_no_lee_el_formulario(
+    anonimo: TestClient, monkeypatch: pytest.MonkeyPatch, cookie: str | None
+) -> None:
+    # FastAPI lee el formulario antes de revisar la sesión: el middleware corta antes.
+    leidos: list[bool] = []
+    monkeypatch.setattr(StarletteRequest, "form", lambda *_a, **_k: leidos.append(True))
+    if cookie:
+        anonimo.cookies.set(COOKIE_NAME, cookie)
+
+    response = subir(anonimo, 1, b"\0" * MAX_IMAGE_BYTES)
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Inicia sesión."}
+    assert leidos == []
 
 
 def test_borrar_una_captura_borra_su_archivo(

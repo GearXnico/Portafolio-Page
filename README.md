@@ -129,7 +129,7 @@ Rutas para editar lo que muestra la página. Todas exigen la sesión del adminis
 - **Orden y visibilidad:** cada elemento tiene `position` (el menor va primero). Un proyecto nuevo queda oculto (`visible: false`) hasta que se publica con un `PUT`. El panel ve también los ocultos.
 - **`PUT` reemplaza todo:** manda el objeto completo; lo que no llega toma su valor por defecto.
 - **Validación:** campos de más (como `id`), caracteres de control, largos sobre el máximo y enlaces que no sean `https://` responden 422. Un slug repetido responde 409 y un id que no existe, 404.
-- **Capturas:** JPEG, PNG o WebP de hasta 5 MB, reconocidos por su contenido y no por la extensión. La API las vuelve a codificar como WebP (máximo 2560 px por lado, sin metadatos como el GPS de una foto), con un nombre al azar, en `MEDIA_DIR/projects/` (por defecto `media/`, un volumen en Docker). Cada proyecto las trae en `images`, con su `url` en `/media/...`. Responde 413 si pesa más de 5 MB, 415 si no es una imagen aceptada y 422 si está dañada o pasa los 40 megapíxeles.
+- **Capturas:** JPEG, PNG o WebP de hasta 5 MB, reconocidos por su contenido y no por la extensión. La API las vuelve a codificar como WebP (máximo 2560 px por lado, sin metadatos como el GPS de una foto), con un nombre al azar, en `MEDIA_DIR/projects/` (por defecto `media/`, un volumen en Docker). Cada proyecto las trae en `images`, con su `url` en `/media/...`. Responde 413 si pesa más de 5 MB, 415 si no es una imagen aceptada y 422 si está dañada o pasa los 25 megapíxeles. Sin sesión, la subida responde 401 antes de leer el archivo.
 - **Al borrar un proyecto o una captura** se borran las filas y los archivos.
 
 ## Migraciones de la API
