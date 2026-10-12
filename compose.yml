@@ -1,5 +1,5 @@
 # Desarrollo local: base de datos, API y web con recarga en vivo.
-# Producción usa deploy/compose.prod.yml (tarea 1.6 del plan).
+# Producción usa deploy/compose.prod.yml (ver deploy/README.md).
 name: ${COMPOSE_PROJECT_NAME:-producto}
 
 services:
