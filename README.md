@@ -97,6 +97,12 @@ compose.yml   desarrollo local
 - Un PR por tarea hacia `dev`, con la plantilla del repo. Se mergea solo con rebase & merge.
 - Nunca se suben secretos ni `.env`: solo `.env.example`.
 
+## Revisión automática con IA
+
+El workflow `.github/workflows/ai-review.yml` revisa con Claude cada PR hacia `dev` al abrirlo o al marcarlo listo para revisión (ADR 0007). Deja como máximo unos 10 comentarios ordenados por severidad, nunca aprueba y no bloquea el merge. Se salta los borradores, los de Dependabot y los PR que solo cambian documentación (`docs/**` o `*.md`). Para pedir otra revisión, comenta `@claude revisa` en el PR.
+
+Necesita el secreto `CLAUDE_CODE_OAUTH_TOKEN` en el repositorio (se genera con `claude setup-token`) y la app de Claude para GitHub instalada en él.
+
 ## Seguridad de la web
 
 - Las cabeceras HTTP de seguridad están en `web/security-headers.ts`: `nosniff`, sin iframes, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`. La CSP solo deja cargar scripts, estilos y datos del mismo dominio, y se aplica al build (en `npm run dev` no, porque Vite necesita un script en línea para recargar). En producción, Caddy usará estos mismos valores (tarea 1.6).
