@@ -9,6 +9,8 @@ from app.config import settings
 from app.models import Base
 
 config = context.config
+if settings.migration_database_url is None:
+    raise RuntimeError("Falta MIGRATION_DATABASE_URL: Alembic se conecta como dueño de las tablas.")
 config.set_main_option("sqlalchemy.url", settings.migration_database_url)
 
 if config.config_file_name is not None:

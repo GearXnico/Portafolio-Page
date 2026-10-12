@@ -10,8 +10,9 @@ class Settings(BaseSettings):
 
     # Usuario de la API, con permisos mínimos: solo lee y escribe filas.
     database_url: str
-    # Dueño de las tablas: solo lo usa Alembic para las migraciones.
-    migration_database_url: str
+    # Dueño de las tablas: solo lo usa Alembic. Es opcional para que en producción
+    # el proceso de la API pueda arrancar sin conocer la clave del dueño.
+    migration_database_url: str | None = None
 
 
 settings = Settings()
