@@ -1,5 +1,8 @@
-"""Login, logout y sesión del panel de administración. Toda ruta `/api/admin/*` exige sesión,
-salvo el login y el logout."""
+"""Login, logout y sesión del panel de administración.
+
+Toda ruta `/api/admin/*` va en `router`, que exige sesión por defecto. Solo el login y el
+logout van en `public_router`.
+"""
 
 from typing import Annotated
 
@@ -11,8 +14,6 @@ from app.services.rate_limit import SlidingWindowLimiter, client_key
 
 COOKIE_NAME = "admin_session"
 COOKIE_PATH = "/api/admin"
-
-router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 # 5 intentos fallidos cada 15 minutos por IP (ADR 0004). Un login correcto borra la cuenta.
 login_limiter = SlidingWindowLimiter(limit=5, window_seconds=15 * 60)
@@ -30,7 +31,11 @@ def require_admin(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inicia sesión.")
 
 
-@router.post("/login")
+public_router = APIRouter(prefix="/api/admin", tags=["admin"])
+router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
+
+
+@public_router.post("/login")
 def login(
     payload: LoginIn,
     request: Request,
@@ -68,7 +73,7 @@ def login(
     return SessionOut()
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@public_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(response: Response) -> None:
     """Borra la cookie. Responde igual con o sin sesión."""
     response.delete_cookie(
@@ -76,7 +81,7 @@ def logout(response: Response) -> None:
     )
 
 
-@router.get("/session", dependencies=[Depends(require_admin)])
+@router.get("/session")
 def session() -> SessionOut:
     """200 si hay sesión; el panel lo usa para saber si mostrar el login."""
     return SessionOut()

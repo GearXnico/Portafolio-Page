@@ -106,7 +106,9 @@ El panel tiene un solo usuario (ADR 0004), sin tabla: sus credenciales van en el
 |---|---|
 | `POST /api/admin/login` | Recibe `email` y `password`. Si calzan, deja la cookie `admin_session` y responde 200; si no, 401. Sin configuración, 503. |
 | `POST /api/admin/logout` | Borra la cookie (204). |
-| `GET /api/admin/session` | 200 con sesión, 401 sin ella. Toda ruta nueva de `/api/admin/*` usa la misma dependencia `require_admin`. |
+| `GET /api/admin/session` | 200 con sesión, 401 sin ella. |
+
+Toda ruta nueva de `/api/admin/*` va en `router` de `app/routers/admin.py`, que exige sesión por defecto; solo el login y el logout van en `public_router`. Un test recorre todas las rutas de `/api/admin/*` y falla si alguna responde sin sesión.
 
 - **Contraseña:** hash Argon2 (`argon2-cffi`). La contraseña se verifica aunque el correo esté mal, para que el tiempo de respuesta no diga cuál falló.
 - **Sesión:** JWT (JSON Web Token) firmado con HS256 y `JWT_SECRET`, de 7 días, en una cookie `httpOnly`, `Secure`, `SameSite=Strict` y con `path=/api/admin`. Cambiar `JWT_SECRET` cierra todas las sesiones; cambiar `ADMIN_EMAIL` también.
