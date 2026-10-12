@@ -8,7 +8,7 @@ Plantilla para empezar productos web con pruebas, CI/CD (integración y desplieg
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción (hito 1 del plan). La API y la web tienen su esqueleto: la página muestra si la API y la base responden.
+> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), y la base tiene las tablas del contenido: perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes.
 
 ## Requisitos
 
