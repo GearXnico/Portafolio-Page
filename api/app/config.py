@@ -1,5 +1,7 @@
 """Configuración de la API, leída de variables de entorno."""
 
+from pathlib import Path
+
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -38,6 +40,10 @@ class Settings(BaseSettings):
     # Firma la cookie de sesión (JWT). Al menos 32 caracteres al azar; cambiarla cierra todas
     # las sesiones abiertas.
     jwt_secret: SecretStr | None = Field(default=None, min_length=32)
+
+    # Carpeta de las capturas de los proyectos. Caddy la sirve en /media; en Docker es un
+    # volumen montado en /code/media. Relativa a la carpeta desde donde corre la API.
+    media_dir: Path = Path("media")
 
 
 settings = Settings()

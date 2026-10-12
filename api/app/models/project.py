@@ -48,6 +48,8 @@ class Project(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by="ProjectImage.position",
+        # El panel y la página siempre muestran las capturas con su proyecto.
+        lazy="selectin",
     )
 
 
@@ -72,3 +74,8 @@ class ProjectImage(Base):
     position: Mapped[int] = mapped_column(server_default="0")
 
     project: Mapped[Project] = relationship(back_populates="images")
+
+    @property
+    def url(self) -> str:
+        """Dirección pública de la captura, que sirve Caddy."""
+        return f"/media/{self.path}"
