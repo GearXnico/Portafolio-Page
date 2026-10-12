@@ -217,8 +217,7 @@ Por eso van los dos: el respaldo de DigitalOcean cubre la pérdida del servidor,
 ### Estructura
 
 ```
-plantilla-producto/        repo plantilla (GitHub "template repository")
-portfolio-page/            creado desde la plantilla, público
+Portafolio-Page/           repo del sitio, público (antes plantilla-producto)
 ├── api/                   FastAPI, Alembic, pytest
 ├── web/                   React, Vite, Vitest
 ├── deploy/                compose.prod.yml, Caddyfile, backup.sh
@@ -230,7 +229,7 @@ portfolio-page/            creado desde la plantilla, público
         └── deploy.yml     en cada merge a main, o a mano para volver a una versión anterior
 ```
 
-La plantilla es este mismo esqueleto, con una API y una página vacías y los mismos workflows. El primer hito del plan la deja probada en CI con `deploy-check`, sin costo; los servidores se contratan en el último hito (decisión de Nicolas, 2026-10-11).
+El repo nació como `plantilla-producto`, pero desde el hito 2 contiene el portafolio, así que se renombró a `Portafolio-Page` (Nicolas, 2026-10-12). La plantilla reutilizable se hace después como proyecto aparte (`Product-template`), extraída de este repo. El primer hito del plan deja el despliegue probado en CI con `deploy-check`, sin costo; los servidores se contratan en el último hito (decisión de Nicolas, 2026-10-11).
 
 ### Decisiones de CI/CD
 

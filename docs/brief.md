@@ -25,7 +25,7 @@ Las ofertas de trabajo revisadas no exigen portafolio. Sí piden React+TS, API e
 5. Formulario de contacto que guarda el mensaje y avisa a Nicolas por correo.
 6. Enlaces con UTM por postulación y por referido. Un UTM es un parámetro que se agrega al final del enlace para saber de dónde viene la visita, por ejemplo `?utm_source=portal&utm_campaign=empresa-x`. Así cada postulación o referido tiene su propio enlace, y el sitio registra cuántas visitas y contactos trajo cada uno.
 7. Pieza técnica completa: frontend en React+TS, API en FastAPI, Postgres, tests (pytest y frontend), Docker y GitHub Actions que prueba y despliega en cada merge.
-8. La plantilla del repositorio (pruebas, CI y despliegue) queda separada y reutilizable para el siguiente producto.
+8. ~~La plantilla del repositorio queda separada y reutilizable para el siguiente producto.~~ Sale de este MVP (Nicolas, 2026-10-12): la plantilla se hace después como proyecto aparte (`Product-template`), extraída del portafolio terminado.
 
 ## Fuera del MVP
 
@@ -64,7 +64,7 @@ Técnicas, de la versión 1:
 
 - Despliegue automático en cada merge a la rama principal, con tests verdes en CI.
 - Agregar un proyecto desde el panel toma menos de 10 minutos.
-- La plantilla permite partir el siguiente producto en 1 día o menos.
+- ~~La plantilla permite partir el siguiente producto en 1 día o menos.~~ Pasa al proyecto de la plantilla (2026-10-12).
 
 ## Criterio de abandono
 

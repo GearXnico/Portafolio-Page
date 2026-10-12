@@ -1,6 +1,6 @@
-# plantilla-producto
+# Portafolio-Page
 
-Plantilla para empezar productos web con pruebas, CI/CD (integración y despliegue continuos) y despliegue ya resueltos. Es un monorepo con tres piezas:
+Sitio web de portafolio: una página pública bilingüe (español e inglés) con perfil, experiencia, proyectos y contacto, más un panel de administración para editarla. Viene con pruebas, CI/CD (integración y despliegue continuos) y despliegue ya resueltos. Es un monorepo con tres piezas:
 
 - **api/**: API (interfaz de programación) en Python con FastAPI.
 - **web/**: frontend en React y TypeScript que se compila a archivos estáticos con Vite.
@@ -208,7 +208,7 @@ cd web && npm audit --audit-level=high
 
 ## Reglas de ramas
 
-`dev` y `main` están protegidas con tres rulesets de GitHub (ADR 0007). Su configuración exacta está en `.github/rulesets/`, porque GitHub no los copia al crear un repo desde la plantilla: en el repo nuevo se importan en Settings > Rules > Rulesets > New ruleset > Import a ruleset.
+`dev` y `main` están protegidas con tres rulesets de GitHub (ADR 0007). Su configuración exacta está en `.github/rulesets/`, para versionarla y poder volver a importarla en Settings > Rules > Rulesets > New ruleset > Import a ruleset.
 
 | Ruleset | Rama | Reglas | Quién se lo salta |
 |---|---|---|---|

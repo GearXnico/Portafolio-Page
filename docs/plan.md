@@ -1,30 +1,37 @@
 # Plan · Sitio web de portafolio
 
-ID: 2026-10-08-sitio-portafolio · Versión: borrador 2 (2026-10-11) · Base: `brief.md`, `arquitectura.md` y `adr/`
+ID: 2026-10-08-sitio-portafolio · Versión: borrador 3 (2026-10-12) · Base: `brief.md`, `arquitectura.md` y `adr/`
 
 ## Resumen
 
-Son 6 hitos y ~93,5 h, a 40 h por semana desde el lunes 2026-10-12. La versión 1 queda publicada el ~2026-10-27, y en el escenario pesimista el 2026-10-30.
+Este plan es solo del **sitio de portafolio**. El repositorio nació como `plantilla-producto`, pero el código de los hitos 2 y 3 ya es el portafolio, así que se renombró a `Portafolio-Page` y aquí se termina (decisión de Nicolas, 2026-10-12). La plantilla reutilizable se hace después, como un proyecto aparte, extrayendo lo que de verdad se repite.
 
-**El desarrollo parte sin costo** (decisión de Nicolas, 2026-10-11). Los hitos 0 a 4 usan solo herramientas gratis: GitHub, Actions en un repo público y Docker en local. Recién el hito 5 contrata los servidores y el dominio y despliega. Así, si el desarrollo se alarga, no se paga infraestructura sin usar.
+El orden general del trabajo (decisión de Nicolas, 2026-10-12) es este:
 
-Para no dejar todo el riesgo del despliegue para el final, el hito 1 igual arma las imágenes de producción y las prueba en CI con `deploy-check` (el staging efímero de la ADR 0008), que es gratis. En el hito 5 quedan solo los servidores, el DNS (sistema de nombres de dominio), los secretos y el `deploy.yml`.
+1. **Terminar el desarrollo del portafolio:** hitos 3 y 4 de este plan.
+2. **Crear la plantilla** como proyecto nuevo, con su propio brief y plan, a partir del portafolio terminado.
+3. **Uno o dos proyectos rápidos** creados desde la plantilla, que después se muestran en el portafolio.
+4. **Recién entonces, el gasto:** el hito 5 de este plan despliega el portafolio, y los otros productos se despliegan en el mismo VPS (servidor virtual privado).
 
-Cada tarea parte con un prompt hecho desde `prompts/plantilla.md` y queda en `prompts/registro.md`, con sus tokens (ADR 0009).
+Los puntos 2 y 3 no son parte de este plan: cada uno tendrá sus propios documentos. La plantilla es parte del ecosistema (Nicolas, 2026-10-12), así que no ocupa el cupo de idea activa; los proyectos rápidos sí siguen las reglas de activación.
 
-Cada tarea está pensada para terminarse en una sesión de Claude Code y se entrega como una rama `feature/*`, `chore/*` o `docs/*` con su PR (pull request) a `dev`, según la ADR (registro de decisión de arquitectura) 0007. "Terminado" significa que se cumple el criterio de la tabla y la checklist de terminado de esa ADR.
+**El desarrollo no tiene costo.** Los hitos 0 a 4 usan solo herramientas gratis: GitHub, Actions en un repo público y Docker en local. El hito 5 contrata los servidores y el dominio. El hito 1 ya armó las imágenes de producción y las prueba en CI (integración continua) con `deploy-check` (el staging efímero de la ADR 0008), así que en el hito 5 quedan solo los servidores, el DNS (sistema de nombres de dominio), los secretos y el `deploy.yml`.
 
-Staging sigue la opción A de la ADR 0008, elegida el 2026-10-11: un staging efímero en CI en cada PR desde el hito 1 y un VPS (servidor virtual privado) de staging aparte desde el hito 5.
+**Las fechas son una guía**, para ver si vamos bien, no plazos (Nicolas, 2026-10-12).
 
-| Hito | Entrega | Horas | Costo | Termina (aprox.) |
-|---|---|---|---|---|
-| 0 | Accesos gratuitos listos | 2 | $0 | 2026-10-12 |
-| 1 | Plantilla con CI, seguridad y prueba de despliegue en CI | 22 | $0 | 2026-10-14 |
-| 2 | API y base de datos | 14 | $0 | 2026-10-16 |
-| 3 | Frontend público bilingüe | 17 | $0 | 2026-10-20 |
-| 4 | Panel de administración | 18 | $0 | 2026-10-22 |
-| 5 | Despliegue, contenido y publicación de la versión 1 | 20,5 | ~US$13,20 al mes más $9.990 al año por el dominio | 2026-10-27 |
-| | **Total** | **93,5** | | |
+Cada tarea está pensada para terminarse en una sesión de Claude Code. Se entrega como una rama `feature/*`, `fix/*`, `docs/*` o `chore/*` con su PR (pull request) a `dev`, según la ADR (registro de decisión de arquitectura) 0007. "Terminado" significa que se cumple el criterio de la tabla y la checklist de terminado de esa ADR. Cada tarea parte con un prompt hecho desde `prompts/plantilla.md` y queda en `prompts/registro.md` (ADR 0009).
+
+| Hito | Entrega | Horas | Estado |
+|---|---|---|---|
+| 0 | Accesos gratuitos listos | 2 | Terminado |
+| 1 | Base con CI, seguridad y prueba de despliegue en CI | 22,5 | Terminado (1.9 en este PR) |
+| 2 | API y base de datos | 14 | Terminado |
+| 3 | Frontend público bilingüe | 17 | 3.1 y 3.2 terminadas |
+| 4 | Panel de administración | 18 | Pendiente |
+| 5 | Despliegue, contenido y publicación de la versión 1 (~US$13,20 al mes más $9.990 al año por el dominio) | 20,5 | Después de la plantilla y los proyectos rápidos |
+| | **Total** | **94** | |
+
+Quedan ~28 h de desarrollo (3.3 a 3.6 y el hito 4) y las 20,5 h del hito 5.
 
 ## Hito 0 · Accesos gratuitos (lo haces tú, sin Claude Code)
 
@@ -37,9 +44,9 @@ Staging sigue la opción A de la ADR 0008, elegida el 2026-10-11: un staging ef�
 | 0.3 | Revisar con Claude Code las cuotas gratuitas de GitHub Actions y GHCR (el registro de imágenes de GitHub) para repos públicos | 0,5 | No hay sorpresas de costo |
 | 0.4 | Generar `CLAUDE_CODE_OAUTH_TOKEN` con `claude setup-token`, para la revisión automática | 0,5 | Tienes el token guardado |
 
-## Hito 1 · Plantilla con CI y prueba de despliegue, sin costo
+## Hito 1 · Base con CI y prueba de despliegue, sin costo
 
-Al final de este hito, el repo se marca como "template repository" y `portfolio-page` se crea a partir de él. Como "Use this template" no sirve sobre un repo existente, el `portfolio-page` vacío que ya existe se borra y se vuelve a crear desde la plantilla con el mismo nombre.
+El repo se llamó `plantilla-producto` porque al principio iba a ser la plantilla. La tarea 1.9 lo renombró a `Portafolio-Page`; ya no se marca como "template repository". El repo vacío que se llamaba `portfolio-page` quedó como `Product-template`, para la futura plantilla.
 
 | # | Tarea | Horas | Terminado cuando |
 |---|---|---|---|
@@ -51,8 +58,9 @@ Al final de este hito, el repo se marca como "template repository" y `portfolio-
 | 1.6 | Imágenes de producción: Dockerfiles multi-stage de la API y de Caddy (con el build de web dentro), `compose.prod.yml` (con red interna fija y `TRUSTED_PROXIES` apuntando a ella, ADR 0004), Caddyfile y job `deploy-check` en CI, con respaldo y migraciones como en producción | 4 | `deploy-check` levanta el compose de producción en el runner, aplica las migraciones y pasa el E2E |
 | 1.7 | Reglas de GitHub: rulesets de `main` y `dev` (1 aprobación con bypass tuyo, historial lineal, solo rebase & merge, checks obligatorios) y `sync-dev.yml`. El gate de staging se agrega en el hito 5. | 3 | Un PR sin checks en verde no se puede mergear, y después de un PR de versión de prueba `dev` queda sincronizada |
 | 1.8 | `ai-review.yml`: revisión automática con IA en los PR a `dev`, con `CLAUDE_CODE_OAUTH_TOKEN` (ADR 0007) | 1 | Un PR de prueba recibe comentarios del revisor y el PR de documentación se salta |
+| 1.9 | Renombre. **Lo hiciste tú (2026-10-12):** `plantilla-producto` pasó a `Portafolio-Page` y el repo vacío `portfolio-page` pasó a `Product-template` (GitHub conserva el historial, los PR y una redirección desde los nombres viejos). **Con Claude Code:** actualizar el README, `arquitectura.md` (sección 7), el brief (punto 8 y la métrica de la plantilla pasan al proyecto de la plantilla) y este plan | 0,5 | El CI corre en verde y ningún documento presenta este repo como la plantilla |
 
-**Fin del hito:** cada PR pasa por tests, seguridad, revisión con IA y una prueba del despliegue completo en CI, todo sin costo. La plantilla queda marcada como template y se crea `portfolio-page` desde ella.
+**Fin del hito:** cada PR pasa por tests, seguridad, revisión con IA y una prueba del despliegue completo en CI, todo sin costo, en el repo `Portafolio-Page`.
 
 ## Hito 2 · API y base de datos
 
@@ -89,7 +97,7 @@ Al final de este hito, el repo se marca como "template repository" y `portfolio-
 
 ## Hito 5 · Despliegue, contenido y publicación (aquí empieza el gasto)
 
-Se inicia cuando el hito 4 está terminado y probado en local y en CI.
+Se inicia cuando el hito 4 está terminado y probado en local y en CI, **y además** la plantilla y al menos un proyecto rápido están terminados (orden decidido por Nicolas el 2026-10-12). Antes de empezar, se revisa cómo comparten el VPS y Caddy los productos que haya.
 
 | # | Tarea | Horas | Terminado cuando |
 |---|---|---|---|
@@ -106,13 +114,14 @@ Se inicia cuando el hito 4 está terminado y probado en local y en CI.
 
 | Riesgo | Señal | Qué hacer |
 |---|---|---|
-| El despliegue real, el área menos practicada, queda para la última semana | Las tareas 5.2 o 5.3 pasan de 4 h cada una | `deploy-check` ya probó las imágenes, el compose y las migraciones en el hito 1, así que lo que queda es servidor, DNS y secretos. Si se traba, se publica primero solo producción y staging se suma unos días después. |
-| El hito 1 toma más de 22 h | El 2026-10-14 todavía no hay CI en verde | Se mantiene: es la base de todo. Si hace falta, se recorta la tarea 3.6 (SEO y accesibilidad) y queda para la versión 1.1. |
+| El despliegue real, el área menos practicada, queda para el final | Las tareas 5.2 o 5.3 pasan de 4 h cada una | `deploy-check` ya probó las imágenes, el compose y las migraciones en el hito 1, así que lo que queda es servidor, DNS y secretos. Si se traba, se publica primero solo producción y staging se suma unos días después. |
+| El portafolio tarda en publicarse porque el hito 5 espera a la plantilla y a los proyectos rápidos | Pasan semanas con el portafolio terminado y sin publicar | Decisión consciente para ahorrar costos. Si una postulación lo necesita antes, se puede adelantar el hito 5 solo para el portafolio. |
 | El panel crece | El hito 4 pasa de 18 h | Se publica sin el reorden de proyectos (4.2) y sin las visitas por UTM (4.5); se agregan después |
-| Una herramienta nueva no funciona (TypeScript 7 o Vite 8) | Errores en 1.3 | Bajar de versión según el riesgo de la arquitectura |
+| La futura plantilla no puede actualizar al portafolio | Al crear la plantilla | Aceptado: el portafolio no se sincroniza con la plantilla. Si después conviene, se conecta con un merge único y se resuelven los conflictos una vez. |
 
 ## Después de la versión 1
 
 - Métrica del brief: agregar más de 1 desarrollo nuevo en el primer mes.
 - Detección de idioma por país con Cloudflare (ADR 0002).
 - Revisión de las métricas de visitas por postulación a las 8 semanas.
+- Agregar al portafolio los proyectos rápidos hechos con la plantilla, cada uno con su caso.
