@@ -1,0 +1,132 @@
+# Producción (y staging): base de datos, migraciones, API y Caddy. ADR 0001.
+# Lee las variables de deploy/.env, que nunca se sube al repo (ver deploy/README.md):
+#   docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --wait caddy
+name: ${COMPOSE_PROJECT_NAME:-producto}
+
+# Lo común a todos los servicios: sin root (cada imagen o `user:`), sin capabilities, sin
+# escribir fuera de sus volúmenes y con logs que rotan para no llenar el disco.
+x-base: &base
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: [/tmp]
+  pids_limit: 200
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+# Imágenes de la API y de Caddy. En CI se construyen aquí; en el servidor se bajan de GHCR
+# por SHA (tarea 5.3) con IMAGE_PREFIX=ghcr.io/<dueño>/<repo> e IMAGE_TAG=<sha>.
+x-api-image: &api-image
+  image: ${IMAGE_PREFIX:-producto}/api:${IMAGE_TAG:-local}
+  build: ../api
+
+# Límites de memoria pensados para el VPS de 1 GiB: suman 768 MiB y dejan el resto al sistema.
+services:
+  db:
+    <<: *base
+    image: postgres:18-alpine
+    # El usuario de la imagen, sin pasar por root (no necesita cambiar de usuario al arrancar).
+    user: postgres
+    tmpfs: [/tmp, /var/run/postgresql]
+    mem_limit: 384m
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: ${POSTGRES_DB:?}
+      APP_DB_USER: ${APP_DB_USER:?}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?}
+    # Sin puertos publicados: solo la ven la API y las migraciones, por la red interna.
+    volumes:
+      - db-data:/var/lib/postgresql
+      - ../db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Aplica las migraciones y termina, antes de cambiar la API. Único con la clave del dueño.
+  migrate:
+    <<: [*base, *api-image]
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    mem_limit: 256m
+    environment:
+      DATABASE_URL: postgresql+psycopg://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB}
+      MIGRATION_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: [*base, *api-image]
+    mem_limit: 256m
+    environment:
+      DATABASE_URL: postgresql+psycopg://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB}
+      # Solo Caddy, desde la red interna de abajo, puede decir la IP real del visitante (ADR 0004).
+      TRUSTED_PROXIES: 172.30.0.0/24
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      CONTACT_NOTIFY_TO: ${CONTACT_NOTIFY_TO:-}
+      # Obligatorios: sin ellos el compose no arranca, en vez de dejar el panel sin login.
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:?}
+      JWT_SECRET: ${JWT_SECRET:?}
+      # Capturas de los proyectos (tarea 2.5), en el volumen que Caddy sirve en /media.
+      MEDIA_DIR: /media
+    volumes:
+      - media:/media
+    healthcheck:
+      # /api/health también consulta la base.
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    <<: *base
+    image: ${IMAGE_PREFIX:-producto}/web:${IMAGE_TAG:-local}
+    build:
+      context: ../web
+      additional_contexts:
+        deploy: .
+    mem_limit: 128m
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+      - media:/srv/media:ro
+    depends_on:
+      api:
+        condition: service_healthy
+
+# Red interna fija, para que TRUSTED_PROXIES no cambie entre despliegues.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  db-data:
+  media:
+  caddy-data:
+  caddy-config:
