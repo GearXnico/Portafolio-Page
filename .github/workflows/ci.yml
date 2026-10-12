@@ -1,5 +1,5 @@
 # Pruebas de cada PR (pull request) y de cada push a dev y main. ADR 0007.
-# Los cuatro jobs corren en paralelo. No usa secretos, así que es igual de seguro en PR desde forks.
+# Los cinco jobs corren en paralelo. No usa secretos, así que es igual de seguro en PR desde forks.
 name: ci
 
 on:
@@ -122,3 +122,60 @@ jobs:
       - name: Logs del compose si falla
         if: failure()
         run: docker compose logs --no-color
+
+  # Prueba del despliegue: el compose de producción en el runner, con respaldo y migraciones como
+  # en el servidor, y el E2E contra Caddy (cabeceras y CSP incluidas). Es el staging efímero de
+  # cada PR (ADR 0008).
+  deploy-check:
+    name: Despliegue
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      COMPOSE: docker compose -f deploy/compose.prod.yml --env-file deploy/.env
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Claves de ejemplo y de prueba, solo para la base desechable del runner. Las variables
+      # que .env.example deja vacías y producción exige van al final (gana la última).
+      - name: Construir las imágenes de producción y levantar la base
+        run: |
+          cp .env.example deploy/.env
+          {
+            echo "SITE_ADDRESS=http://localhost"
+            echo "ADMIN_EMAIL=ci@example.com"
+            echo "ADMIN_PASSWORD_HASH=no-es-un-hash"
+            echo "JWT_SECRET=$(openssl rand -hex 32)"
+          } >> deploy/.env
+          $COMPOSE up -d --build --wait db
+      - name: Respaldo antes de migrar
+        run: |
+          $COMPOSE exec -T db pg_dump -U app -d app --format=custom > respaldo.dump
+          $COMPOSE exec -T db pg_restore --list < respaldo.dump > /dev/null
+      - name: Migraciones, API y Caddy
+        run: $COMPOSE up -d --wait caddy
+      - name: Ningún contenedor corre como root
+        run: |
+          for service in db api caddy; do
+            uid=$($COMPOSE exec -T "$service" id -u)
+            echo "$service: uid $uid"
+            test "$uid" != 0
+          done
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - run: npm run e2e
+        working-directory: web
+        env:
+          E2E_BASE_URL: http://localhost
+      - name: Logs del compose si falla
+        if: failure()
+        run: $COMPOSE logs --no-color
