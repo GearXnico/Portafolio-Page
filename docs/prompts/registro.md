@@ -5,6 +5,7 @@ Una fila por tarea del plan, en orden. En las sesiones de Claude Code en la nube
 | # | Fecha | Tarea | Modelo | Tokens entrada | Tokens salida | Sesiones | PR | Estado | Archivo |
 |---|---|---|---|---|---|---|---|---|---|
 | 2.5 | 2026-10-12 | Subida de capturas | n/d | n/d | n/d | 1 | #20 | En revisión | — |
+| 3.1 | 2026-10-12 | Layout de la página pública | n/d | n/d | n/d | 1 | #22 | En revisión | — |
 
 ## Totales por hito
 
