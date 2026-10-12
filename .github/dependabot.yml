@@ -43,6 +43,14 @@ updates:
     groups:
       docker:
         update-types: [minor, patch]
+    # Node solo en versiones LTS (soporte de largo plazo, las pares). Las impares duran unos 6
+    # meses y las dependencias no siempre las aceptan (el PR #15 a Node 25 no construía).
+    # Los parches de la LTS en uso llegan igual: la etiqueta `24-alpine` es flotante y Trivy revisa
+    # la imagen cada semana. Las LTS nuevas (26, 28) se siguen proponiendo.
+    # Agregar la siguiente impar (29.x) cuando corresponda.
+    ignore:
+      - dependency-name: node
+        versions: ["25.x", "27.x"]
 
   # Mantiene al día los SHA fijados en .github/workflows/.
   - package-ecosystem: github-actions
