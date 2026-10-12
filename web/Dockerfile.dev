@@ -1,8 +1,12 @@
 # Imagen solo para desarrollo local (compose.yml). La de producción es la tarea 1.6.
 FROM node:24-alpine
 
+# Corre con el usuario sin privilegios que trae la imagen, no como root.
 WORKDIR /code
-COPY package.json package-lock.json ./
+RUN chown node:node /code
+USER node
+
+COPY --chown=node:node package.json package-lock.json .npmrc ./
 RUN npm ci
 
 EXPOSE 5173

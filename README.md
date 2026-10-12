@@ -62,7 +62,14 @@ npx playwright install chromium   # solo la primera vez
 npm run e2e                    # Playwright, con el compose arriba
 ```
 
-El E2E (prueba de punta a punta) abre la página en Chromium y espera que el estado de la API diga "ok", así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
+El E2E (prueba de punta a punta) revisa además las cabeceras de seguridad y que la consola no muestre errores (ahí aparece cualquier cosa que bloquee la CSP). Para probar el build con la CSP (política de seguridad de contenido), como en producción:
+
+```bash
+npm run build && npx vite preview &
+E2E_BASE_URL=http://localhost:4173 npm run e2e
+```
+
+El E2E abre la página en Chromium y espera que el estado de la API diga "ok", así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
 
 ## Migraciones de la API
 
@@ -89,3 +96,9 @@ compose.yml   desarrollo local
 - Commits con Conventional Commits en español, por ejemplo `feat: agrega formulario de contacto`.
 - Un PR por tarea hacia `dev`, con la plantilla del repo. Se mergea solo con rebase & merge.
 - Nunca se suben secretos ni `.env`: solo `.env.example`.
+
+## Seguridad de la web
+
+- Las cabeceras HTTP de seguridad están en `web/security-headers.ts`: `nosniff`, sin iframes, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`. La CSP solo deja cargar scripts, estilos y datos del mismo dominio, y se aplica al build (en `npm run dev` no, porque Vite necesita un script en línea para recargar). En producción, Caddy usará estos mismos valores (tarea 1.6).
+- El build no publica source maps (el código fuente original).
+- El contenedor de desarrollo de la web corre con el usuario `node`, no como root.
