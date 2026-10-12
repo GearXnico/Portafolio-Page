@@ -60,13 +60,16 @@ describe("HomePage", () => {
     ).toEqual(["Python", "TypeScript"]);
   });
 
-  it("sin contenido cargado muestra solo el título y ninguna sección vacía", async () => {
+  it("sin contenido cargado muestra solo el título y el contacto, sin secciones vacías", async () => {
     stubBootstrap(bootstrapFixture({ profile: null, skills: [], experience: [], projects: [] }));
 
     renderPage();
 
     expect(await screen.findByRole("heading", { level: 1, name: "Producto" })).toBeInTheDocument();
-    expect(screen.queryAllByRole("region")).toEqual([]);
+    // El formulario de contacto no depende del contenido, así que es la única sección.
+    const regions = screen.getAllByRole("region");
+    expect(regions).toHaveLength(1);
+    expect(regions[0]).toHaveAccessibleName("Contacto");
   });
 
   it("muestra el texto de un proyecto como texto, sin interpretar HTML", async () => {

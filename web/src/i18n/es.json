@@ -14,5 +14,16 @@
   "skills.tool": "Herramientas",
   "project.stack": "Stack",
   "project.demo": "Ver demo",
-  "project.repo": "Código"
+  "project.repo": "Código",
+  "contact.intro": "Escríbeme y te respondo por correo.",
+  "contact.name": "Nombre",
+  "contact.email": "Correo",
+  "contact.message": "Mensaje",
+  "contact.send": "Enviar",
+  "contact.sending": "Enviando…",
+  "contact.success": "¡Gracias! Tu mensaje llegó y te responderé pronto.",
+  "contact.error.invalid": "Revisa los datos: el correo debe ser válido y ningún campo puede ir vacío.",
+  "contact.error.rateLimit": "Enviaste varios mensajes seguidos. Intenta de nuevo más tarde.",
+  "contact.error.generic": "No se pudo enviar el mensaje. Intenta de nuevo en unos minutos.",
+  "contact.website": "Sitio web"
 }

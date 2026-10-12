@@ -1,11 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ContactSection } from "../src/components/ContactSection";
+import { renderWithQuery } from "./render";
 
 describe("ContactSection", () => {
   it("muestra solo los enlaces https y los abre aparte sin dar acceso a la página", () => {
-    render(
+    renderWithQuery(
       <ContactSection
         links={{
           github: "https://github.com/ejemplo",
@@ -22,9 +23,10 @@ describe("ContactSection", () => {
     expect(links[0]).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("no aparece si no hay enlaces válidos", () => {
-    const { container } = render(<ContactSection links={{ x: "ftp://a" }} />);
+  it("sin enlaces válidos muestra solo el formulario", () => {
+    renderWithQuery(<ContactSection links={{ x: "ftp://a" }} />);
 
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Enviar" })).toBeInTheDocument();
   });
 });
