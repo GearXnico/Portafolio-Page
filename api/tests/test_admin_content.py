@@ -644,7 +644,7 @@ def test_una_imagen_danada_responde_422(admin: TestClient, proyecto: Any, media:
     assert archivos(media) == []
 
 
-@pytest.mark.parametrize("tamano", [(8000, 5001), (20_000, 20_000)], ids=["40mp", "bomba"])
+@pytest.mark.parametrize("tamano", [(5000, 5001), (20_000, 20_000)], ids=["25mp", "bomba"])
 def test_una_imagen_con_demasiados_pixeles_responde_422(
     admin: TestClient, proyecto: Any, media: Path, tamano: tuple[int, int]
 ) -> None:

@@ -9,6 +9,7 @@ Seguridad:
 
 import io
 import logging
+import threading
 from collections.abc import Iterable
 from typing import BinaryIO
 from uuid import uuid4
@@ -25,9 +26,12 @@ logger = logging.getLogger(__name__)
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
 # Formatos que se aceptan, según el contenido del archivo.
 ACCEPTED_FORMATS = ("JPEG", "PNG", "WEBP")
-# Una imagen chica en bytes puede ocupar gigas al abrirla (bomba de descompresión). 40 MP
-# cubre de sobra una captura 8K (33 MP) y se revisa antes de decodificar los píxeles.
-MAX_PIXELS = 40_000_000
+# Una imagen chica en bytes puede ocupar gigas al abrirla (bomba de descompresión). 25 MP
+# cubre una captura 6K (21 MP) y se revisa antes de decodificar los píxeles.
+MAX_PIXELS = 25_000_000
+# Una imagen de 25 MP ocupa ~100 MB decodificada, y la conversión hace copias. Como mucho dos
+# conversiones a la vez acotan la memoria aunque lleguen varias subidas juntas.
+_conversions = threading.Semaphore(2)
 # Lado mayor de la imagen guardada: suficiente para una pantalla grande y liviana de cargar.
 MAX_SIDE = 2560
 WEBP_QUALITY = 85
@@ -49,7 +53,8 @@ def add_image(
             status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail="La captura supera los 5 MB.",
         )
-    data = to_webp(file)
+    with _conversions:
+        data = to_webp(file)
 
     relative_path = f"{FOLDER}/{uuid4().hex}.webp"
     file_path = settings.media_dir / relative_path
@@ -110,7 +115,7 @@ def to_webp(file: BinaryIO) -> bytes:
 def _too_many_pixels() -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        detail="La captura tiene demasiados píxeles (máximo 40 megapíxeles).",
+        detail="La captura tiene demasiados píxeles (máximo 25 megapíxeles).",
     )
 
 
