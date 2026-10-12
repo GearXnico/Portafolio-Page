@@ -93,8 +93,9 @@ jobs:
           node-version: "24"
       - run: npm audit --audit-level=high
 
-  # Trivy sobre las imágenes construidas: vulnerabilidades altas o críticas que ya tienen corrección.
-  # Hoy escanea las imágenes de desarrollo; la tarea 1.6 cambia a las de producción.
+  # Trivy sobre las imágenes de producción: vulnerabilidades altas o críticas que ya tienen
+  # corrección. No revisa postgres:18-alpine, que no se construye aquí; sus hallazgos están en
+  # gosu, que no se ejecuta porque compose.prod.yml arranca la base con el usuario postgres.
   trivy:
     name: Trivy (${{ matrix.image }})
     runs-on: ubuntu-latest
@@ -109,10 +110,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # La de web es Caddy con el build de la página, y toma el Caddyfile de deploy/.
       - name: Construir la imagen
         env:
           IMAGE: ${{ matrix.image }}
-        run: docker build -t "producto-$IMAGE:ci" -f "$IMAGE/Dockerfile.dev" "$IMAGE"
+        run: docker build -t "producto-$IMAGE:ci" --build-context deploy=deploy "$IMAGE"
       # v0.36.0 es posterior al compromiso de los tags de esta acción (marzo de 2026), y el SHA
       # fijo evita que un tag movido cambie lo que corre.
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
