@@ -1,0 +1,7 @@
+{
+  "app.title": "Producto",
+  "apiStatus.label": "Estado de la API",
+  "apiStatus.loading": "consultando…",
+  "apiStatus.ok": "ok",
+  "apiStatus.error": "sin respuesta"
+}

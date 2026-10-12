@@ -3,12 +3,12 @@
 Plantilla para empezar productos web con pruebas, CI/CD (integración y despliegue continuos) y despliegue ya resueltos. Es un monorepo con tres piezas:
 
 - **api/**: API (interfaz de programación) en Python con FastAPI.
-- **web/**: frontend que se compila a archivos estáticos con Vite.
+- **web/**: frontend en React y TypeScript que se compila a archivos estáticos con Vite.
 - **db**: Postgres 18.
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción (hito 1 del plan). La API tiene su esqueleto con `/api/health`; la página todavía está vacía.
+> Estado: en construcción (hito 1 del plan). La API y la web tienen su esqueleto: la página muestra si la API y la base responden.
 
 ## Requisitos
 
@@ -30,7 +30,7 @@ Los cambios en `api/app/` y `web/` se recargan solos. Las migraciones de la base
 
 Si cambias las dependencias (`api/pyproject.toml` o `web/package.json`), reconstruye con `docker compose up -d --build`.
 
-## API: tests, lint y migraciones
+## API: tests y lint
 
 Los tests van contra el Postgres del compose, sin mocks (objetos simulados) de la base, así que la `db` tiene que estar arriba. Puedes correrlos dentro del contenedor:
 
@@ -49,6 +49,23 @@ pytest -q --cov=app --cov-fail-under=80
 ruff check . && ruff format --check . && mypy app
 ```
 
+## Web: tests, lint y E2E
+
+Desde `web/`, con Node 24:
+
+```bash
+npm ci
+npm run test -- --run          # Vitest (pruebas unitarias)
+npm run test:coverage          # con el mínimo de 60 % de líneas
+npm run lint && npm run typecheck && npm run format:check
+npx playwright install chromium   # solo la primera vez
+npm run e2e                    # Playwright, con el compose arriba
+```
+
+El E2E (prueba de punta a punta) abre la página en Chromium y espera que el estado de la API diga "ok", así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
+
+## Migraciones de la API
+
 Migraciones con Alembic (herramienta de migraciones de SQLAlchemy):
 
 ```bash
@@ -60,7 +77,7 @@ alembic upgrade head                                   # aplicar
 
 ```
 api/          FastAPI: app/ (routers/, models/), tests/ y alembic/ (migraciones)
-web/          frontend (React y TypeScript llegan en la tarea 1.3)
+web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwright)
 deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
 compose.yml   desarrollo local
 .github/      plantilla de PR (pull request); los workflows llegan en las tareas 1.4 a 1.8
