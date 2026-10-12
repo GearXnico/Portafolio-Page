@@ -8,7 +8,7 @@ Plantilla para empezar productos web con pruebas, CI/CD (integración y desplieg
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto y tiene el login del administrador.
+> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel.
 
 ## Requisitos
 
@@ -113,6 +113,22 @@ Toda ruta nueva de `/api/admin/*` va en `router` de `app/routers/admin.py`, que 
 - **Contraseña:** hash Argon2 (`argon2-cffi`). La contraseña se verifica aunque el correo esté mal, para que el tiempo de respuesta no diga cuál falló.
 - **Sesión:** JWT (JSON Web Token) firmado con HS256 y `JWT_SECRET`, de 7 días, en una cookie `httpOnly`, `Secure`, `SameSite=Strict` y con `path=/api/admin`. Cambiar `JWT_SECRET` cierra todas las sesiones; cambiar `ADMIN_EMAIL` también.
 - **Límite:** 5 intentos fallidos cada 15 minutos por IP; después responde 429 con `Retry-After`. Un login correcto borra los intentos de esa IP. Usa el mismo límite en memoria y `TRUSTED_PROXIES` que el formulario de contacto.
+
+## Contenido desde el panel
+
+Rutas para editar lo que muestra la página. Todas exigen la sesión del administrador (sin ella, 401 antes de mirar el cuerpo) y usan JSON. Los cambios se ven en la siguiente carga de `GET /api/bootstrap`.
+
+| Recurso | Rutas |
+|---|---|
+| Proyectos | `GET` y `POST /api/admin/projects`; `GET`, `PUT` y `DELETE /api/admin/projects/{id}` |
+| Perfil | `GET` y `PUT /api/admin/profile` (el primer `PUT` lo crea; antes, `GET` responde 404) |
+| Habilidades | `GET` y `POST /api/admin/skills`; `PUT` y `DELETE /api/admin/skills/{id}` |
+| Experiencia | `GET` y `POST /api/admin/experience`; `PUT` y `DELETE /api/admin/experience/{id}` |
+
+- **Orden y visibilidad:** cada elemento tiene `position` (el menor va primero). Un proyecto nuevo queda oculto (`visible: false`) hasta que se publica con un `PUT`. El panel ve también los ocultos.
+- **`PUT` reemplaza todo:** manda el objeto completo; lo que no llega toma su valor por defecto.
+- **Validación:** campos de más (como `id`), caracteres de control, largos sobre el máximo y enlaces que no sean `https://` responden 422. Un slug repetido responde 409 y un id que no existe, 404.
+- **Al borrar un proyecto** se borran sus capturas en la base. Los archivos en `/media` los maneja la tarea 2.5.
 
 ## Migraciones de la API
 
