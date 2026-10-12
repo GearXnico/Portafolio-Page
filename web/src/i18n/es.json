@@ -25,5 +25,5 @@
   "contact.error.invalid": "Revisa los datos: el correo debe ser válido y ningún campo puede ir vacío.",
   "contact.error.rateLimit": "Enviaste varios mensajes seguidos. Intenta de nuevo más tarde.",
   "contact.error.generic": "No se pudo enviar el mensaje. Intenta de nuevo en unos minutos.",
-  "contact.website": "Sitio web"
+  "contact.website": "Deja este campo vacío"
 }

@@ -69,9 +69,22 @@ describe("ContactForm", () => {
   it("el campo trampa queda fuera del foco y de los lectores de pantalla", () => {
     renderForm();
 
-    const trap = document.querySelector<HTMLInputElement>('input[name="website"]');
+    const trap = document.querySelector<HTMLInputElement>('input[name="hp_field"]');
     expect(trap).toHaveAttribute("tabindex", "-1");
     expect(trap?.closest('[aria-hidden="true"]')).not.toBeNull();
+  });
+
+  it("si el campo trampa viene lleno, lo envía como website para que la API lo descarte", async () => {
+    const fetchMock = stubContact(new Response("{}", { status: 201 }));
+    renderForm();
+
+    const trap = document.querySelector<HTMLInputElement>('input[name="hp_field"]');
+    if (!trap) throw new Error("falta el campo trampa");
+    fireEvent.change(trap, { target: { value: "https://spam.example.com" } });
+    fillAndSubmit();
+
+    await screen.findByText(/Tu mensaje llegó/);
+    expect(fetchMock.mock.calls[0]?.[1].body).toContain('"website":"https://spam.example.com"');
   });
 
   it("usa los textos en inglés y envía lang en", async () => {
