@@ -233,6 +233,13 @@ def test_quitar_la_configuracion_cierra_la_sesion(
     assert client.get("/api/admin/session").status_code == 401
 
 
+def test_sin_configuracion_no_se_crea_un_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "jwt_secret", None)
+
+    with pytest.raises(RuntimeError):
+        auth.create_session_token()
+
+
 def test_cambiar_el_correo_cierra_la_sesion(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
