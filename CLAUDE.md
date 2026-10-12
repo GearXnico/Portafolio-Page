@@ -13,6 +13,8 @@ Responde en español y deja en inglés los términos técnicos que se usan así 
 
 | Documento | Para qué |
 |---|---|
+| `docs/desarrollo.md` | Reglas de desarrollo: cuándo no agregar capas, dónde va cada cosa y cómo se revisa |
+| `docs/testing.md` | Qué se prueba, qué no y en qué nivel |
 | `docs/brief.md` | Alcance del MVP (producto mínimo viable) y lo que queda fuera |
 | `docs/arquitectura.md` | Componentes, modelo de datos, seguridad y CI/CD (integración y despliegue continuos) |
 | `docs/adr/` | El porqué de cada decisión (0001 a 0009) |
