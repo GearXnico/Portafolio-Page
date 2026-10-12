@@ -60,7 +60,7 @@ En local no hace falta completarlas: el formulario se prueba igual.
 
 | Variable | Qué es |
 |---|---|
-| `TRUSTED_PROXIES` | IP o redes, separadas por coma, desde las que la API acepta `X-Forwarded-For` para saber la IP real del visitante. **En local se deja vacía.** En producción será la red interna de Docker donde está Caddy (tarea 1.6). Vacía, nadie puede falsear su IP con ese header. |
+| `TRUSTED_PROXIES` | IP o redes, separadas por coma, desde las que la API acepta `X-Forwarded-For` para saber la IP real del visitante. **En local se deja vacía.** En producción la fija `deploy/compose.prod.yml` en la red interna de Docker donde está Caddy. Vacía, nadie puede falsear su IP con ese header. |
 
 ### Administrador del panel (ADR 0004)
 
