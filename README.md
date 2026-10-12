@@ -99,6 +99,7 @@ db/init/      scripts que corren al crear la base (usuario de la API)
 web/          React: src/ (components/, i18n/), tests/ (Vitest) y e2e/ (Playwright)
 deploy/       archivos de producción (tareas 1.6, 5.3 y 5.4)
 compose.yml   desarrollo local
+docs/         brief, arquitectura, ADR (registros de decisión), plan y prompts; CLAUDE.md los indexa
 .github/      plantilla de PR (pull request); los workflows llegan en las tareas 1.4 a 1.8
 ```
 
