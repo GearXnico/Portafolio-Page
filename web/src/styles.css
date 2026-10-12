@@ -82,6 +82,20 @@ a {
   border-radius: 0.5rem;
 }
 
+.projects img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  background: var(--surface);
+}
+
+.project-links {
+  display: flex;
+  gap: 1rem;
+}
+
 .experience li + li {
   margin-top: 1.5rem;
 }
