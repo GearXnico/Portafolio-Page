@@ -1,5 +1,5 @@
 # Imagen solo para desarrollo local (compose.yml). La de producción es la tarea 1.6.
-FROM node:24-alpine
+FROM node:25-alpine
 
 # Corre con el usuario sin privilegios que trae la imagen, no como root.
 WORKDIR /code
