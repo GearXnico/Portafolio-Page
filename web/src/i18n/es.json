@@ -11,5 +11,8 @@
   "experience.present": "actualidad",
   "skills.language": "Lenguajes",
   "skills.framework": "Frameworks",
-  "skills.tool": "Herramientas"
+  "skills.tool": "Herramientas",
+  "project.stack": "Stack",
+  "project.demo": "Ver demo",
+  "project.repo": "Código"
 }

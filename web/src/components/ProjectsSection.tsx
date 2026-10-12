@@ -1,4 +1,5 @@
 import type { PublicProject } from "../api/bootstrap";
+import { httpsUrl } from "../content";
 import { localized, useLang } from "../i18n";
 
 interface Props {
@@ -6,8 +7,8 @@ interface Props {
 }
 
 /**
- * Proyectos publicados (la API ya deja fuera los ocultos). Las capturas, el stack y los
- * enlaces a demo y repositorio llegan en la tarea 3.3.
+ * Proyectos publicados (la API ya deja fuera los ocultos), con su primera captura como
+ * portada, el stack y los enlaces a demo y repositorio.
  */
 export function ProjectsSection({ projects }: Props) {
   const { lang, t } = useLang();
@@ -17,14 +18,45 @@ export function ProjectsSection({ projects }: Props) {
     <section id="projects" aria-labelledby="projects-title">
       <h2 id="projects-title">{t("section.projects")}</h2>
       <ul className="projects">
-        {projects.map((project) => (
-          <li key={project.slug}>
-            <article>
-              <h3>{localized(project, "title", lang)}</h3>
-              <p>{localized(project, "summary", lang)}</p>
-            </article>
-          </li>
-        ))}
+        {projects.map((project) => {
+          // La API devuelve las capturas en su orden; la primera hace de portada.
+          const cover = project.images[0];
+          const demo = httpsUrl(project.demo_url);
+          const repo = httpsUrl(project.repo_url);
+          return (
+            <li key={project.slug}>
+              <article>
+                {cover && (
+                  <img src={cover.url} alt={localized(cover, "alt", lang)} loading="lazy" />
+                )}
+                <h3>{localized(project, "title", lang)}</h3>
+                <p>{localized(project, "summary", lang)}</p>
+                {project.stack.length > 0 && (
+                  <ul className="tags" aria-label={t("project.stack")}>
+                    {/* La API no impide nombres repetidos, así que la clave lleva la posición. */}
+                    {project.stack.map((name, i) => (
+                      <li key={`${String(i)}-${name}`}>{name}</li>
+                    ))}
+                  </ul>
+                )}
+                {(demo ?? repo) && (
+                  <p className="project-links">
+                    {demo && (
+                      <a href={demo} target="_blank" rel="noopener noreferrer">
+                        {t("project.demo")}
+                      </a>
+                    )}
+                    {repo && (
+                      <a href={repo} target="_blank" rel="noopener noreferrer">
+                        {t("project.repo")}
+                      </a>
+                    )}
+                  </p>
+                )}
+              </article>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

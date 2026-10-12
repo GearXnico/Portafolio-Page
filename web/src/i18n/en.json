@@ -11,5 +11,8 @@
   "experience.present": "present",
   "skills.language": "Languages",
   "skills.framework": "Frameworks",
-  "skills.tool": "Tools"
+  "skills.tool": "Tools",
+  "project.stack": "Stack",
+  "project.demo": "Live demo",
+  "project.repo": "Source code"
 }
