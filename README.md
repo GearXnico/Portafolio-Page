@@ -146,7 +146,7 @@ Respuesta:
 }
 ```
 
-- **Idioma** (`app/idioma.py`, ADR 0002): el idioma preferido de `Accept-Language` (por calidad `q` y luego por orden). Español si es `es`; si no, o si no viene el header, inglés.
+- **Idioma** (`app/idioma.py`, ADR 0002): el primero de `Accept-Language`, que el navegador pone como preferido. Español si es `es`; si no, o si no viene el header, inglés.
 - **Contenido**: textos en los dos idiomas, para que el selector cambie sin otra llamada. `profile` es `null` mientras no se cargue el perfil. Solo salen los proyectos con `visible = true`. No salen ids, orden, visibilidad, fechas de edición ni el correo de contacto.
 - **Visitante único por día**: no se guarda la IP. Se guarda un HMAC-SHA256 (hash con clave) de IP y user agent, cuya clave es una sal al azar que se crea cada día (UTC) en la tabla `visitor_salt` y se borra al día siguiente. Sin la sal, ni con un respaldo de la base se puede volver a la IP.
 - Si falla el registro de la visita, la página igual carga.
