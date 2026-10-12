@@ -31,9 +31,10 @@ def verify_credentials(email: str, password: str) -> bool:
     La contraseña se verifica aunque el correo no calce, para que el tiempo de respuesta no
     revele cuál de los dos estaba mal.
     """
-    if not is_configured():
+    # Repite parte de is_configured() para que mypy sepa que no son None. Sin `assert`, porque
+    # Python lo omite con `-O` (regla S101 de ruff).
+    if not (is_configured() and settings.admin_email and settings.admin_password_hash):
         return False
-    assert settings.admin_email and settings.admin_password_hash
     email_ok = hmac.compare_digest(
         email.strip().lower().encode(), settings.admin_email.strip().lower().encode()
     )
@@ -46,7 +47,8 @@ def verify_credentials(email: str, password: str) -> bool:
 
 
 def create_session_token(now: datetime | None = None) -> str:
-    assert settings.admin_email and settings.jwt_secret
+    if not (settings.admin_email and settings.jwt_secret):
+        raise RuntimeError("Login del administrador sin configurar")
     issued = now or datetime.now(UTC)
     claims = {
         "sub": settings.admin_email.strip().lower(),
@@ -58,9 +60,8 @@ def create_session_token(now: datetime | None = None) -> str:
 
 def is_valid_session(token: str) -> bool:
     """True si el token está firmado con nuestra clave, no venció y es del administrador actual."""
-    if not is_configured():
+    if not (is_configured() and settings.admin_email and settings.jwt_secret):
         return False
-    assert settings.admin_email and settings.jwt_secret
     try:
         claims = jwt.decode(
             token,

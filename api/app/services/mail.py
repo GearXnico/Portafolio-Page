@@ -30,12 +30,14 @@ def send_to_owner(*, subject: str, body: str, reply_to: str | None = None) -> No
 
     Lanza MailError si el correo no está configurado o si el servidor falla.
     """
-    if not is_configured():
+    # Mismas variables que is_configured(), leídas aquí para que mypy sepa que no son None.
+    # No se usa `assert`, porque Python lo omite con `-O` (regla S101 de ruff).
+    host, user, password = settings.smtp_host, settings.smtp_user, settings.smtp_password
+    if not (host and user and password and settings.contact_notify_to):
         raise MailError("SMTP sin configurar")
-    assert settings.smtp_host and settings.smtp_user and settings.smtp_password
 
     email = EmailMessage()
-    email["From"] = settings.smtp_user
+    email["From"] = user
     email["To"] = settings.contact_notify_to
     email["Subject"] = subject
     if reply_to:
@@ -43,10 +45,10 @@ def send_to_owner(*, subject: str, body: str, reply_to: str | None = None) -> No
     email.set_content(body)
 
     try:
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=TIMEOUT_SECONDS) as smtp:
+        with smtplib.SMTP(host, settings.smtp_port, timeout=TIMEOUT_SECONDS) as smtp:
             # STARTTLS con verificación del certificado: la clave nunca viaja en texto plano.
             smtp.starttls(context=ssl.create_default_context())
-            smtp.login(settings.smtp_user, settings.smtp_password.get_secret_value())
+            smtp.login(user, password.get_secret_value())
             smtp.send_message(email)
     except (smtplib.SMTPException, OSError) as exc:
         raise MailError(type(exc).__name__) from exc
