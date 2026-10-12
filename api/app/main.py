@@ -15,7 +15,7 @@ from app.services.images import MAX_IMAGE_BYTES
 MAX_BODY_BYTES = 64 * 1024
 # La subida de capturas: la imagen (5 MB) más los textos alternativos y los separadores del
 # formulario. El tamaño exacto de la imagen lo revisa app/services/images.py.
-UPLOAD_PATHS = re.compile(r"/api/admin/projects/[^/]+/images")
+UPLOAD_PATHS = re.compile(r"/api/admin/projects/\d+/images")
 MAX_UPLOAD_BYTES = MAX_IMAGE_BYTES + 64 * 1024
 
 

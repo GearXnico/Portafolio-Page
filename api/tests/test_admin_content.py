@@ -622,6 +622,14 @@ def test_un_cuerpo_mas_grande_que_el_limite_de_subida_responde_413(
     assert response.json() == {"detail": "El cuerpo es demasiado grande"}
 
 
+def test_el_limite_de_subida_solo_acepta_ids_numericos(admin: TestClient) -> None:
+    response = admin.post(
+        "/api/admin/projects/abc/images", files={"file": ("a.png", b"\0" * MAX_BODY_BYTES)}
+    )
+
+    assert response.status_code == 413
+
+
 def test_el_limite_de_subida_no_aplica_a_las_demas_rutas(admin: TestClient) -> None:
     response = admin.post(
         "/api/admin/projects",
