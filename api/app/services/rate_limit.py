@@ -52,6 +52,11 @@ class SlidingWindowLimiter:
             hits.append(now)
             return None
 
+    def forget(self, key: str) -> None:
+        """Borra los eventos de una clave, por ejemplo tras un login correcto."""
+        with self._lock:
+            self._hits.pop(key, None)
+
     def reset(self) -> None:
         with self._lock:
             self._hits.clear()
