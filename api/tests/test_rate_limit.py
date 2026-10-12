@@ -1,5 +1,7 @@
 """Límite de frecuencia, con un reloj controlado por el test."""
 
+import logging
+
 import pytest
 from starlette.requests import Request
 
@@ -41,12 +43,17 @@ def test_un_intento_rechazado_no_alarga_el_bloqueo() -> None:
     assert limite.hit("a") is None
 
 
-def test_no_guarda_mas_claves_que_el_tope() -> None:
+def test_no_guarda_mas_claves_que_el_tope_y_avisa_al_botar_una_vigente(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     reloj = Reloj()
     limite = SlidingWindowLimiter(limit=1, window_seconds=60, max_keys=3, clock=reloj)
 
-    for ip in ["a", "b", "c", "d"]:
-        assert limite.hit(ip) is None
+    with caplog.at_level(logging.WARNING):
+        for ip in ["a", "b", "c", "d"]:
+            assert limite.hit(ip) is None
+
+    assert "se botó una clave con eventos vigentes" in caplog.text
 
     assert len(limite._hits) == 3
     # Se botó la clave usada hace más tiempo.
@@ -54,7 +61,7 @@ def test_no_guarda_mas_claves_que_el_tope() -> None:
     assert limite.hit("d") is not None
 
 
-def test_al_llenarse_bota_primero_las_claves_vencidas() -> None:
+def test_al_llenarse_bota_primero_las_claves_vencidas(caplog: pytest.LogCaptureFixture) -> None:
     reloj = Reloj()
     limite = SlidingWindowLimiter(limit=1, window_seconds=60, max_keys=2, clock=reloj)
     limite.hit("vieja")
@@ -65,6 +72,7 @@ def test_al_llenarse_bota_primero_las_claves_vencidas() -> None:
     limite.hit("nueva")
 
     assert set(limite._hits) == {"activa", "nueva"}
+    assert caplog.text == ""
 
 
 def pedido(host: str | None) -> Request:

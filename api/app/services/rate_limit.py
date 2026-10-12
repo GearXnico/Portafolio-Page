@@ -6,6 +6,7 @@ a la base o a Redis.
 """
 
 import ipaddress
+import logging
 import math
 import threading
 import time
@@ -13,6 +14,8 @@ from collections import OrderedDict, deque
 from collections.abc import Callable
 
 from fastapi import Request
+
+logger = logging.getLogger(__name__)
 
 
 class SlidingWindowLimiter:
@@ -61,7 +64,10 @@ class SlidingWindowLimiter:
         for key in expired:
             del self._hits[key]
         while len(self._hits) >= self.max_keys:
+            # Una clave con eventos vigentes que se bota recupera sus intentos: solo pasa si
+            # llegan más IP distintas que el tope en una ventana, y conviene enterarse.
             self._hits.popitem(last=False)
+            logger.warning("Límite de frecuencia lleno: se botó una clave con eventos vigentes")
 
 
 def client_key(request: Request) -> str:
