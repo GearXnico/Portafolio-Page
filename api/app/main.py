@@ -2,7 +2,7 @@
 
 import re
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.config import settings
@@ -18,6 +18,11 @@ MAX_BODY_BYTES = 64 * 1024
 UPLOAD_PATHS = re.compile(r"/api/admin/projects/[^/]+/images")
 MAX_UPLOAD_BYTES = MAX_IMAGE_BYTES + 64 * 1024
 
+
+def _is_admin(request: Request) -> bool:
+    return admin.has_session(request.cookies.get(admin.COOKIE_NAME))
+
+
 app = FastAPI(title="API")
 app.include_router(health.router)
 app.include_router(bootstrap.router)
@@ -30,6 +35,7 @@ app.add_middleware(
     max_bytes=MAX_BODY_BYTES,
     upload_paths=UPLOAD_PATHS,
     upload_max_bytes=MAX_UPLOAD_BYTES,
+    upload_allowed=_is_admin,
 )
 # Va por fuera (se agrega al final) para que todo lo demás vea la IP real del visitante.
 if settings.trusted_proxies:

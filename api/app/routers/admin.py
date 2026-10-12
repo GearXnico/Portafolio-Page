@@ -23,11 +23,15 @@ def get_login_limiter() -> SlidingWindowLimiter:
     return login_limiter
 
 
+def has_session(admin_session: str | None) -> bool:
+    return bool(admin_session) and auth.is_valid_session(admin_session or "")
+
+
 def require_admin(
     admin_session: Annotated[str | None, Cookie()] = None,
 ) -> None:
     """Dependencia de toda ruta protegida: 401 si no hay una sesión válida."""
-    if not admin_session or not auth.is_valid_session(admin_session):
+    if not has_session(admin_session):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inicia sesión.")
 
 
