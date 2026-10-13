@@ -1,9 +1,9 @@
-"""Contenido del sitio que se edita desde el panel: proyectos, perfil, habilidades y experiencia.
+"""Site content edited from the panel: projects, profile, skills and experience.
 
-Los esquemas `...In` son lo que manda el panel: rechazan campos de más (como `id` o
-`created_at`), caracteres de control y enlaces que no sean https. Los largos máximos frenan
-abusos y dejan cada request bajo el límite de cuerpo de la API (`MAX_BODY_BYTES`).
-Los esquemas `...Out` son lo que devuelve el panel, con id, orden y visibilidad.
+The `...In` schemas are what the panel sends: they reject extra fields (like `id` or
+`created_at`), control characters and links that aren't https. The maximum lengths stop
+abuse and keep each request under the API's body limit (`MAX_BODY_BYTES`).
+The `...Out` schemas are what the panel gets back, with id, order and visibility.
 """
 
 from datetime import date, datetime
@@ -23,13 +23,14 @@ from app.models.base import URL_MAX_LENGTH
 from app.schemas.contact import EMAIL_PATTERN
 from app.schemas.text import multiline, single_line
 
-# El mismo patrón que la restricción de la base (URL_HTTPS_REGEX): solo https, con host y sin
-# espacios, para que un `javascript:` nunca llegue a un <a href> de la página (XSS).
+# The same pattern as the database constraint (URL_HTTPS_REGEX): https only, with a host and no
+# spaces, so a `javascript:` link never reaches an <a href> on the page (XSS, cross-site
+# scripting).
 _URL_PATTERN = r"^https://[^\s/]+\S*$"
 
 
 def _empty_as_none(value: object) -> object:
-    """Un enlace vacío del formulario se guarda como `null`."""
+    """An empty link from the form is saved as `null`."""
     if isinstance(value, str) and not value.strip():
         return None
     return value
@@ -39,16 +40,16 @@ def _strip(max_length: int, min_length: int = 1) -> StringConstraints:
     return StringConstraints(strip_whitespace=True, min_length=min_length, max_length=max_length)
 
 
-# Textos de una línea (títulos, nombres) y textos largos (con saltos de línea).
+# Single-line texts (titles, names) and long texts (with line breaks).
 Line200 = Annotated[str, _strip(200), AfterValidator(single_line)]
 Line100 = Annotated[str, _strip(100), AfterValidator(single_line)]
 Line50 = Annotated[str, _strip(50), AfterValidator(single_line)]
 Text500 = Annotated[str, _strip(500), AfterValidator(multiline)]
 Text5000 = Annotated[str, _strip(5000), AfterValidator(multiline)]
 OptionalText5000 = Annotated[str, _strip(5000, min_length=0), AfterValidator(multiline)]
-# Cuerpo en Markdown de un proyecto.
+# Markdown body of a project.
 OptionalText10000 = Annotated[str, _strip(10_000, min_length=0), AfterValidator(multiline)]
-# Texto alternativo de una captura (para lectores de pantalla); vacío si es decorativa.
+# Alt text of a screenshot (for screen readers); empty if it is decorative.
 AltText = Annotated[str, _strip(300, min_length=0), AfterValidator(single_line)]
 
 Url = Annotated[
@@ -57,18 +58,18 @@ Url = Annotated[
     AfterValidator(single_line),
 ]
 OptionalUrl = Annotated[Url | None, BeforeValidator(_empty_as_none)]
-# Orden en la página: el menor va primero.
+# Order on the page: the lowest goes first.
 Position = Annotated[int, Field(strict=True, ge=0, le=1_000_000)]
-# El slug va en la URL: minúsculas, números y guiones simples (igual que en la base).
+# The slug goes in the URL: lowercase letters, digits and single hyphens (same as the database).
 Slug = Annotated[str, StringConstraints(max_length=100, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")]
-# Nombre de un enlace del perfil, por ejemplo "github" o "linkedin".
+# Name of a profile link, for example "github" or "linkedin".
 LinkKey = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_-]{0,29}$")]
 Email = Annotated[
     str,
     StringConstraints(strip_whitespace=True, max_length=320, pattern=EMAIL_PATTERN),
     AfterValidator(single_line),
 ]
-# Los mismos valores que SKILL_CATEGORIES (lo revisa un test).
+# The same values as SKILL_CATEGORIES (a test checks it).
 SkillCategory = Literal["language", "framework", "tool"]
 
 
@@ -80,7 +81,7 @@ class _Out(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Proyectos
+# Projects
 
 
 class ProjectIn(_In):
@@ -94,7 +95,7 @@ class ProjectIn(_In):
     stack: list[Line50] = Field(default=[], max_length=30)
     demo_url: OptionalUrl = None
     repo_url: OptionalUrl = None
-    # Oculto por defecto: se publica desde el panel cuando está listo.
+    # Hidden by default: it is published from the panel when it's ready.
     visible: Annotated[bool, Field(strict=True)] = False
     position: Position = 0
 
@@ -126,7 +127,7 @@ class ProjectOut(_Out):
     updated_at: datetime
 
 
-# Perfil (una sola fila)
+# Profile (a single row)
 
 
 class ProfileIn(_In):
@@ -134,7 +135,7 @@ class ProfileIn(_In):
     headline_en: Line200
     about_es: Text5000
     about_en: Text5000
-    # Solo lo ve el panel: la página pública no lo muestra (el contacto es por el formulario).
+    # Only the panel sees it: the public page doesn't show it (contact goes through the form).
     contact_email: Email
     links: dict[LinkKey, Url] = Field(default={}, max_length=10)
 
@@ -149,7 +150,7 @@ class ProfileOut(_Out):
     updated_at: datetime
 
 
-# Habilidades
+# Skills
 
 
 class SkillIn(_In):
@@ -165,7 +166,7 @@ class SkillOut(_Out):
     position: int
 
 
-# Experiencia
+# Experience
 
 
 class ExperienceIn(_In):
@@ -175,14 +176,14 @@ class ExperienceIn(_In):
     description_es: OptionalText5000 = ""
     description_en: OptionalText5000 = ""
     start_date: date
-    # Vacío: el trabajo actual.
+    # Empty: the current job.
     end_date: date | None = None
     position: Position = 0
 
     @model_validator(mode="after")
     def _end_after_start(self) -> Self:
         if self.end_date is not None and self.end_date < self.start_date:
-            raise ValueError("end_date no puede ser anterior a start_date")
+            raise ValueError("end_date can't be earlier than start_date")
         return self
 
 

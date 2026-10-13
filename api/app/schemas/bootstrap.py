@@ -1,8 +1,8 @@
-"""Respuesta de `GET /api/bootstrap`.
+"""Response of `GET /api/bootstrap`.
 
-Trae los textos en los dos idiomas para que el selector cambie de idioma sin otra llamada.
-No incluye ids, fechas de edición, orden, visibilidad ni el correo de contacto: la página
-no los necesita y no hay por qué publicarlos.
+It brings the texts in both languages so the selector can switch language without another call.
+It doesn't include ids, edit dates, order, visibility or the contact email: the page doesn't
+need them and there is no reason to publish them.
 """
 
 from datetime import date
@@ -61,7 +61,7 @@ class PublicProject(BaseModel):
 
 class Bootstrap(BaseModel):
     lang: Lang
-    # None mientras no se haya cargado el perfil desde el panel.
+    # None until the profile has been loaded from the panel.
     profile: PublicProfile | None
     skills: list[PublicSkill]
     experience: list[PublicExperience]

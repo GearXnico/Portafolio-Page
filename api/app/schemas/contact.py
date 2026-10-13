@@ -1,8 +1,8 @@
-"""Formulario de contacto. Los largos calzan con las restricciones de la tabla `contact_message`.
+"""Contact form. The lengths match the constraints of the `contact_message` table.
 
-El formulario es público, así que aquí se rechaza todo lo que no sea texto normal: caracteres
-de control (que Postgres rechaza, como el byte nulo, o que permitirían inyectar cabeceras en el
-correo de aviso) y campos que el formulario no envía.
+The form is public, so anything that isn't normal text is rejected here: control characters
+(which Postgres rejects, like the null byte, or which would allow injecting headers into the
+notice email) and fields the form doesn't send.
 """
 
 from datetime import datetime
@@ -12,15 +12,15 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstra
 
 from app.schemas.text import multiline, single_line
 
-# Más estricto que la restricción de la base: exige un punto en el dominio y no deja pasar
-# los separadores de direcciones (coma, punto y coma, <>, comillas), para que el Reply-To del
-# correo de aviso tenga siempre una sola dirección.
+# Stricter than the database constraint: it requires a dot in the domain and rejects address
+# separators (comma, semicolon, <>, quotes), so the Reply-To of the notice email always has a
+# single address.
 _EMAIL_CHAR = r"[^@\s,;:<>()\[\]\\\"]"
 EMAIL_PATTERN = rf"^{_EMAIL_CHAR}+@{_EMAIL_CHAR}+\.{_EMAIL_CHAR}+$"
 
 
 def _optional_single_line(value: str | None) -> str | None:
-    """Un texto vacío se guarda como `null`, igual que si no hubiera llegado."""
+    """An empty string is saved as `null`, the same as if it had not been sent."""
     return single_line(value) if value else None
 
 
@@ -47,7 +47,7 @@ Utm = Annotated[
 
 
 class ContactIn(BaseModel):
-    """Lo que envía el formulario. Cualquier campo extra (como `read`) se rechaza."""
+    """What the form sends. Any extra field (like `read`) is rejected."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -57,8 +57,8 @@ class ContactIn(BaseModel):
     lang: Literal["es", "en"]
     utm_source: Utm = None
     utm_campaign: Utm = None
-    # Campo trampa (honeypot): el formulario lo oculta, así que una persona lo deja vacío.
-    # Si llega con algo, es un bot: la API responde igual que siempre, pero no guarda nada.
+    # Trap field (honeypot): the form hides it, so a person leaves it empty.
+    # If it arrives with something, it's a bot: the API responds as always, but saves nothing.
     website: str = Field(default="", max_length=2000)
 
 
@@ -66,8 +66,8 @@ class ContactOut(BaseModel):
     status: Literal["ok"] = "ok"
 
 
-# Panel: mensajes recibidos. Tienen datos personales del remitente: solo los ve el
-# administrador con sesión y nunca van a los logs.
+# Panel: received messages. They hold the sender's personal data: only the logged-in
+# administrator sees them, and they never go to the logs.
 
 
 class ContactMessageOut(BaseModel):
