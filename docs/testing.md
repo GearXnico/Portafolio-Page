@@ -42,6 +42,7 @@ Regla práctica para elegir el nivel: **un caso se prueba una vez, en el nivel m
 | La página carga, cambia de idioma y no tiene errores de consola ni le faltan cabeceras de seguridad | Es lo que ve cualquier visitante | `web/e2e/` |
 | Título, `meta description` e `<html lang>` siguen al idioma de la página | Es lo que leen los buscadores y los lectores de pantalla | `web/tests/HomePage.test.tsx`, `web/tests/admin.test.tsx` y `web/e2e/lang.spec.ts` |
 | Un proyecto creado en el panel se ve en la página pública, y el formulario manda los dos idiomas y solo los campos que la API acepta | Es la tarea principal del panel; si el formulario y la API dejan de calzar, el proyecto no se guarda | `web/e2e/projects.spec.ts` (el camino completo) y `web/tests/adminProjects.test.tsx` (lo que se envía y los mensajes de error) |
+| Un cambio de perfil hecho en el panel se ve en la página; los formularios de perfil, habilidades y experiencia mandan a la API los dos idiomas y solo los campos que acepta, y avisan si responde 422 | Es lo que el administrador hace para mantener la página al día; si el formulario y la API dejan de calzar, el cambio no llega y nadie lo nota | `web/e2e/profile.spec.ts` (perfil de punta a punta) y `web/tests/adminProfile.test.tsx` (formularios) |
 
 Cada `fix/*` empieza con un test que reproduce el error y falla antes de la corrección.
 
