@@ -13,10 +13,10 @@ from app.models import Experience, Profile, Project, ProjectImage, Skill, Visit,
 
 @pytest.fixture
 def api(client: TestClient, db_session: Session) -> TestClient:
-    """Cliente cuya API usa la sesión del test: todo lo que escribe se revierte al final.
+    """Client whose API uses the test's session: everything it writes is rolled back at the end.
 
-    Parte con las tablas vacías (dentro de la transacción del test), para que los datos que
-    tengas en tu base local no cambien el resultado.
+    It starts with empty tables (inside the test's transaction), so the data in your local
+    database doesn't change the result.
     """
     for modelo in (Visit, ProjectImage, Project, Skill, Experience, Profile):
         db_session.execute(delete(modelo))
@@ -77,7 +77,7 @@ def contenido(api: TestClient, db_session: Session) -> None:
         [publicado, proyecto("primero", visible=True), proyecto("borrador", visible=False)]
     )
     db_session.flush()
-    # Como en un request real, la API lee de la base y no de los objetos en memoria.
+    # As in a real request, the API reads from the database and not from the objects in memory.
     db_session.expire_all()
 
 
@@ -90,14 +90,14 @@ def contenido(api: TestClient, db_session: Session) -> None:
         ({"Accept-Language": "es-CL,es;q=0.9,en;q=0.8"}, {}, "es"),
         ({"Accept-Language": "en-US,en;q=0.9"}, {}, "en"),
         ({}, {}, "en"),
-        # La elección del selector manda sobre el navegador.
+        # The selector's choice wins over the browser.
         ({"Accept-Language": "en-US"}, {"lang": "es"}, "es"),
         ({"Accept-Language": "es-CL"}, {"lang": "en"}, "en"),
-        # Un `lang` que no existe se ignora.
+        # A `lang` that doesn't exist is ignored.
         ({"Accept-Language": "es-CL"}, {"lang": "fr"}, "es"),
     ],
 )
-def test_idioma(
+def test_language(
     api: TestClient,
     db_session: Session,
     headers: dict[str, str],
@@ -111,10 +111,10 @@ def test_idioma(
     assert visitas(db_session)[-1].lang == esperado
 
 
-# --- Contenido ---
+# --- Content ---
 
 
-def test_sin_contenido_responde_vacio(api: TestClient) -> None:
+def test_without_content_responds_empty(api: TestClient) -> None:
     response = api.get("/api/bootstrap")
 
     assert response.status_code == 200
@@ -128,7 +128,7 @@ def test_sin_contenido_responde_vacio(api: TestClient) -> None:
 
 
 @pytest.mark.usefixtures("contenido")
-def test_devuelve_el_contenido_visible_en_los_dos_idiomas(api: TestClient) -> None:
+def test_returns_the_visible_content_in_both_languages(api: TestClient) -> None:
     datos = api.get("/api/bootstrap").json()
 
     assert datos["profile"] == {
@@ -153,7 +153,7 @@ def test_devuelve_el_contenido_visible_en_los_dos_idiomas(api: TestClient) -> No
 
 
 @pytest.mark.usefixtures("contenido")
-def test_los_proyectos_ocultos_no_salen(api: TestClient) -> None:
+def test_hidden_projects_are_not_returned(api: TestClient) -> None:
     proyectos = api.get("/api/bootstrap").json()["projects"]
 
     assert [p["slug"] for p in proyectos] == ["primero", "publicado"]
@@ -161,7 +161,7 @@ def test_los_proyectos_ocultos_no_salen(api: TestClient) -> None:
 
 
 @pytest.mark.usefixtures("contenido")
-def test_las_capturas_salen_en_orden_y_con_su_url(api: TestClient) -> None:
+def test_screenshots_come_in_order_and_with_their_url(api: TestClient) -> None:
     publicado = api.get("/api/bootstrap").json()["projects"][1]
 
     assert publicado["images"] == [
@@ -171,11 +171,11 @@ def test_las_capturas_salen_en_orden_y_con_su_url(api: TestClient) -> None:
 
 
 @pytest.mark.usefixtures("contenido")
-def test_no_expone_datos_internos(api: TestClient) -> None:
+def test_does_not_expose_internal_data(api: TestClient) -> None:
     response = api.get("/api/bootstrap")
     datos = response.json()
 
-    # Ni el correo de contacto, ni ids, ni campos de gestión.
+    # Neither the contact email, nor ids, nor management fields.
     assert "privado@ejemplo.cl" not in response.text
     internos = {"id", "visible", "position", "created_at", "updated_at", "project_id", "path"}
     for seccion in ("skills", "experience", "projects"):
@@ -196,14 +196,14 @@ def test_no_expone_datos_internos(api: TestClient) -> None:
     }
 
 
-def test_la_respuesta_no_se_guarda_en_cache(api: TestClient) -> None:
+def test_response_is_not_cached(api: TestClient) -> None:
     assert api.get("/api/bootstrap").headers["Cache-Control"] == "no-store"
 
 
-# --- Visitas y UTM ---
+# --- Visits and UTM ---
 
 
-def test_registra_la_visita_con_sus_utm(api: TestClient, db_session: Session) -> None:
+def test_records_the_visit_with_its_utm(api: TestClient, db_session: Session) -> None:
     api.get(
         "/api/bootstrap",
         params={
@@ -224,7 +224,7 @@ def test_registra_la_visita_con_sus_utm(api: TestClient, db_session: Session) ->
     assert visita.country is None
 
 
-def test_sin_utm_la_visita_queda_sin_origen(api: TestClient, db_session: Session) -> None:
+def test_without_utm_the_visit_has_no_source(api: TestClient, db_session: Session) -> None:
     api.get("/api/bootstrap")
 
     (visita,) = visitas(db_session)
@@ -237,7 +237,7 @@ def test_sin_utm_la_visita_queda_sin_origen(api: TestClient, db_session: Session
     assert visita.referrer is None
 
 
-def test_utm_largos_o_con_basura_se_limpian_sin_romper_la_pagina(
+def test_long_or_garbage_utm_is_cleaned_without_breaking_the_page(
     api: TestClient, db_session: Session
 ) -> None:
     response = api.get(
@@ -256,12 +256,12 @@ def test_utm_largos_o_con_basura_se_limpian_sin_romper_la_pagina(
     assert visita.utm_source == "x" * 200
     assert visita.utm_medium == "social"
     assert visita.utm_campaign is None
-    # El texto se guarda tal cual: React lo escapa al mostrarlo en el panel.
+    # The text is stored as is: React escapes it when showing it in the panel.
     assert visita.utm_content == "<script>alert(1)</script>"
     assert visita.referrer is None
 
 
-def test_no_guarda_la_ip_y_el_hash_identifica_al_visitante_del_dia(
+def test_does_not_store_the_ip_and_the_hash_identifies_the_visitor_of_the_day(
     api: TestClient, db_session: Session
 ) -> None:
     firefox = {"User-Agent": "Firefox/140"}
@@ -271,14 +271,14 @@ def test_no_guarda_la_ip_y_el_hash_identifica_al_visitante_del_dia(
 
     hashes = [v.visitor_hash for v in visitas(db_session)]
     assert hashes[0] == hashes[1] != hashes[2]
-    # El TestClient se conecta desde "testclient": ni ese valor ni otra IP quedan en la fila.
+    # The TestClient connects from "testclient": neither that value nor any other IP is in the row.
     for visita in visitas(db_session):
         valores = [str(getattr(visita, c.key)) for c in Visit.__table__.columns]
         assert not any("testclient" in v for v in valores)
     assert db_session.scalar(select(VisitorSalt.day)) is not None
 
 
-def test_si_falla_el_registro_la_pagina_igual_carga(
+def test_if_recording_fails_the_page_still_loads(
     api: TestClient, db_session: Session, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     from sqlalchemy.exc import OperationalError
@@ -286,7 +286,7 @@ def test_si_falla_el_registro_la_pagina_igual_carga(
     from app.routers import bootstrap
 
     def falla(*_: object, **__: object) -> None:
-        raise OperationalError("INSERT", {}, Exception("la base no responde"))
+        raise OperationalError("INSERT", {}, Exception("the database is not responding"))
 
     monkeypatch.setattr(bootstrap, "daily_salt", falla)
 
