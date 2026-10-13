@@ -118,6 +118,8 @@ describe("panel /admin", () => {
     await waitFor(() => {
       expect(document.documentElement.lang).toBe("en");
     });
+    expect(document.title).toBe("Admin panel");
+    expect(document.querySelector('meta[name="robots"]')).toHaveAttribute("content", "noindex");
   });
 
   it("el selector cambia el idioma del panel y lo recuerda", async () => {

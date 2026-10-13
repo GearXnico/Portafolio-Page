@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { App } from "../src/App";
@@ -91,5 +91,22 @@ describe("HomePage", () => {
     renderPage();
 
     expect(await screen.findByRole("alert")).toHaveTextContent("No se pudo cargar el contenido");
+  });
+
+  it("pone título y descripción del documento según el idioma", async () => {
+    stubBootstrap(bootstrapFixture());
+
+    renderPage();
+    await screen.findByRole("heading", { level: 1, name: "Desarrollador full stack" });
+
+    const description = () =>
+      document.querySelector('meta[name="description"]')?.getAttribute("content");
+    expect(document.title).toBe("Desarrollador full stack · Portafolio");
+    expect(description()).toMatch(/^Portafolio:/);
+
+    fireEvent.click(screen.getByRole("button", { name: "English" }));
+
+    expect(document.title).toBe("Full stack developer · Portfolio");
+    expect(description()).toMatch(/^Portfolio:/);
   });
 });
