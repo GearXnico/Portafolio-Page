@@ -8,7 +8,7 @@ import { bootstrapFixture } from "./fixtures";
 
 function project(overrides: Partial<PublicProject> = {}): PublicProject {
   const [base] = bootstrapFixture().projects;
-  if (!base) throw new Error("el fixture no trae proyectos");
+  if (!base) throw new Error("the fixture has no projects");
   return { ...base, ...overrides };
 }
 
@@ -26,7 +26,7 @@ const images = [
 ];
 
 describe("ProjectsSection", () => {
-  it("muestra la primera captura como portada, con el texto alternativo del idioma", () => {
+  it("shows the first screenshot as the cover, with the alt text for the language", () => {
     renderIn("en", [project({ images })]);
 
     const img = screen.getByRole("img");
@@ -34,13 +34,13 @@ describe("ProjectsSection", () => {
     expect(img).toHaveAttribute("alt", "Cover");
   });
 
-  it("en español usa el texto alternativo en español", () => {
+  it("in Spanish uses the Spanish alt text", () => {
     renderIn("es", [project({ images })]);
 
     expect(screen.getByRole("img")).toHaveAttribute("alt", "Portada");
   });
 
-  it("muestra el stack y los enlaces a demo y repositorio en una pestaña aparte", () => {
+  it("shows the stack and the demo and repository links in a separate tab", () => {
     renderIn("es", [
       project({
         stack: ["React", "FastAPI"],
@@ -64,13 +64,13 @@ describe("ProjectsSection", () => {
     );
   });
 
-  it("no enlaza URLs que no son https", () => {
+  it("doesn't link URLs that aren't https", () => {
     renderIn("es", [project({ demo_url: "javascript:alert(1)", repo_url: "http://ejemplo.cl" })]);
 
     expect(screen.queryAllByRole("link")).toEqual([]);
   });
 
-  it("sin capturas, stack ni enlaces muestra solo el título y el resumen", () => {
+  it("without screenshots, stack or links shows only the title and summary", () => {
     renderIn("es", [project({ stack: [], images: [] })]);
 
     expect(screen.getByRole("heading", { name: "Este sitio" })).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe("ProjectsSection", () => {
     expect(screen.queryByRole("list", { name: "Stack" })).toBeNull();
   });
 
-  it("no aparece si no hay proyectos publicados", () => {
+  it("doesn't appear if there are no published projects", () => {
     const { container } = renderIn("es", []);
 
     expect(container).toBeEmptyDOMElement();
