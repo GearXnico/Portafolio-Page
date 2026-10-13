@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from "react-router";
 
 import { useProject } from "../api/projects";
 import { ProjectForm } from "../components/ProjectForm";
+import { ProjectImages } from "../components/ProjectImages";
 import { useLang } from "../i18n";
 
 /** Crea un proyecto (`/admin/projects/new`) o edita uno existente (`/admin/projects/:id`). */
@@ -29,7 +30,8 @@ export function AdminProjectEditPage() {
       {project && !isFetching && (
         <ProjectForm key={project.id} project={project} onSaved={backToList} />
       )}
-      {/* La tarea 4.3 agrega aquí las capturas del proyecto. */}
+      {projectId === undefined && <p>{t("admin.images.saveFirst")}</p>}
+      {project && <ProjectImages project={project} />}
     </>
   );
 }
