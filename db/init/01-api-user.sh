@@ -1,12 +1,12 @@
 #!/bin/sh
-# Crea el usuario con el que se conecta la API, con permisos mínimos.
+# Creates the user the API connects with, with least privilege.
 #
-# - POSTGRES_USER es el dueño de las tablas y corre las migraciones (Alembic).
-# - APP_DB_USER solo puede leer y escribir filas: no crea, borra ni vacía tablas,
-#   así que un error o una inyección de SQL en la API no puede cambiar el esquema.
+# - POSTGRES_USER owns the tables and runs the migrations (Alembic).
+# - APP_DB_USER can only read and write rows: it can't create, drop or truncate tables,
+#   so a bug or an SQL (Structured Query Language) injection in the API can't change the schema.
 #
-# Postgres corre los scripts de /docker-entrypoint-initdb.d solo cuando el volumen
-# de la base está vacío. Si ya tenías la base, recréala con `docker compose down -v`.
+# Postgres runs the scripts in /docker-entrypoint-initdb.d only when the database
+# volume is empty. If you already had the database, recreate it with `docker compose down -v`.
 set -eu
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
@@ -17,15 +17,15 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
 CREATE ROLE :"app_user" LOGIN PASSWORD :'app_password'
     NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
 
--- Nadie más que el dueño y la API se conecta a esta base.
+-- Nobody but the owner and the API connects to this database.
 REVOKE ALL ON DATABASE :"db" FROM PUBLIC;
 GRANT CONNECT ON DATABASE :"db" TO :"app_user";
 
--- Usa el esquema, pero no crea objetos en él.
+-- It uses the schema, but doesn't create objects in it.
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 GRANT USAGE ON SCHEMA public TO :"app_user";
 
--- Las tablas y secuencias que creen las migraciones le dan solo estos permisos.
+-- Tables and sequences created by the migrations grant it only these privileges.
 ALTER DEFAULT PRIVILEGES FOR ROLE :"owner" IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO :"app_user";
 ALTER DEFAULT PRIVILEGES FOR ROLE :"owner" IN SCHEMA public

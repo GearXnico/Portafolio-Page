@@ -1,15 +1,15 @@
-# Servidor web de producción (ADR 0001): HTTPS automático, la página, /media y /api.
-# SITE_ADDRESS es el dominio (por ejemplo, ejemplo.cl). Con http://localhost sirve solo HTTP,
-# como en el job deploy-check de CI.
+# Production web server (ADR, architecture decision record, 0001): automatic HTTPS, the page, /media and /api.
+# SITE_ADDRESS is the domain (for example, ejemplo.cl). With http://localhost it serves HTTP only,
+# as in the CI (continuous integration) deploy-check job.
 {
-	# Sin API de administración: la configuración cambia solo con un despliegue nuevo.
+	# No admin API: the configuration changes only with a new deployment.
 	admin off
 }
 
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
-	# Los mismos valores de web/security-headers.ts; el E2E de deploy-check los compara.
+	# The same values as web/security-headers.ts; the deploy-check E2E (end-to-end) tests compare them.
 	header {
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
@@ -17,28 +17,28 @@
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
 		Cross-Origin-Opener-Policy "same-origin"
 		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
-		# Solo HTTPS durante un año. Los navegadores lo ignoran si llega por HTTP.
+		# HTTPS only for one year. Browsers ignore it if it arrives over HTTP.
 		Strict-Transport-Security "max-age=31536000"
 		-Server
 	}
 
 	handle /api/* {
-		# Tope antes de llegar a la API, que tiene sus propios límites. Cabe una captura de 5 MB.
+		# Cap before reaching the API, which has its own limits. A 5 MB screenshot fits.
 		request_body {
 			max_size 6MB
 		}
-		# Caddy reemplaza X-Forwarded-For por la IP real del visitante, y la API solo lo lee
-		# desde la red interna de compose.prod.yml (TRUSTED_PROXIES).
+		# Caddy replaces X-Forwarded-For with the visitor's real IP, and the API only reads it
+		# from the internal network of compose.prod.yml (TRUSTED_PROXIES).
 		reverse_proxy api:8000
 	}
 
-	# Capturas de los proyectos, que guarda la API en el volumen compartido.
+	# Project screenshots, which the API stores in the shared volume.
 	handle_path /media/* {
 		root * /srv/media
 		file_server
 	}
 
-	# La página (SPA): las rutas que no son archivos devuelven index.html.
+	# The page (SPA, single-page application): paths that aren't files return index.html.
 	handle {
 		root * /srv/web
 		try_files {path} /index.html
