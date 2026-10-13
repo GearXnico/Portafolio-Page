@@ -1,4 +1,4 @@
-"""Login del administrador (ADR 0004): credenciales, cookie, límite por IP y acceso sin sesión."""
+"""Admin login (ADR 0004): credentials, cookie, per-IP limit and access without a session."""
 
 import getpass
 import re
@@ -21,7 +21,7 @@ from app.services import auth
 CORREO = "admin@example.com"
 CLAVE = "una clave larga de prueba"
 SECRETO = "s" * 48
-# Hash de CLAVE, calculado una vez porque Argon2 es lento a propósito.
+# Hash of CLAVE, computed once because Argon2 is slow on purpose.
 HASH = auth.hash_password(CLAVE)
 
 
@@ -37,7 +37,7 @@ def admin_configurado(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 @pytest.fixture
 def client() -> Iterator[TestClient]:
-    # Por HTTPS, porque la cookie es Secure y el cliente no la devolvería por HTTP.
+    # Over HTTPS, because the cookie is Secure and the client wouldn't send it back over HTTP.
     with TestClient(app, base_url="https://testserver") as test_client:
         yield test_client
 
@@ -49,7 +49,7 @@ def entrar(client: TestClient, email: str = CORREO, password: str = CLAVE) -> An
 # Login
 
 
-def test_login_correcto_deja_la_cookie_de_sesion(client: TestClient) -> None:
+def test_successful_login_sets_the_session_cookie(client: TestClient) -> None:
     response = entrar(client)
 
     assert response.status_code == 200
@@ -60,7 +60,7 @@ def test_login_correcto_deja_la_cookie_de_sesion(client: TestClient) -> None:
     assert client.get("/api/admin/session").status_code == 200
 
 
-def test_el_correo_no_distingue_mayusculas(client: TestClient) -> None:
+def test_email_is_case_insensitive(client: TestClient) -> None:
     assert entrar(client, email="  Admin@Example.COM ").status_code == 200
 
 
@@ -68,7 +68,7 @@ def test_el_correo_no_distingue_mayusculas(client: TestClient) -> None:
     ("email", "password"),
     [(CORREO, "otra clave cualquiera"), ("otro@example.com", CLAVE), ("otro@example.com", "x")],
 )
-def test_credenciales_malas_responden_401_sin_cookie(
+def test_bad_credentials_respond_401_without_cookie(
     client: TestClient, email: str, password: str
 ) -> None:
     response = entrar(client, email=email, password=password)
@@ -88,12 +88,12 @@ def test_credenciales_malas_responden_401_sin_cookie(
         {"email": CORREO, "password": CLAVE, "admin": True},
     ],
 )
-def test_cuerpo_invalido_responde_422(client: TestClient, cuerpo: dict[str, Any]) -> None:
+def test_invalid_body_responds_422(client: TestClient, cuerpo: dict[str, Any]) -> None:
     assert client.post("/api/admin/login", json=cuerpo).status_code == 422
 
 
 @pytest.mark.parametrize("variable", ["admin_email", "admin_password_hash", "jwt_secret"])
-def test_sin_configuracion_el_login_responde_503(
+def test_without_configuration_login_responds_503(
     client: TestClient, monkeypatch: pytest.MonkeyPatch, variable: str
 ) -> None:
     monkeypatch.setattr(settings, variable, None)
@@ -101,7 +101,7 @@ def test_sin_configuracion_el_login_responde_503(
     assert entrar(client).status_code == 503
 
 
-def test_un_hash_mal_copiado_no_deja_entrar(
+def test_a_badly_copied_hash_does_not_let_anyone_in(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(settings, "admin_password_hash", SecretStr("no-es-un-hash"))
@@ -109,15 +109,15 @@ def test_un_hash_mal_copiado_no_deja_entrar(
     assert entrar(client).status_code == 401
 
 
-def test_jwt_secret_corto_no_se_acepta() -> None:
+def test_short_jwt_secret_is_rejected() -> None:
     with pytest.raises(ValueError, match="32"):
         type(settings)(jwt_secret="corto")
 
 
-# Límite de intentos
+# Attempt limit
 
 
-def test_bloquea_tras_5_intentos_fallidos(client: TestClient) -> None:
+def test_blocks_after_5_failed_attempts(client: TestClient) -> None:
     for _ in range(5):
         assert entrar(client, password="mala clave").status_code == 401
 
@@ -128,7 +128,7 @@ def test_bloquea_tras_5_intentos_fallidos(client: TestClient) -> None:
     assert "set-cookie" not in response.headers
 
 
-def test_un_login_correcto_borra_los_intentos_fallidos(client: TestClient) -> None:
+def test_a_successful_login_clears_the_failed_attempts(client: TestClient) -> None:
     for _ in range(4):
         entrar(client, password="mala clave")
     assert entrar(client).status_code == 200
@@ -138,7 +138,7 @@ def test_un_login_correcto_borra_los_intentos_fallidos(client: TestClient) -> No
     assert entrar(client).status_code == 429
 
 
-def test_el_bloqueo_es_por_ip_real_detras_de_caddy() -> None:
+def test_block_is_by_real_ip_behind_caddy() -> None:
     detras_de_caddy: Any = ProxyHeadersMiddleware(cast(Any, app), trusted_hosts="testclient")
     with TestClient(detras_de_caddy, base_url="https://testserver") as client:
         for _ in range(5):
@@ -163,7 +163,7 @@ def test_el_bloqueo_es_por_ip_real_detras_de_caddy() -> None:
     assert otra_ip.status_code == 200
 
 
-def test_sin_proxy_de_confianza_x_forwarded_for_no_cambia_la_ip(client: TestClient) -> None:
+def test_without_trusted_proxy_x_forwarded_for_does_not_change_the_ip(client: TestClient) -> None:
     for i in range(5):
         entrar_con_ip = client.post(
             "/api/admin/login",
@@ -175,18 +175,18 @@ def test_sin_proxy_de_confianza_x_forwarded_for_no_cambia_la_ip(client: TestClie
     assert entrar(client).status_code == 429
 
 
-# Sesión y acceso sin sesión a /api/admin/*
+# Session, and access to /api/admin/* without a session
 
 
-def test_sin_sesion_responde_401(client: TestClient) -> None:
+def test_without_session_responds_401(client: TestClient) -> None:
     response = client.get("/api/admin/session")
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Log in."}
 
 
-def test_toda_ruta_admin_salvo_login_y_logout_exige_sesion(client: TestClient) -> None:
-    # Atrapa una ruta nueva de /api/admin/* que quede fuera del router protegido.
+def test_every_admin_route_except_login_and_logout_requires_a_session(client: TestClient) -> None:
+    # Catches a new /api/admin/* route left outside the protected router.
     publicas = {"/api/admin/login", "/api/admin/logout"}
     rutas = {p: m for p, m in app.openapi()["paths"].items() if p.startswith("/api/admin")}
 
@@ -195,13 +195,13 @@ def test_toda_ruta_admin_salvo_login_y_logout_exige_sesion(client: TestClient) -
         if ruta in publicas:
             continue
         for metodo in metodos:
-            # Los parámetros de ruta ({id}) se reemplazan por un valor cualquiera.
+            # Path parameters ({id}) are replaced with any value.
             response = client.request(metodo, re.sub(r"\{[^}]+\}", "1", ruta))
             assert response.status_code == 401, (metodo, ruta)
 
 
 def _token(clave: str = SECRETO, **cambios: Any) -> str:
-    """Un JWT como el de la API, con los cambios pedidos (None quita el campo)."""
+    """A JWT like the API's, with the requested changes (None removes the field)."""
     ahora = datetime.now(UTC)
     claims = {"sub": CORREO, "iat": ahora, "exp": ahora + timedelta(days=7)} | cambios
     return jwt.encode({k: v for k, v in claims.items() if v is not None}, clave)
@@ -211,20 +211,20 @@ def _token(clave: str = SECRETO, **cambios: Any) -> str:
     "token",
     [
         "no-es-un-jwt",
-        _token(clave="t" * 48),  # firmado con otra clave
-        _token(exp=datetime.now(UTC) - timedelta(seconds=1)),  # vencido
-        _token(sub="otro@example.com"),  # de otro correo
-        _token(exp=None),  # sin vencimiento
-        jwt.encode({"sub": CORREO}, key=None, algorithm="none"),  # sin firma
+        _token(clave="t" * 48),  # signed with another key
+        _token(exp=datetime.now(UTC) - timedelta(seconds=1)),  # expired
+        _token(sub="otro@example.com"),  # for another email
+        _token(exp=None),  # no expiry
+        jwt.encode({"sub": CORREO}, key=None, algorithm="none"),  # unsigned
     ],
 )
-def test_sesion_invalida_responde_401(client: TestClient, token: str) -> None:
+def test_invalid_session_responds_401(client: TestClient, token: str) -> None:
     client.cookies.set(COOKIE_NAME, token)
 
     assert client.get("/api/admin/session").status_code == 401
 
 
-def test_quitar_la_configuracion_cierra_la_sesion(
+def test_removing_the_configuration_closes_the_session(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     entrar(client)
@@ -233,14 +233,14 @@ def test_quitar_la_configuracion_cierra_la_sesion(
     assert client.get("/api/admin/session").status_code == 401
 
 
-def test_sin_configuracion_no_se_crea_un_token(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_without_configuration_no_token_is_created(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "jwt_secret", None)
 
     with pytest.raises(RuntimeError):
         auth.create_session_token()
 
 
-def test_cambiar_el_correo_cierra_la_sesion(
+def test_changing_the_email_closes_the_session(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     entrar(client)
@@ -249,7 +249,7 @@ def test_cambiar_el_correo_cierra_la_sesion(
     assert client.get("/api/admin/session").status_code == 401
 
 
-def test_logout_borra_la_cookie(client: TestClient) -> None:
+def test_logout_deletes_the_cookie(client: TestClient) -> None:
     entrar(client)
 
     response = client.post("/api/admin/logout")
@@ -259,11 +259,11 @@ def test_logout_borra_la_cookie(client: TestClient) -> None:
     assert client.get("/api/admin/session").status_code == 401
 
 
-def test_logout_sin_sesion_responde_204(client: TestClient) -> None:
+def test_logout_without_session_responds_204(client: TestClient) -> None:
     assert client.post("/api/admin/logout").status_code == 204
 
 
-# Comando para generar el hash
+# Command to generate the hash
 
 
 def _respuestas(monkeypatch: pytest.MonkeyPatch, *textos: str) -> None:
@@ -271,7 +271,7 @@ def _respuestas(monkeypatch: pytest.MonkeyPatch, *textos: str) -> None:
     monkeypatch.setattr(getpass, "getpass", lambda prompt: pendientes.pop(0))
 
 
-def test_el_comando_imprime_un_hash_que_verifica(
+def test_command_prints_a_hash_that_verifies(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     _respuestas(monkeypatch, CLAVE, CLAVE)
@@ -288,7 +288,7 @@ def test_el_comando_imprime_un_hash_que_verifica(
 @pytest.mark.parametrize(
     ("primera", "segunda"), [("corta", "corta"), (CLAVE, "otra clave distinta"), ("x" * 257,) * 2]
 )
-def test_el_comando_rechaza_claves_cortas_o_distintas(
+def test_command_rejects_short_or_mismatched_passwords(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], primera: str, segunda: str
 ) -> None:
     _respuestas(monkeypatch, primera, segunda)
@@ -297,8 +297,8 @@ def test_el_comando_rechaza_claves_cortas_o_distintas(
     assert capsys.readouterr().out == ""
 
 
-def test_variables_vacias_cuentan_como_no_definidas(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Así quedan en .env.example y en compose.yml: la API tiene que arrancar igual.
+def test_empty_variables_count_as_undefined(monkeypatch: pytest.MonkeyPatch) -> None:
+    # That's how they are in .env.example and compose.yml: the API still has to start.
     for variable in ("ADMIN_EMAIL", "ADMIN_PASSWORD_HASH", "JWT_SECRET"):
         monkeypatch.setenv(variable, "")
 
