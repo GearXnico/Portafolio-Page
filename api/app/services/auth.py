@@ -1,6 +1,7 @@
-"""Login del administrador único (ADR 0004): contraseña con Argon2 y sesión con JWT.
+"""Login of the single administrator (ADR (Architecture Decision Record) 0004): password with
+Argon2 and session with JWT (JSON Web Token).
 
-Las credenciales vienen de variables de entorno; no hay tabla de usuarios.
+The credentials come from environment variables; there is no users table.
 """
 
 import hmac
@@ -26,13 +27,13 @@ def hash_password(password: str) -> str:
 
 
 def verify_credentials(email: str, password: str) -> bool:
-    """True si el correo y la contraseña son los del administrador.
+    """True if the email and password are the administrator's.
 
-    La contraseña se verifica aunque el correo no calce, para que el tiempo de respuesta no
-    revele cuál de los dos estaba mal.
+    The password is verified even if the email doesn't match, so the response time doesn't
+    reveal which of the two was wrong.
     """
-    # Repite parte de is_configured() para que mypy sepa que no son None. Sin `assert`, porque
-    # Python lo omite con `-O` (regla S101 de ruff).
+    # Repeats part of is_configured() so mypy knows they aren't None. No `assert`, because
+    # Python skips it with `-O` (ruff rule S101).
     if not (is_configured() and settings.admin_email and settings.admin_password_hash):
         return False
     email_ok = hmac.compare_digest(
@@ -48,7 +49,7 @@ def verify_credentials(email: str, password: str) -> bool:
 
 def create_session_token(now: datetime | None = None) -> str:
     if not (settings.admin_email and settings.jwt_secret):
-        raise RuntimeError("Login del administrador sin configurar")
+        raise RuntimeError("Administrator login is not configured")
     issued = now or datetime.now(UTC)
     claims = {
         "sub": settings.admin_email.strip().lower(),
@@ -59,7 +60,7 @@ def create_session_token(now: datetime | None = None) -> str:
 
 
 def is_valid_session(token: str) -> bool:
-    """True si el token está firmado con nuestra clave, no venció y es del administrador actual."""
+    """True if the token is signed with our key, hasn't expired and belongs to the current admin."""
     if not (is_configured() and settings.admin_email and settings.jwt_secret):
         return False
     try:

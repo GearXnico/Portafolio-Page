@@ -1,7 +1,7 @@
-"""Decide el idioma de la página (ADR 0002).
+"""Decide the page language (ADR (Architecture Decision Record) 0002).
 
-Todo pasa por `decide_locale`, para que el día que se use el país (Cloudflare,
-header `CF-IPCountry`) baste con cambiar esta función.
+Everything goes through `decide_locale`, so that the day the country is used (Cloudflare,
+`CF-IPCountry` header) changing this function is enough.
 """
 
 from typing import Literal
@@ -10,7 +10,7 @@ Lang = Literal["es", "en"]
 
 
 def parse_lang(value: str | None) -> Lang | None:
-    """Devuelve el idioma si `value` es uno de los soportados; si no, None."""
+    """Return the language if `value` is a supported one; otherwise, None."""
     if value == "es":
         return "es"
     if value == "en":
@@ -19,12 +19,12 @@ def parse_lang(value: str | None) -> Lang | None:
 
 
 def decide_locale(country: str | None, accept_language: str | None) -> Lang:
-    """Español si el primer idioma del navegador es español; si no, inglés.
+    """Spanish if the browser's first language is Spanish; otherwise, English.
 
-    Los navegadores ponen primero el idioma preferido (`es-CL,es;q=0.9,en;q=0.8`), así que
-    basta con mirar la primera entrada. `country` queda reservado para la detección por país
-    (código ISO 3166-1, como "CL"); en la versión 1 no se usa.
+    Browsers put the preferred language first (`es-CL,es;q=0.9,en;q=0.8`), so looking at the
+    first entry is enough. `country` is reserved for detection by country (ISO 3166-1 code,
+    like "CL"); version 1 doesn't use it.
     """
-    del country  # Reservado para cuando el país venga de Cloudflare.
+    del country  # Reserved for when the country comes from Cloudflare.
     first = (accept_language or "").split(",", 1)[0].split(";", 1)[0]
     return "es" if first.strip().lower().split("-", 1)[0] == "es" else "en"

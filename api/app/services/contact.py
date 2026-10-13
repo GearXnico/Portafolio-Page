@@ -1,4 +1,4 @@
-"""Mensajes de contacto: guardado, aviso por correo en segundo plano y lectura desde el panel."""
+"""Contact messages: saving, email notice in the background and reading from the panel."""
 
 import logging
 from collections.abc import Callable, Sequence
@@ -12,7 +12,7 @@ from app.models import ContactMessage
 from app.schemas.contact import ContactIn
 from app.services import mail
 
-# No se registran datos personales: solo el id del mensaje.
+# No personal data is logged: only the message id.
 logger = logging.getLogger(__name__)
 
 
@@ -35,9 +35,9 @@ def save_message(session: Session, data: ContactIn) -> int:
 def notify_new_message(
     message_id: int, session_factory: Callable[[], Session] = SessionLocal
 ) -> None:
-    """Avisa por correo y marca `emailed`. Si falla, el mensaje queda guardado igual."""
+    """Send the email notice and set `emailed`. If it fails, the message stays saved anyway."""
     if not mail.is_configured():
-        logger.warning("Aviso por correo desactivado (SMTP sin configurar): mensaje %d", message_id)
+        logger.warning("Email notice disabled (SMTP not configured): message %d", message_id)
         return
 
     with session_factory() as session:
@@ -51,7 +51,7 @@ def notify_new_message(
                 reply_to=message.email,
             )
         except mail.MailError as exc:
-            logger.warning("No se pudo enviar el aviso del mensaje %d: %s", message_id, exc)
+            logger.warning("Could not send the notice for message %d: %s", message_id, exc)
             return
         message.emailed = True
         session.commit()
@@ -69,7 +69,7 @@ def _body(message: ContactMessage) -> str:
 
 
 def list_messages(session: Session) -> Sequence[ContactMessage]:
-    """Todos los mensajes, el más nuevo primero."""
+    """All messages, newest first."""
     query = select(ContactMessage).order_by(
         ContactMessage.created_at.desc(), ContactMessage.id.desc()
     )
@@ -77,10 +77,10 @@ def list_messages(session: Session) -> Sequence[ContactMessage]:
 
 
 def set_read(session: Session, message_id: int, read: bool) -> ContactMessage:
-    """Marca el mensaje como leído o no leído. 404 si no existe."""
+    """Mark the message as read or unread. 404 if it doesn't exist."""
     message = session.get(ContactMessage, message_id)
     if message is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found.")
     message.read = read
     session.commit()
     return message

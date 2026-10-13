@@ -1,8 +1,8 @@
-"""Límite de frecuencia por IP (dirección de red), en memoria.
+"""Rate limit per IP (Internet Protocol address), in memory.
 
-Vive en el proceso de la API: se reinicia con cada despliegue y no se comparte entre procesos.
-Para un sitio con un solo proceso de Uvicorn alcanza; si algún día hay varios, hay que moverlo
-a la base o a Redis.
+It lives in the API process: it resets with each deployment and isn't shared between processes.
+That is enough for a site with a single Uvicorn process; if there are ever several, it has to
+move to the database or to Redis.
 """
 
 import ipaddress
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class SlidingWindowLimiter:
-    """Permite `limit` eventos por clave dentro de una ventana móvil de `window_seconds`."""
+    """Allow `limit` events per key within a sliding window of `window_seconds`."""
 
     def __init__(
         self,
@@ -30,14 +30,14 @@ class SlidingWindowLimiter:
     ) -> None:
         self.limit = limit
         self.window_seconds = window_seconds
-        # Tope de claves en memoria, para que muchas IP distintas no la llenen.
+        # Cap on keys in memory, so many different IPs don't fill it.
         self.max_keys = max_keys
         self._clock = clock
         self._hits: OrderedDict[str, deque[float]] = OrderedDict()
         self._lock = threading.Lock()
 
     def hit(self, key: str) -> int | None:
-        """Registra un evento. Devuelve None si se permite, o los segundos que faltan si no."""
+        """Record an event. Return None if allowed, or the remaining seconds if not."""
         now = self._clock()
         with self._lock:
             hits = self._hits.get(key)
@@ -53,7 +53,7 @@ class SlidingWindowLimiter:
             return None
 
     def forget(self, key: str) -> None:
-        """Borra los eventos de una clave, por ejemplo tras un login correcto."""
+        """Delete a key's events, for example after a successful login."""
         with self._lock:
             self._hits.pop(key, None)
 
@@ -64,25 +64,25 @@ class SlidingWindowLimiter:
     def _make_room(self, now: float) -> None:
         if len(self._hits) < self.max_keys:
             return
-        # Primero se botan las claves sin eventos vigentes; si no alcanza, la más antigua.
+        # First drop the keys with no current events; if that's not enough, the oldest one.
         expired = [k for k, h in self._hits.items() if not h or h[-1] <= now - self.window_seconds]
         for key in expired:
             del self._hits[key]
         while len(self._hits) >= self.max_keys:
-            # Una clave con eventos vigentes que se bota recupera sus intentos: solo pasa si
-            # llegan más IP distintas que el tope en una ventana, y conviene enterarse.
+            # A dropped key with current events gets its attempts back: this only happens if
+            # more distinct IPs than the cap arrive within one window, and it's worth knowing.
             self._hits.popitem(last=False)
-            logger.warning("Límite de frecuencia lleno: se botó una clave con eventos vigentes")
+            logger.warning("Rate limit full: dropped a key with current events")
 
 
 def client_key(request: Request) -> str:
-    """La IP del visitante como clave del límite.
+    """The visitor's IP as the limit key.
 
-    Una IPv6 se agrupa por su red /64, porque cualquier conexión doméstica tiene millones de
-    direcciones en ese rango. Detrás de Caddy, la IP real llega por X-Forwarded-For solo si
-    `TRUSTED_PROXIES` incluye a Caddy (ver app/main.py).
+    An IPv6 address is grouped by its /64 network, because any home connection has millions of
+    addresses in that range. Behind Caddy, the real IP arrives through X-Forwarded-For only if
+    `TRUSTED_PROXIES` includes Caddy (see app/main.py).
     """
-    host = request.client.host if request.client else "desconocido"
+    host = request.client.host if request.client else "unknown"
     try:
         ip = ipaddress.ip_address(host)
     except ValueError:

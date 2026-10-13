@@ -1,4 +1,4 @@
-"""Guardado del contenido que se edita desde el panel de administración."""
+"""Saving of the content edited from the admin panel."""
 
 from collections.abc import Sequence
 from typing import Any
@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Base, Profile
 
-# Nombre de la restricción única del slug (convención de nombres de app/models/base.py).
+# Name of the slug's unique constraint (naming convention in app/models/base.py).
 _SLUG_CONSTRAINT = "uq_project_slug"
 
 
@@ -26,7 +26,7 @@ def list_ordered[M: Base](
 def get_or_404[M: Base](session: Session, model: type[M], item_id: int) -> M:
     item = session.get(model, item_id)
     if item is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found.")
     return item
 
 
@@ -38,7 +38,7 @@ def create[M: Base](session: Session, model: type[M], data: BaseModel) -> M:
 
 
 def update[M: Base](session: Session, item: M, data: BaseModel) -> M:
-    """Reemplaza todos los campos editables (PUT): lo que no llega toma su valor por defecto."""
+    """Replace every editable field (PUT): whatever isn't sent takes its default value."""
     for field, value in data.model_dump().items():
         setattr(item, field, value)
     _commit(session)
@@ -51,9 +51,9 @@ def delete(session: Session, item: Base) -> None:
 
 
 def save_profile(session: Session, data: BaseModel) -> Profile:
-    """Crea el perfil la primera vez y después lo reemplaza. Siempre es la fila 1.
+    """Create the profile the first time and replace it afterwards. It is always row 1.
 
-    Un solo `INSERT ... ON CONFLICT`: dos guardados seguidos (doble clic) no chocan.
+    A single `INSERT ... ON CONFLICT`: two saves in a row (double click) don't collide.
     """
     values = data.model_dump()
     statement = (
@@ -70,7 +70,7 @@ def save_profile(session: Session, data: BaseModel) -> Profile:
 
 
 def _commit(session: Session) -> None:
-    """Guarda los cambios. Un slug repetido responde 409; cualquier otro error sigue su curso."""
+    """Commit the changes. A duplicate slug responds 409; any other error propagates."""
     try:
         session.commit()
     except IntegrityError as exc:
@@ -79,6 +79,6 @@ def _commit(session: Session) -> None:
         if isinstance(orig, UniqueViolation) and orig.diag.constraint_name == _SLUG_CONSTRAINT:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Ya existe un proyecto con ese slug.",
+                detail="A project with that slug already exists.",
             ) from exc
         raise
