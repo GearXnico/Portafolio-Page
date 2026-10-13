@@ -12,8 +12,9 @@ function errorKey(error: Error): MessageKey {
 }
 
 /**
- * Capturas de un proyecto ya guardado: las actuales con su botón para borrar, y un formulario para
- * subir otra. La primera es la portada en la página pública. La API valida y convierte el archivo.
+ * Screenshots of a saved project: the current ones, each with its delete button, and a form to
+ * upload another. The first one is the cover on the public page. The API (application
+ * programming interface) validates and converts the file.
  */
 export function ProjectImages({ project }: { project: AdminProject }) {
   const { t } = useLang();
@@ -27,7 +28,7 @@ export function ProjectImages({ project }: { project: AdminProject }) {
     event.preventDefault();
     if (!file) return;
     const form = event.currentTarget;
-    // Solo se muestra el error de la última acción.
+    // Only the error from the last action is shown.
     remove.reset();
     upload.mutate(
       { file, alt_es: altEs, alt_en: altEn },

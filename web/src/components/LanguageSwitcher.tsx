@@ -1,6 +1,6 @@
 import { LANGS, useLang } from "../i18n";
 
-/** Botones para cambiar el idioma de la página; la elección se recuerda. */
+/** Buttons to change the page language; the choice is remembered. */
 export function LanguageSwitcher() {
   const { lang, setLang, t } = useLang();
 

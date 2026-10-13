@@ -7,7 +7,7 @@ interface Props {
   onToggleRead: () => void;
 }
 
-/** Un mensaje de contacto en el panel. El texto se muestra como texto (React lo escapa). */
+/** A contact message in the admin panel. The text is shown as text (React escapes it). */
 export function MessageItem({ message, busy, onToggleRead }: Props) {
   const { lang, t } = useLang();
   const origin =

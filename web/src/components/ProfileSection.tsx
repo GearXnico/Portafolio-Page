@@ -5,7 +5,7 @@ interface Props {
   profile: PublicProfile | null;
 }
 
-/** Encabezado de la página: titular y presentación. Sin perfil cargado, solo el título. */
+/** Page header: headline and introduction. With no profile loaded, only the title. */
 export function ProfileSection({ profile }: Props) {
   const { lang, t } = useLang();
   return (

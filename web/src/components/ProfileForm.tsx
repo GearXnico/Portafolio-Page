@@ -5,9 +5,10 @@ import { useLang } from "../i18n";
 import { BilingualField } from "./BilingualField";
 import { FormStatus } from "./FormStatus";
 
-// Los enlaces se editan como texto, uno por línea: «github https://github.com/…».
-// Una línea que no trae justo nombre y URL, o un nombre repetido, no se envía: se avisa antes,
-// en vez de perder un enlace en silencio. Lo demás lo valida la API (422).
+// Links are edited as text, one per line: «github https://github.com/…».
+// A line without exactly a name and a URL, or with a repeated name, isn't sent: the user is warned
+// first, instead of silently losing a link. The API (application programming interface)
+// validates the rest (422).
 function linksToText(links: Record<string, string>): string {
   return Object.entries(links)
     .map(([name, url]) => `${name} ${url}`)
@@ -26,7 +27,7 @@ function textToLinks(text: string): Record<string, string> | null {
   return links;
 }
 
-/** Formulario del perfil; `initial` es lo guardado (o vacío si aún no hay perfil). */
+/** Profile form; `initial` is what is saved (or empty if there is no profile yet). */
 export function ProfileForm({ initial }: { initial: ProfileInput }) {
   const { t } = useLang();
   const save = useSaveProfile();
@@ -39,7 +40,7 @@ export function ProfileForm({ initial }: { initial: ProfileInput }) {
     const parsedLinks = textToLinks(links);
     setInvalidLinks(parsedLinks === null);
     if (parsedLinks === null) return;
-    // Solo los campos que acepta la API: la respuesta trae además `updated_at`.
+    // Only the fields the API accepts: the response also includes `updated_at`.
     const { headline_es, headline_en, about_es, about_en, contact_email } = profile;
     save.mutate({
       headline_es,

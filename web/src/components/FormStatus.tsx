@@ -6,7 +6,7 @@ interface Props {
   saved: boolean;
 }
 
-/** Resultado de guardar un formulario del panel: guardado, datos inválidos (422) u otro error. */
+/** Result of saving an admin panel form: saved, invalid data (422) or another error. */
 export function FormStatus({ error, saved }: Props) {
   const { t } = useLang();
   if (error) {

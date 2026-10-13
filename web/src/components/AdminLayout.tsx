@@ -13,8 +13,8 @@ import {
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 /**
- * Marco de todas las pantallas del panel. No llama a `bootstrap` (registraría una visita), así
- * que el idioma es el que se eligió en el selector, o español.
+ * Frame for every admin panel screen. It doesn't call `bootstrap` (that would record a visit), so
+ * the language is the one picked in the switcher, or Spanish.
  */
 export function AdminLayout() {
   const [lang, setLang] = useState<Lang>(() => storedLang() ?? DEFAULT_LANG);

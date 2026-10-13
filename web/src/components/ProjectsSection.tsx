@@ -7,8 +7,8 @@ interface Props {
 }
 
 /**
- * Proyectos publicados (la API ya deja fuera los ocultos), con su primera captura como
- * portada, el stack y los enlaces a demo y repositorio.
+ * Published projects (the API (application programming interface) already leaves out hidden
+ * ones), with their first screenshot as the cover, the stack and the demo and repository links.
  */
 export function ProjectsSection({ projects }: Props) {
   const { lang, t } = useLang();
@@ -19,7 +19,7 @@ export function ProjectsSection({ projects }: Props) {
       <h2 id="projects-title">{t("section.projects")}</h2>
       <ul className="projects">
         {projects.map((project) => {
-          // La API devuelve las capturas en su orden; la primera hace de portada.
+          // The API returns the screenshots in order; the first one is the cover.
           const cover = project.images[0];
           const demo = httpsUrl(project.demo_url);
           const repo = httpsUrl(project.repo_url);
@@ -33,7 +33,7 @@ export function ProjectsSection({ projects }: Props) {
                 <p>{localized(project, "summary", lang)}</p>
                 {project.stack.length > 0 && (
                   <ul className="tags" aria-label={t("project.stack")}>
-                    {/* La API no impide nombres repetidos, así que la clave lleva la posición. */}
+                    {/* The API doesn't prevent repeated names, so the key includes the position. */}
                     {project.stack.map((name, i) => (
                       <li key={`${String(i)}-${name}`}>{name}</li>
                     ))}

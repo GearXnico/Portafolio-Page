@@ -4,7 +4,8 @@ import { ContactError, useSendContact } from "../api/contact";
 import { useLang, type MessageKey } from "../i18n";
 import { readUtm } from "../utm";
 
-// Largos máximos de la API (docs/api.md): el navegador corta antes de enviar.
+// Maximum lengths from the API (application programming interface) (docs/api.md): the browser
+// cuts off before sending.
 const MAX = { name: 200, email: 320, message: 5000 } as const;
 
 const ERROR_KEYS: Record<ContactError["kind"], MessageKey> = {
@@ -14,9 +15,9 @@ const ERROR_KEYS: Record<ContactError["kind"], MessageKey> = {
 };
 
 /**
- * Formulario de contacto. La validación de los campos la hace el navegador (obligatorios,
- * largo y formato de correo) y la API vuelve a validar todo; si la API rechaza algo, se
- * muestra un mensaje según la causa, sin repetir el detalle técnico.
+ * Contact form. The browser validates the fields (required, length and email format) and the
+ * API validates everything again; if the API rejects something, a message is shown based on the
+ * cause, without repeating the technical detail.
  */
 export function ContactForm() {
   const { lang, t } = useLang();
@@ -32,7 +33,8 @@ export function ContactForm() {
       return typeof value === "string" ? value : "";
     };
     setSent(false);
-    // La API de contacto solo guarda estas dos UTM; cualquier otro campo lo rechaza.
+    // The contact API only stores these two UTM (Urchin Tracking Module) parameters; it rejects
+    // any other field.
     const { utm_source, utm_campaign } = readUtm();
     send.mutate(
       {
@@ -69,8 +71,8 @@ export function ContactForm() {
         {t("contact.message")}
         <textarea name="message" required maxLength={MAX.message} rows={6} />
       </label>
-      {/* Campo trampa: fuera de la pantalla y sin foco, para que solo un bot lo llene. El nombre y
-          la etiqueta no son comunes para que el autocompletado del navegador no lo llene. Viaja como `website`. */}
+      {/* Honeypot field: off screen and unfocusable, so only a bot fills it in. The name and label
+          are unusual so browser autofill doesn't fill it in. It is sent as `website`. */}
       <div className="trap" aria-hidden="true">
         <label>
           {t("contact.website")}
