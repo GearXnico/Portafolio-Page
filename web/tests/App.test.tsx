@@ -8,7 +8,10 @@ function bootstrapBody(lang: string) {
   return JSON.stringify({ lang, profile: null, skills: [], experience: [], projects: [] });
 }
 
-/** Simula la API: /api/bootstrap responde con `lang` y /api/health con ok. */
+/**
+ * Fakes the API (application programming interface): /api/bootstrap responds with `lang` and
+ * /api/health with ok.
+ */
 function stubApi(lang: string | null) {
   const fetchMock = vi.fn((input: string) => {
     if (input.startsWith("/api/bootstrap")) {
@@ -23,7 +26,7 @@ function stubApi(lang: string | null) {
 }
 
 describe("App", () => {
-  it("sin contenido muestra el título de la plantilla", async () => {
+  it("without content shows the template title", async () => {
     stubApi("es");
 
     renderWithQuery(<App />);
@@ -31,7 +34,7 @@ describe("App", () => {
     expect(await screen.findByRole("heading", { name: "Producto" })).toBeInTheDocument();
   });
 
-  it("usa el idioma que decide la API", async () => {
+  it("uses the language the API decides", async () => {
     stubApi("en");
 
     renderWithQuery(<App />);
@@ -41,7 +44,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "English" })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("la elección guardada manda sobre la API y se envía en bootstrap", async () => {
+  it("the saved choice overrides the API and is sent in bootstrap", async () => {
     localStorage.setItem("lang", "en");
     const fetchMock = stubApi("es");
 
@@ -53,7 +56,7 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Product" })).toBeInTheDocument();
   });
 
-  it("el selector cambia el idioma y lo recuerda", async () => {
+  it("the switcher changes the language and remembers it", async () => {
     stubApi("en");
     renderWithQuery(<App />);
     await screen.findByRole("heading", { name: "Product" });
@@ -65,7 +68,7 @@ describe("App", () => {
     expect(document.documentElement.lang).toBe("es");
   });
 
-  it("si bootstrap falla, la página queda en español", async () => {
+  it("if bootstrap fails, the page stays in Spanish", async () => {
     const fetchMock = stubApi(null);
 
     renderWithQuery(<App />);
@@ -74,7 +77,7 @@ describe("App", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/bootstrap", expect.anything());
   });
 
-  it("no muestra textos mientras espera a bootstrap", () => {
+  it("shows no text while waiting for bootstrap", () => {
     vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => undefined)));
 
     renderWithQuery(<App />);

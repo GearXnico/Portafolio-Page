@@ -10,7 +10,7 @@ function renderPage() {
 }
 
 describe("HomePage", () => {
-  it("muestra perfil, proyectos, experiencia, habilidades y contacto en español", async () => {
+  it("shows profile, projects, experience, skills and contact in Spanish", async () => {
     stubBootstrap(bootstrapFixture());
 
     renderPage();
@@ -30,7 +30,7 @@ describe("HomePage", () => {
     expect(document.documentElement.lang).toBe("es");
   });
 
-  it("usa los textos en inglés cuando bootstrap decide inglés", async () => {
+  it("uses the English texts when bootstrap picks English", async () => {
     stubBootstrap(bootstrapFixture({ lang: "en" }));
 
     renderPage();
@@ -46,7 +46,7 @@ describe("HomePage", () => {
     expect(document.documentElement.lang).toBe("en");
   });
 
-  it("agrupa las habilidades por categoría", async () => {
+  it("groups skills by category", async () => {
     stubBootstrap(bootstrapFixture());
 
     renderPage();
@@ -60,19 +60,19 @@ describe("HomePage", () => {
     ).toEqual(["Python", "TypeScript"]);
   });
 
-  it("sin contenido cargado muestra solo el título y el contacto, sin secciones vacías", async () => {
+  it("with no content loaded shows only the title and contact, without empty sections", async () => {
     stubBootstrap(bootstrapFixture({ profile: null, skills: [], experience: [], projects: [] }));
 
     renderPage();
 
     expect(await screen.findByRole("heading", { level: 1, name: "Producto" })).toBeInTheDocument();
-    // El formulario de contacto no depende del contenido, así que es la única sección.
+    // The contact form doesn't depend on the content, so it is the only section.
     const regions = screen.getAllByRole("region");
     expect(regions).toHaveLength(1);
     expect(regions[0]).toHaveAccessibleName("Contacto");
   });
 
-  it("muestra el texto de un proyecto como texto, sin interpretar HTML", async () => {
+  it("shows a project's text as text, without interpreting HTML", async () => {
     const projects = bootstrapFixture().projects.map((p) => ({
       ...p,
       title_es: '<img src=x onerror="alert(1)">',
@@ -85,7 +85,7 @@ describe("HomePage", () => {
     expect(container.querySelector("img")).toBeNull();
   });
 
-  it("muestra un aviso si la API falla", async () => {
+  it("shows a notice if the API (application programming interface) fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 500 })));
 
     renderPage();
@@ -93,7 +93,7 @@ describe("HomePage", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("No se pudo cargar el contenido");
   });
 
-  it("pone título y descripción del documento según el idioma", async () => {
+  it("sets the document title and description by language", async () => {
     stubBootstrap(bootstrapFixture());
 
     renderPage();
