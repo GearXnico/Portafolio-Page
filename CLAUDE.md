@@ -170,8 +170,9 @@ pre-commit run --all-files
 
 1. Corre tests, lint, typecheck y `pre-commit`, y confirma que todo está en verde.
 2. Abre el PR a `dev` y entrega el enlace.
-3. Agrega una fila en `docs/prompts/registro.md` con la tarea, el modelo, los tokens de `/cost`, las sesiones y el PR. Completa "Resultado" y "Lecciones" en el archivo del prompt.
-4. Si cambió un comando o una convención, actualiza este archivo en el mismo PR.
+3. Agrega arriba en `CHANGELOG.md`, en inglés, la sección con la versión de tu PR: `feat` sube MINOR y los demás tipos suben PATCH. La guía está al final de ese archivo.
+4. Agrega una fila en `docs/prompts/registro.md` con la tarea, el modelo, los tokens de `/cost`, las sesiones y el PR. Completa "Resultado" y "Lecciones" en el archivo del prompt.
+5. Si cambió un comando o una convención, actualiza este archivo en el mismo PR.
 
 ## Lo que no se hace sin preguntar
 
