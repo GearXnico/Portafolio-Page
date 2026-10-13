@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// E2E (prueba de punta a punta): abre la página en un navegador real.
-// Usa el servidor que ya esté corriendo (por ejemplo, el del compose) o levanta `npm run dev`.
+// E2E (end-to-end tests): opens the page in a real browser.
+// Uses the server that is already running (for example, the compose one) or starts `npm run dev`.
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:5173";
 
 export default defineConfig({
@@ -9,7 +9,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
-  // Navegador en español por defecto; los tests de idioma cambian el locale.
+  // Spanish browser by default; the language tests change the locale.
   use: { baseURL, locale: "es-CL", trace: "on-first-retry" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {

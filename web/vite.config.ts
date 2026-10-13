@@ -10,7 +10,8 @@ export default defineConfig({
   server: {
     port: 5173,
     headers: securityHeaders,
-    // En local, /api se pasa a la API del compose, igual que hará Caddy en producción.
+    // Locally, /api is forwarded to the compose API (application programming interface), just as
+    // Caddy will do in production.
     proxy: apiProxy,
   },
   preview: {
@@ -19,7 +20,7 @@ export default defineConfig({
     proxy: apiProxy,
   },
   build: {
-    // Sin source maps en el build: no se publica el código fuente original.
+    // No source maps in the build: the original source code isn't published.
     sourcemap: false,
   },
   test: {
