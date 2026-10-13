@@ -13,6 +13,9 @@ test.describe("con el navegador en inglés", () => {
       "true",
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    // Termina igual con o sin perfil cargado ("<titular> · Portfolio" o "Portfolio").
+    await expect(page).toHaveTitle(/Portfolio$/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /^Portfolio/);
   });
 
   test("el selector cambia el idioma y se recuerda al recargar", async ({ page }) => {
@@ -21,6 +24,7 @@ test.describe("con el navegador en inglés", () => {
 
     await page.getByRole("button", { name: "Español" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "es");
+    await expect(page).toHaveTitle(/Portafolio$/);
 
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("lang", "es");
