@@ -8,6 +8,9 @@ export interface ContactInput {
   email: string;
   message: string;
   lang: Lang;
+  // Origen del enlace con que llegó el visitante; solo van si vienen en la URL (tarea 3.5).
+  utm_source?: string;
+  utm_campaign?: string;
   // Campo trampa (honeypot): una persona lo deja vacío; si llega con algo, la API no guarda nada.
   website: string;
 }
