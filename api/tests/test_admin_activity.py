@@ -1,6 +1,6 @@
-"""Mensajes de contacto y visitas por UTM vistos desde el panel.
+"""Contact messages and visits by UTM (Urchin Tracking Module), seen from the panel.
 
-Contra el Postgres real: cada test corre en una transacción que se revierte al final.
+Against the real Postgres: each test runs in a transaction that is rolled back at the end.
 """
 
 from collections.abc import Iterator
@@ -32,7 +32,7 @@ def admin_configurado(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def anonimo(db_session: Session) -> Iterator[TestClient]:
-    """Cliente sin sesión. La API usa la sesión del test y parte con las tablas vacías."""
+    """Client without a session. The API uses the test's session and starts with empty tables."""
     db_session.execute(delete(ContactMessage))
     db_session.execute(delete(Visit))
 
@@ -70,7 +70,7 @@ def visita(session: Session, visitante: str, **utm: str) -> None:
     session.flush()
 
 
-# Acceso sin sesión
+# Access without a session
 
 
 @pytest.mark.parametrize(
@@ -81,14 +81,18 @@ def visita(session: Session, visitante: str, **utm: str) -> None:
         ("GET", "/api/admin/visits"),
     ],
 )
-def test_sin_sesion_responde_401(anonimo: TestClient, metodo: str, ruta: str) -> None:
+def test_activity_routes_without_session_respond_401(
+    anonimo: TestClient, metodo: str, ruta: str
+) -> None:
     response = anonimo.request(metodo, ruta, json={})
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Log in."}
 
 
-def test_sin_sesion_no_marca_el_mensaje(anonimo: TestClient, db_session: Session) -> None:
+def test_without_session_does_not_mark_the_message(
+    anonimo: TestClient, db_session: Session
+) -> None:
     item = mensaje(db_session, "Ana", datetime(2026, 10, 1))
 
     anonimo.patch(f"/api/admin/messages/{item.id}", json={"read": True})
@@ -97,12 +101,10 @@ def test_sin_sesion_no_marca_el_mensaje(anonimo: TestClient, db_session: Session
     assert item.read is False
 
 
-# Mensajes
+# Messages
 
 
-def test_lista_los_mensajes_del_mas_nuevo_al_mas_antiguo(
-    admin: TestClient, db_session: Session
-) -> None:
+def test_lists_messages_from_newest_to_oldest(admin: TestClient, db_session: Session) -> None:
     mensaje(db_session, "Antiguo", datetime(2026, 10, 1))
     mensaje(
         db_session, "Nuevo", datetime(2026, 10, 2), utm_source="portal", utm_campaign="empresa-x"
@@ -128,7 +130,7 @@ def test_lista_los_mensajes_del_mas_nuevo_al_mas_antiguo(
     assert datos[0]["read"] is False
 
 
-def test_marca_un_mensaje_como_leido_y_no_leido(admin: TestClient, db_session: Session) -> None:
+def test_marks_a_message_as_read_and_unread(admin: TestClient, db_session: Session) -> None:
     item = mensaje(db_session, "Ana", datetime(2026, 10, 1))
 
     leido = admin.patch(f"/api/admin/messages/{item.id}", json={"read": True})
@@ -142,7 +144,7 @@ def test_marca_un_mensaje_como_leido_y_no_leido(admin: TestClient, db_session: S
     assert item.read is False
 
 
-def test_marcar_un_mensaje_que_no_existe_responde_404(admin: TestClient) -> None:
+def test_marking_a_nonexistent_message_responds_404(admin: TestClient) -> None:
     response = admin.patch("/api/admin/messages/999999", json={"read": True})
 
     assert response.status_code == 404
@@ -152,7 +154,7 @@ def test_marcar_un_mensaje_que_no_existe_responde_404(admin: TestClient) -> None
     "cuerpo",
     [{}, {"read": "true"}, {"read": 1}, {"read": True, "name": "otro"}],
 )
-def test_marcar_con_un_cuerpo_invalido_responde_422(
+def test_marking_with_an_invalid_body_responds_422(
     admin: TestClient, db_session: Session, cuerpo: dict[str, object]
 ) -> None:
     item = mensaje(db_session, "Ana", datetime(2026, 10, 1))
@@ -163,16 +165,16 @@ def test_marcar_con_un_cuerpo_invalido_responde_422(
 
 
 @pytest.mark.parametrize("message_id", ["0", "2147483648", "abc"])
-def test_un_id_fuera_de_rango_responde_422(admin: TestClient, message_id: str) -> None:
+def test_an_out_of_range_message_id_responds_422(admin: TestClient, message_id: str) -> None:
     response = admin.patch(f"/api/admin/messages/{message_id}", json={"read": True})
 
     assert response.status_code == 422
 
 
-# Visitas
+# Visits
 
 
-def test_agrupa_las_visitas_por_utm_source_y_utm_campaign(
+def test_groups_visits_by_utm_source_and_utm_campaign(
     admin: TestClient, db_session: Session
 ) -> None:
     visita(db_session, HASH_A, utm_source="portal", utm_campaign="empresa-x")
@@ -191,5 +193,5 @@ def test_agrupa_las_visitas_por_utm_source_y_utm_campaign(
     ]
 
 
-def test_sin_visitas_responde_una_lista_vacia(admin: TestClient) -> None:
+def test_without_visits_responds_an_empty_list(admin: TestClient) -> None:
     assert admin.get("/api/admin/visits").json() == []
