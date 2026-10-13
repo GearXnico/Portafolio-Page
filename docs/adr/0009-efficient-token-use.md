@@ -1,65 +1,65 @@
-# 0009 · Uso eficiente de tokens sin perder calidad
+# 0009 · Efficient token use without losing quality
 
-Estado: aceptada · Fecha: 2026-10-11 · Pidió: Nicolas
+Status: accepted · Date: 2026-10-11 · Requested by: Nicolas
 
-## Contexto
+## Context
 
-El desarrollo se hace con Claude Code sobre una suscripción con límites de uso, y la revisión automática con IA de la ADR 0007 consume de la misma suscripción. El objetivo es sacarle el mayor provecho a cada token. La condición es no perder calidad: los tests, la seguridad y la revisión no se recortan para ahorrar.
+Development is done with Claude Code on a subscription with usage limits, and the automated AI review from ADR (architecture decision record) 0007 draws from the same subscription. The goal is to get the most out of every token. The condition is not to lose quality: tests, security and review are not cut to save tokens.
 
-En la práctica, lo que más gasta no es escribir código: es releer contexto que no hace falta, las sesiones largas que arrastran todo el historial, y rehacer trabajo cuando una tarea quedó mal definida.
+In practice, what costs the most isn't writing code: it's rereading context that isn't needed, long sessions that drag the whole history along, and redoing work when a task was poorly defined.
 
-## Opciones consideradas
+## Options considered
 
-| Opción | Ahorro | Contras |
+| Option | Savings | Cons |
 |---|---|---|
-| A. Sin reglas: trabajar como salga | Ninguno | Sesiones largas, mucho contexto repetido, límites del plan alcanzados a mitad de semana |
-| B. Reglas de sesión, prompts y medición (esta ADR) | Alto en contexto y retrabajo | Disciplina: una tarea por sesión y llenar el registro |
-| C. Usar siempre el modelo más barato | Alto por token | Más errores y retrabajo en tareas difíciles, así que el ahorro real es menor |
+| A. No rules: work however it goes | None | Long sessions, lots of repeated context, plan limits reached mid-week |
+| B. Session, prompt and measurement rules (this ADR) | High in context and rework | Discipline: one task per session and filling in the log |
+| C. Always use the cheapest model | High per token | More errors and rework on hard tasks, so the real savings are smaller |
 
-## Decisión
+## Decision
 
-B, con estas reglas.
+B, with these rules.
 
-**Contexto mínimo**
+**Minimal context**
 
-- CLAUDE.md tiene menos de 200 líneas y apunta a los documentos de `docs/` en vez de copiarlos. Cada prompt dice qué documento y qué sección leer.
-- `node_modules/`, `dist/`, `.venv/`, los lockfiles y `/media` quedan bloqueados para lectura en `.claude/settings.json`.
-- En los prompts se nombran rutas y funciones; no se pega contenido que Claude puede leer solo.
-- Las búsquedas amplias en el código se delegan a un subagente, que devuelve solo la conclusión.
+- CLAUDE.md has fewer than 200 lines and points to the documents in `docs/` instead of copying them. Each prompt says which document and which section to read.
+- `node_modules/`, `dist/`, `.venv/`, the lockfiles and `/media` are blocked from reading in `.claude/settings.json`.
+- Prompts name paths and functions; they don't paste content Claude can read on its own.
+- Broad code searches are delegated to a subagent, which returns only the conclusion.
 
-**Sesiones cortas**
+**Short sessions**
 
-- Una tarea del plan por sesión. Al terminarla, `/clear` antes de la siguiente.
-- Si una sesión se alarga, `/compact` con una indicación de qué conservar.
-- Si una tarea no se termina en dos intentos, se divide en tareas más chicas en el plan; no se reintenta con un prompt más largo.
+- One plan task per session. When it's done, `/clear` before the next one.
+- If a session runs long, `/compact` with a note on what to keep.
+- If a task isn't finished in two attempts, it is split into smaller tasks in the plan; it isn't retried with a longer prompt.
 
-**Menos retrabajo**
+**Less rework**
 
-- Las tareas que tocan varios archivos parten en modo plan: Claude propone, Nicolas aprueba y después se escribe.
-- Cada prompt sale de la plantilla `prompts/template.md`, con el criterio de terminado copiado del plan.
-- Los hooks de `pre-commit` y los tests locales corren antes del PR, para no gastar una revisión de IA ni un ciclo de CI en errores de formato.
-- La salida de tests y lint se pide resumida (`pytest -q --maxfail=1`, solo los errores del lint).
+- Tasks that touch several files start in plan mode: Claude proposes, Nicolas approves, and then the code is written.
+- Each prompt comes from the `prompts/template.md` template, with the definition of done copied from the plan.
+- The `pre-commit` hooks and the local tests run before the PR, so as not to spend an AI review or a CI (continuous integration) cycle on formatting errors.
+- Test and lint output is requested in summary form (`pytest -q --maxfail=1`, only the lint errors).
 
-**Modelo según la tarea**
+**Model by task**
 
-| Tipo de tarea | Modelo |
+| Task type | Model |
 |---|---|
-| Rutinaria (CRUD, componentes, tests, configuración) | Sonnet, de gama media |
-| Diseño, errores difíciles, seguridad o una tarea que falló una vez | Opus, el más capaz |
-| Revisión automática de PR | Sonnet, con el tope de comentarios de la ADR 0007 |
+| Routine: CRUD (create, read, update, delete), components, tests, configuration | Sonnet, mid-range |
+| Design, hard bugs, security, or a task that failed once | Opus, the most capable |
+| Automated PR (pull request) review | Sonnet, with the comment cap from ADR 0007 |
 
-**Medición**
+**Measurement**
 
-- Cada tarea registra sus tokens (`/cost`) en `prompts/log.md`.
-- Al cerrar cada hito se comparan los tokens y las horas con el plan, y se anota en `docs/notes/` qué ajustar.
-- Si un hito consume más del doble que el anterior por tarea, se revisan los prompts antes de seguir.
+- Each task records its tokens (`/cost`) in `prompts/log.md`.
+- When each milestone closes, tokens and hours are compared with the plan, and what to adjust is noted in `docs/notes/`.
+- If a milestone uses more than twice as much per task as the previous one, the prompts are reviewed before continuing.
 
-**Lo que nunca se recorta**
+**What is never cut**
 
-Tests, cobertura mínima, checks de seguridad, staging, la revisión humana y la revisión con IA de los PR de `feature/*`.
+Tests, minimum coverage, security checks, staging, human review, and the AI review of `feature/*` PRs.
 
-## Consecuencias
+## Consequences
 
-- Al final de la versión 1 habrá datos reales de cuánto cuesta cada tipo de tarea. Con ellos se ajustan la plantilla y las estimaciones de la siguiente idea.
-- Las reglas de sesión y de modelo quedan en el CLAUDE.md del producto, así que Claude Code las aplica sin que haya que repetirlas.
-- Llenar el registro toma ~2 minutos por tarea. Claude Code puede hacerlo al final de la sesión si se le pide.
+- By the end of version 1 there will be real data on how much each type of task costs. With it, the template and the estimates for the next idea are adjusted.
+- The session and model rules live in the product's CLAUDE.md, so Claude Code applies them without having to repeat them.
+- Filling in the log takes ~2 minutes per task. Claude Code can do it at the end of the session if asked.
