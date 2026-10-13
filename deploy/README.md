@@ -1,43 +1,43 @@
 # deploy/
 
-Archivos de producción y staging. Las imágenes son `api/Dockerfile` (la API) y `web/Dockerfile` (Caddy con el build de la página y el `Caddyfile` de esta carpeta).
+Production and staging files. The images are `api/Dockerfile` (the API, or application programming interface) and `web/Dockerfile` (Caddy with the page build and the `Caddyfile` from this folder).
 
-| Archivo | Tarea | Qué hace |
+| File | Task | What it does |
 |---|---|---|
-| `compose.prod.yml` | 1.6 | Base, migraciones, API y Caddy, sin root, sin capabilities, con el sistema de archivos de solo lectura, límites de memoria y logs que rotan |
-| `Caddyfile` | 1.6 | HTTPS automático, la página, `/media`, `/api` y las mismas cabeceras de seguridad de `web/security-headers.ts` |
-| `deploy.sh` | 5.3 | Respaldo, migraciones, health check y rollback |
-| `backup.sh` | 5.4 | `pg_dump` diario |
+| `compose.prod.yml` | 1.6 | Database, migrations, API and Caddy, without root, without capabilities, with a read-only file system, memory limits and rotating logs |
+| `Caddyfile` | 1.6 | Automatic HTTPS, the page, `/media`, `/api` and the same security headers as `web/security-headers.ts` |
+| `deploy.sh` | 5.3 | Backup, migrations, health check and rollback |
+| `backup.sh` | 5.4 | Daily `pg_dump` |
 
-## Probarlo en tu máquina
+## Try it on your machine
 
-Es lo mismo que hace el job `deploy-check` de CI (integración continua) en cada PR:
+It is the same thing the CI (continuous integration) `deploy-check` job does on every PR (pull request):
 
 ```bash
 cp .env.example deploy/.env
-# En deploy/.env: SITE_ADDRESS=http://localhost (solo HTTP), y ADMIN_EMAIL, ADMIN_PASSWORD_HASH
-# y JWT_SECRET, que producción exige (cómo generarlos, en .env.example).
+# In deploy/.env: SITE_ADDRESS=http://localhost (HTTP only), and ADMIN_EMAIL, ADMIN_PASSWORD_HASH
+# and JWT_SECRET, which production requires (how to generate them is in .env.example).
 docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --build --wait caddy
 cd web && E2E_BASE_URL=http://localhost npm run e2e
-docker compose -f deploy/compose.prod.yml --env-file deploy/.env down -v   # borra la base de prueba
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env down -v   # deletes the test database
 ```
 
-Usa los puertos 80 y 443, así que no lo levantes junto a otro servidor web.
+It uses ports 80 and 443, so don't run it alongside another web server.
 
-## Dónde van los secretos
+## Where the secrets go
 
-El `.env` nunca se sube al repo, que es público.
+The `.env` is never committed to the repo, which is public.
 
-- **En CI:** `deploy-check` usa las claves de ejemplo de `.env.example` y valores de prueba para el administrador, porque la base se destruye al terminar. No necesita secretos de GitHub.
-- **En staging y producción (hito 5):** cada servidor tiene su propio `deploy/.env`, junto a `compose.prod.yml`, con permisos `600` y dueño el usuario `deploy`. Lo creas tú una vez por SSH (acceso remoto cifrado) y no cambia con cada despliegue. Lleva las variables de `.env.example` con valores nuevos y al azar (no los de tu máquina), más `SITE_ADDRESS` con el dominio. Staging y producción no comparten claves.
-- **En GitHub (hito 5):** solo lo que necesita el workflow de despliegue para entrar al servidor: la llave SSH, el host y el usuario, como secretos del ambiente `staging` o `production` (ADR 0008).
+- **In CI:** `deploy-check` uses the example passwords from `.env.example` and test values for the admin, because the database is destroyed at the end. It needs no GitHub secrets.
+- **In staging and production (milestone 5):** each server has its own `deploy/.env`, next to `compose.prod.yml`, with `600` permissions and owned by the `deploy` user. You create it once over SSH (encrypted remote access) and it doesn't change with each deployment. It holds the variables from `.env.example` with new, random values (not the ones from your machine), plus `SITE_ADDRESS` with the domain. Staging and production don't share passwords.
+- **In GitHub (milestone 5):** only what the deployment workflow needs to get into the server: the SSH key, the host and the user, as secrets of the `staging` or `production` environment (ADR (architecture decision record) 0008).
 
-En el servidor, además de `deploy/`, tiene que estar `db/init/`, que crea el usuario de la API la primera vez que arranca la base.
+On the server, besides `deploy/`, `db/init/` has to be there too; it creates the API user the first time the database starts.
 
-## Decisiones de esta carpeta
+## Decisions in this folder
 
-- **Red interna fija** (`172.30.0.0/24`): `TRUSTED_PROXIES` apunta a ella, así que la API solo lee `X-Forwarded-For` de Caddy (ADR 0004). Caddy reemplaza ese header por la IP real del visitante.
-- **Sin root:** la API corre con el usuario `app` (uid 10001), Caddy con `caddy` (uid 10002) y Postgres con `postgres`. A Caddy se le quita el permiso de abrir puertos bajos, porque Docker ya los deja abrir sin privilegios.
-- **Memoria** para el VPS (servidor virtual privado) de 1 GiB: base 384 MiB, API 256 MiB y Caddy 128 MiB, en total 768 MiB.
-- **Sin logs de acceso:** ni Uvicorn ni Caddy anotan la IP de cada visita, porque es un dato personal.
-- **Migraciones:** el servicio `migrate` corre antes de que cambie la API, y es el único con la clave del dueño de las tablas.
+- **Fixed internal network** (`172.30.0.0/24`): `TRUSTED_PROXIES` points to it, so the API only reads `X-Forwarded-For` from Caddy (ADR 0004). Caddy replaces that header with the visitor's real IP.
+- **No root:** the API runs as the `app` user (uid 10001), Caddy as `caddy` (uid 10002) and Postgres as `postgres`. Caddy has the permission to open low ports removed, because Docker already lets them be opened without privileges.
+- **Memory** for the 1 GiB VPS (virtual private server): database 384 MiB, API 256 MiB and Caddy 128 MiB, 768 MiB in total.
+- **No access logs:** neither Uvicorn nor Caddy records each visitor's IP, because it is personal data.
+- **Migrations:** the `migrate` service runs before the API changes, and it is the only one with the table owner's password.
