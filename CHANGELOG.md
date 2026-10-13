@@ -2,13 +2,19 @@
 
 Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
-## [0.20.10] - 2026-10-13
+## [0.20.6] - 2026-10-13
+
+### Changed
+
+- The project docs in `docs/` (API reference, architecture, brief, development rules, local deployment guide, plan and testing rules) are now in English, and the branch, commit, PR and test name conventions they state are now English (#37).
+
+## [0.20.5] - 2026-10-13
 
 ### Changed
 
 - Comments, step names and job names in the CI workflows, Dependabot, pre-commit, Trivy, Docker Compose, Caddy, `.env.example` and the DB init script are now in English, and the AI review now writes its reviews in English (#37).
 
-## [0.20.5] - 2026-10-13
+## [0.20.4] - 2026-10-13
 
 ### Changed
 
