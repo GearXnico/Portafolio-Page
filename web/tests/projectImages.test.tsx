@@ -38,11 +38,14 @@ const NEW_IMAGE: ProjectImage = {
   position: 1,
 };
 
-/** Simula la API del panel: `routes` da el código y el cuerpo por "MÉTODO url". */
+/**
+ * Fakes the admin panel API (application programming interface): `routes` gives the status and
+ * body by "METHOD url".
+ */
 function stubApi(routes: Record<string, [number, unknown]>) {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     const [status, body] = routes[`${init?.method ?? "GET"} ${url}`] ?? [200, {}];
-    // Un 204 no puede llevar cuerpo.
+    // A 204 can't have a body.
     return Promise.resolve(new Response(status === 204 ? null : JSON.stringify(body), { status }));
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -58,7 +61,7 @@ async function openProject() {
   return within(await screen.findByRole("region", { name: "Capturas" }));
 }
 
-/** Elige un archivo y llena los textos alternativos, que son obligatorios. */
+/** Picks a file and fills in the alt texts, which are required. */
 function chooseFile(name = "inicio.png") {
   const file = new File(["png"], name, { type: "image/png" });
   fireEvent.change(screen.getByLabelText(/^Imagen/), { target: { files: [file] } });
@@ -75,15 +78,15 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("capturas de un proyecto en el panel", () => {
-  it("muestra las capturas guardadas", async () => {
+describe("project screenshots in the admin panel", () => {
+  it("shows the saved screenshots", async () => {
     stubApi({ "GET /api/admin/projects/7": [200, PROJECT] });
     const section = await openProject();
 
     expect(section.getByRole("img", { name: "Portada" })).toHaveAttribute("src", COVER.url);
   });
 
-  it("no sube sin los dos textos alternativos", async () => {
+  it("doesn't upload without both alt texts", async () => {
     const fetchMock = stubApi({ "GET /api/admin/projects/7": [200, PROJECT] });
     const section = await openProject();
 
@@ -96,7 +99,7 @@ describe("capturas de un proyecto en el panel", () => {
     expect(calls(fetchMock, "POST")).toHaveLength(0);
   });
 
-  it("sin capturas lo dice, y no deja subir sin elegir un archivo", async () => {
+  it("says so when there are no screenshots, and doesn't allow uploading without picking a file", async () => {
     stubApi({ "GET /api/admin/projects/7": [200, { ...PROJECT, images: [] }] });
     const section = await openProject();
 
@@ -104,7 +107,7 @@ describe("capturas de un proyecto en el panel", () => {
     expect(section.getByRole("button", { name: "Subir captura" })).toBeDisabled();
   });
 
-  it("un proyecto nuevo pide guardarlo antes de subir capturas", async () => {
+  it("a new project asks to be saved before uploading screenshots", async () => {
     stubApi({});
     renderWithQuery(<App />, "/admin/projects/new");
 
@@ -114,13 +117,13 @@ describe("capturas de un proyecto en el panel", () => {
     expect(screen.queryByRole("region", { name: "Capturas" })).not.toBeInTheDocument();
   });
 
-  it("subir envía el archivo con sus textos y la muestra sin perder lo escrito en el formulario", async () => {
+  it("uploading sends the file with its texts and shows it without losing what was typed in the form", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/projects/7": [200, PROJECT],
       "POST /api/admin/projects/7/images": [201, NEW_IMAGE],
     });
     const section = await openProject();
-    // Un cambio sin guardar en el formulario de al lado.
+    // An unsaved change in the form next to it.
     fireEvent.change(screen.getByLabelText("Orden"), { target: { value: "4" } });
 
     const file = chooseFile();
@@ -133,7 +136,7 @@ describe("capturas de un proyecto en el panel", () => {
     expect(sent.get("file")).toBe(file);
     expect(sent.get("alt_es")).toBe("Pantalla de inicio");
     expect(sent.get("alt_en")).toBe("Home screen");
-    // No vuelve a pedir el proyecto: el formulario conserva el cambio y los campos se limpian.
+    // It doesn't fetch the project again: the form keeps the change and the fields are cleared.
     expect(calls(fetchMock, "GET").filter(([url]) => url === "/api/admin/projects/7")).toHaveLength(
       1,
     );
@@ -146,7 +149,7 @@ describe("capturas de un proyecto en el panel", () => {
     [415, "El archivo no es una imagen JPEG, PNG o WebP."],
     [422, "La imagen está dañada"],
     [500, "No se pudo conectar"],
-  ])("si la subida responde %i, lo avisa", async (status, text) => {
+  ])("if the upload responds %i, shows a notice", async (status, text) => {
     stubApi({
       "GET /api/admin/projects/7": [200, PROJECT],
       "POST /api/admin/projects/7/images": [status, {}],
@@ -159,7 +162,7 @@ describe("capturas de un proyecto en el panel", () => {
     expect(await section.findByRole("alert")).toHaveTextContent(text);
   });
 
-  it("borrar pide confirmación y quita la captura", async () => {
+  it("deleting asks for confirmation and removes the screenshot", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/projects/7": [200, PROJECT],
       "DELETE /api/admin/projects/7/images/1": [204, null],
@@ -176,7 +179,7 @@ describe("capturas de un proyecto en el panel", () => {
     expect(calls(fetchMock, "DELETE")[0]?.[0]).toBe("/api/admin/projects/7/images/1");
   });
 
-  it("un borrado correcto quita el error de una subida fallida", async () => {
+  it("a successful delete clears the error from a failed upload", async () => {
     stubApi({
       "GET /api/admin/projects/7": [200, PROJECT],
       "POST /api/admin/projects/7/images": [413, {}],
@@ -196,7 +199,7 @@ describe("capturas de un proyecto en el panel", () => {
     expect(section.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("si no se confirma, no borra nada", async () => {
+  it("if not confirmed, deletes nothing", async () => {
     const fetchMock = stubApi({ "GET /api/admin/projects/7": [200, PROJECT] });
     vi.spyOn(window, "confirm").mockReturnValue(false);
     const section = await openProject();
