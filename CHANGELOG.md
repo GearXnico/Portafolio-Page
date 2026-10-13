@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [0.20.8] - 2026-10-13
+
+### Changed
+
+- API test names, docstrings and comments are now in English; Spanish sample data stays as it is (#37).
+
 ## [0.20.7] - 2026-10-13
 
 ### Changed
