@@ -17,7 +17,10 @@ const MESSAGE: ContactMessage = {
   read: false,
 };
 
-/** Simula la API del panel con sesión: cada ruta responde lo que indica `routes`. */
+/**
+ * Fakes the admin panel API (application programming interface) with a session: each route
+ * responds with what `routes` says.
+ */
 function stubApi(routes: { messages?: unknown; visits?: unknown; status?: number }) {
   let messages = routes.messages;
   const fetchMock = vi.fn((input: string, init?: RequestInit) => {
@@ -38,8 +41,8 @@ function stubApi(routes: { messages?: unknown; visits?: unknown; status?: number
   return fetchMock;
 }
 
-describe("panel: mensajes", () => {
-  it("el inicio del panel enlaza a mensajes y visitas", async () => {
+describe("admin panel: messages", () => {
+  it("the admin panel home links to messages and visits", async () => {
     stubApi({});
     renderWithQuery(<App />, "/admin");
 
@@ -53,7 +56,7 @@ describe("panel: mensajes", () => {
     );
   });
 
-  it("muestra el mensaje con su remitente y origen, y el HTML como texto", async () => {
+  it("shows the message with its sender and source, and the HTML as text", async () => {
     stubApi({ messages: [MESSAGE] });
     renderWithQuery(<App />, "/admin/messages");
 
@@ -65,7 +68,7 @@ describe("panel: mensajes", () => {
     expect(article.getByText("Hola, <b>me interesa</b> tu perfil.")).toBeInTheDocument();
   });
 
-  it("marcar como leído llama a la API y actualiza el estado", async () => {
+  it("marking as read calls the API and updates the status", async () => {
     const fetchMock = stubApi({ messages: [MESSAGE] });
     renderWithQuery(<App />, "/admin/messages");
 
@@ -79,21 +82,21 @@ describe("panel: mensajes", () => {
     );
   });
 
-  it("un mensaje sin UTM aparece como directo", async () => {
+  it("a message without UTM (Urchin Tracking Module) parameters shows as direct", async () => {
     stubApi({ messages: [{ ...MESSAGE, utm_source: null, utm_campaign: null, read: true }] });
     renderWithQuery(<App />, "/admin/messages");
 
     expect(await screen.findByText(/Directo · Leído/)).toBeInTheDocument();
   });
 
-  it("sin mensajes lo dice", async () => {
+  it("says so when there are no messages", async () => {
     stubApi({ messages: [] });
     renderWithQuery(<App />, "/admin/messages");
 
     expect(await screen.findByText("Todavía no hay mensajes.")).toBeInTheDocument();
   });
 
-  it("si la API falla, avisa", async () => {
+  it("if the API fails, shows a notice", async () => {
     stubApi({ status: 500 });
     renderWithQuery(<App />, "/admin/messages");
 
@@ -101,13 +104,13 @@ describe("panel: mensajes", () => {
   });
 });
 
-describe("panel: visitas", () => {
+describe("admin panel: visits", () => {
   const VISITS: VisitCount[] = [
     { utm_source: "portal", utm_campaign: "empresa-x", visits: 3, unique_visitors: 2 },
     { utm_source: null, utm_campaign: null, visits: 1, unique_visitors: 1 },
   ];
 
-  it("muestra los conteos por utm_source y utm_campaign", async () => {
+  it("shows the counts by utm_source and utm_campaign", async () => {
     stubApi({ visits: VISITS });
     renderWithQuery(<App />, "/admin/visits");
 
@@ -119,14 +122,14 @@ describe("panel: visitas", () => {
     ]);
   });
 
-  it("sin visitas lo dice", async () => {
+  it("says so when there are no visits", async () => {
     stubApi({ visits: [] });
     renderWithQuery(<App />, "/admin/visits");
 
     expect(await screen.findByText("Todavía no hay visitas.")).toBeInTheDocument();
   });
 
-  it("si la API falla, avisa", async () => {
+  it("if the API fails, shows a notice", async () => {
     stubApi({ status: 500 });
     renderWithQuery(<App />, "/admin/visits");
 
