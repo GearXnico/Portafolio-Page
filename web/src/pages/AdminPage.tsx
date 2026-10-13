@@ -1,9 +1,17 @@
 import { Link, useNavigate } from "react-router";
 
 import { useLogout } from "../api/admin";
-import { useLang } from "../i18n";
+import { useLang, type MessageKey } from "../i18n";
 
-/** Inicio del panel: enlaces a cada sección y el botón para cerrar sesión. */
+// Secciones del panel: cada pantalla nueva suma aquí su enlace.
+const SECTIONS: readonly [string, MessageKey][] = [
+  ["projects", "admin.projects.title"],
+  ["profile", "admin.profile.title"],
+  ["skills", "admin.skills.title"],
+  ["experience", "admin.experience.title"],
+];
+
+/** Inicio del panel: el menú de secciones y el cierre de sesión. */
 export function AdminPage() {
   const { t } = useLang();
   const navigate = useNavigate();
@@ -12,12 +20,13 @@ export function AdminPage() {
   return (
     <>
       <h1>{t("admin.title")}</h1>
-      {/* Una sección por línea. */}
       <nav aria-label={t("admin.sections")}>
         <ul>
-          <li>
-            <Link to="projects">{t("admin.projects.title")}</Link>
-          </li>
+          {SECTIONS.map(([path, label]) => (
+            <li key={path}>
+              <Link to={path}>{t(label)}</Link>
+            </li>
+          ))}
         </ul>
       </nav>
       {logout.isError && <p role="alert">{t("admin.error")}</p>}
