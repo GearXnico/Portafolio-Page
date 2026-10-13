@@ -8,7 +8,7 @@ Sitio web de portafolio: una página pública bilingüe (español e inglés) con
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel. La web tiene la ruta `/admin` con login y logout (las pantallas de edición vienen en el hito 4).
+> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel. La web tiene la ruta `/admin` con login y logout, y la lista y edición de proyectos en `/admin/projects` (las demás pantallas de edición vienen en el hito 4).
 
 ## Requisitos
 
