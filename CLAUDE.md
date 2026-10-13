@@ -1,181 +1,183 @@
-# CLAUDE.md · Sitio web de portafolio
+# CLAUDE.md · Portfolio website
 
-Portafolio personal de Nicolas: una página pública bilingüe (español e inglés) con perfil, experiencia, proyectos y contacto, más un panel de administración para editarla. También es una pieza técnica del portafolio, así que la calidad del código, los tests y el pipeline cuentan tanto como la página.
+Nicolas's personal portfolio: a bilingual (Spanish and English) public page with profile, experience, projects and contact, plus an admin panel to edit it. It is also a technical piece of the portfolio, so the quality of the code, the tests and the pipeline count as much as the page.
 
-Responde en español y deja en inglés los términos técnicos que se usan así en la industria. Cuando uses una sigla, agrega su significado entre paréntesis la primera vez.
+Reply to Nico in Spanish or English; both are fine. In Spanish, keep in English the technical terms the industry uses in English. When you use an acronym, add its meaning in parentheses the first time.
 
-## Principios (Nicolas, 2026-10-12)
+Documentation, code comments, commit messages, branch names and PR (pull request) text are in English. UI (user interface) text stays bilingual through `web/src/i18n/{es,en}.json`.
 
-- **No overengineer.** Haz lo mínimo que resuelve la tarea; nada de capas, abstracciones o configuraciones "por si acaso".
-- **Keep it simple and secure.** Ante dos opciones seguras, elige la más simple. La seguridad no se recorta, pero se resuelve con lo más directo que funcione.
+## Principles (Nicolas, 2026-10-12)
 
-## Documentos (leer solo lo que la tarea necesite)
+- **No overengineer.** Do the minimum that solves the task; no layers, abstractions or configuration "just in case".
+- **Keep it simple and secure.** Between two secure options, pick the simpler one. Security is never cut, but it is solved with the most direct thing that works.
 
-| Documento | Para qué |
+## Documents (read only what the task needs)
+
+| Document | Purpose |
 |---|---|
-| `docs/api.md` | Referencia de la API: rutas, validaciones y protecciones |
-| `docs/development.md` | Reglas de desarrollo: cuándo no agregar capas, dónde va cada cosa y cómo se revisa |
-| `docs/testing.md` | Qué se prueba, qué no y en qué nivel |
-| `docs/brief.md` | Alcance del MVP (producto mínimo viable) y lo que queda fuera |
-| `docs/architecture.md` | Componentes, modelo de datos, seguridad y CI/CD (integración y despliegue continuos) |
-| `docs/adr/` | El porqué de cada decisión (0001 a 0009) |
-| `docs/plan.md` | Hitos y tareas, con su criterio de terminado |
-| `docs/prompts/` | Plantilla y registro de prompts por tarea |
+| `docs/api.md` | API (application programming interface) reference: routes, validations and protections |
+| `docs/development.md` | Development rules: when not to add layers, where each thing goes and how it is reviewed |
+| `docs/testing.md` | What is tested, what is not and at which level |
+| `docs/brief.md` | MVP (minimum viable product) scope and what is left out |
+| `docs/architecture.md` | Components, data model, security and CI/CD (continuous integration and continuous deployment) |
+| `docs/adr/` | The why behind each decision (0001 to 0009) |
+| `docs/plan.md` | Milestones and tasks, with their definition of done |
+| `docs/prompts/` | Prompt template and log per task |
 
-No cambies una decisión de una ADR (registro de decisión de arquitectura) por tu cuenta. Si el código no calza con un documento, pregunta antes.
+Don't change a decision from an ADR (architecture decision record) on your own. If the code doesn't match a document, ask first.
 
 ## Stack
 
-- **API:** Python 3.14, FastAPI 0.143, Pydantic 2.14, SQLAlchemy 2.1, Alembic 1.20, Uvicorn 0.54 y pytest 9.
-- **Web:** React 19.3, Vite 8.3, TypeScript 7.0 en modo estricto, React Router 8, TanStack Query 5, Vitest 5 y Playwright 1.64.
-- **Base:** Postgres 18.
-- **Servidor:** Caddy 2.11 sirve los estáticos y `/media`, y hace de proxy de `/api`.
-- **Infraestructura:** Docker Compose y GitHub Actions, con imágenes en GHCR (el registro de imágenes de GitHub).
+- **API:** Python 3.14, FastAPI 0.143, Pydantic 2.14, SQLAlchemy 2.1, Alembic 1.20, Uvicorn 0.54 and pytest 9.
+- **Web:** React 19.3, Vite 8.3, TypeScript 7.0 in strict mode, React Router 8, TanStack Query 5, Vitest 5 and Playwright 1.64.
+- **Database:** Postgres 18.
+- **Server:** Caddy 2.11 serves the static files and `/media`, and proxies `/api`.
+- **Infrastructure:** Docker Compose and GitHub Actions, with images in GHCR (GitHub Container Registry).
 
-## Estructura
+## Structure
 
 ```
 api/        FastAPI: app/, tests/, alembic/
 web/        React: src/, tests/, e2e/
 deploy/     compose.prod.yml, Caddyfile, deploy.sh, backup.sh
-docs/       documentos del proyecto
-compose.yml desarrollo local
+docs/       project documents
+compose.yml local development
 ```
 
-## Comandos
+## Commands
 
-El detalle está en el README. Actualiza esta sección si cambian.
+The details are in the README. Update this section if they change.
 
 ```bash
-# Todo en local
+# Everything locally
 cp .env.example .env
-docker compose up -d                       # db, api (:8000) y web (:5173)
+docker compose up -d                       # db, api (:8000) and web (:5173)
 
 # API
 cd api
 python -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"                    # instalar dependencias
-pytest -q --maxfail=1               # tests (necesita la db del compose)
+pip install -e ".[dev]"                    # install dependencies
+pytest -q --maxfail=1               # tests (needs the compose db)
 pytest --cov=app --cov-fail-under=80
-ruff check . && ruff format --check . && mypy app   # ruff incluye las reglas de seguridad (S)
+ruff check . && ruff format --check . && mypy app   # ruff includes the security rules (S)
 pip install "pip-audit==2.10.*" && pip-audit --skip-editable
-alembic revision --autogenerate -m "<cambio>"
+alembic revision --autogenerate -m "<change>"
 alembic upgrade head
 
 # Web
 cd web
 npm ci
 npm run test -- --run                      # Vitest
-npm run test:coverage                      # mínimo 80 %
+npm run test:coverage                      # 80 % minimum
 npm run lint && npm run typecheck
 npm audit --audit-level=high
-npm run e2e                                # Playwright, con el compose arriba
+npm run e2e                                # Playwright, with the compose up
 
-# Producción en local (lo mismo que el job deploy-check); detalle en deploy/README.md
-cp .env.example deploy/.env                 # y completa SITE_ADDRESS, ADMIN_* y JWT_SECRET
+# Production locally (same as the deploy-check job); details in deploy/README.md
+cp .env.example deploy/.env                 # and fill in SITE_ADDRESS, ADMIN_* and JWT_SECRET
 docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --build --wait caddy
 cd web && E2E_BASE_URL=http://localhost npm run e2e
 
-# pre-commit: ruff, Prettier y llaves privadas; también corre en el CI
-pip install "pre-commit==4.6.*" && pre-commit install   # una vez
+# pre-commit: ruff, Prettier and private keys; it also runs in CI
+pip install "pre-commit==4.6.*" && pre-commit install   # once
 pre-commit run --all-files
 ```
 
-## Reglas de trabajo (ADR 0007)
+## Working rules (ADR 0007)
 
-**Ramas**
+**Branches**
 
-- Se parte desde `dev`.
-- Nombres: `feature/<nombre-descriptivo>`, `fix/<nombre>`, `docs/<nombre>`, `chore/<nombre>` o `hotfix/<nombre>` (este último sale de `main`).
-- En minúsculas, con guiones y de 2 a 4 palabras en español.
-- Nunca se trabaja directo en `dev` ni en `main`.
+- Start from `dev`.
+- Names: `feature/<descriptive-name>`, `fix/<name>`, `docs/<name>`, `chore/<name>` or `hotfix/<name>` (the last one branches off `main`).
+- Lowercase, hyphenated, 2 to 4 English words.
+- Never work directly on `dev` or `main`.
 
 **Commits**
 
-- Conventional Commits en español: `feat: agrega formulario de contacto`.
-- Tipos: `feat`, `fix`, `test`, `docs`, `refactor` y `chore`.
-- Cada commit hace una sola cosa y deja los tests en verde, porque se mergea con rebase & merge. Antes del PR, ordénalos con `git rebase -i`.
+- Conventional Commits in English: `feat: add contact form`.
+- Types: `feat`, `fix`, `test`, `docs`, `refactor` and `chore`.
+- Each commit does one thing and leaves the tests green, because merges use rebase & merge. Before the PR, order them with `git rebase -i`.
 
 **PR**
 
-- Uno por tarea del plan, hacia `dev`, con la plantilla: Antes, Después, Cómo probar y la checklist.
-- Idealmente con menos de ~400 líneas.
-- Nunca hagas merge, ni apruebes, ni uses force push en `dev` o `main`. En tu propia rama puedes usar `--force-with-lease`.
+- One per plan task, targeting `dev`, with the template: Before, After, How to test and the checklist.
+- Ideally under ~400 lines.
+- Never merge, approve or force push on `dev` or `main`. On your own branch you can use `--force-with-lease`.
 
 **Tests**
 
-- Toda `feature/*` trae tests.
-- Todo `fix/*` trae primero un test que reproduce el error.
-- Cobertura mínima: 80 % de las líneas, en la API y en web.
-- Los tests de la API van contra Postgres real, sin mocks (objetos simulados) de la base.
-- Cada ruta de `/api/admin/*` tiene un test de acceso sin sesión.
-- Nunca saltes, desactives ni borres un test para dejar el CI en verde.
+- Every `feature/*` comes with tests.
+- Every `fix/*` first brings a test that reproduces the bug.
+- Minimum coverage: 80 % of lines, in the API and in web.
+- API tests run against a real Postgres, with no mocks (simulated objects) of the database.
+- Every `/api/admin/*` route has a test for access without a session.
+- Never skip, disable or delete a test to get CI green.
 
-**Seguridad**
+**Security**
 
-- Valida las entradas con Pydantic.
-- No guardes secretos, `.env` ni datos reales en el repo; versiona solo `.env.example`.
-- No registres datos personales en los logs.
-- Las dependencias nuevas tienen que pasar `pip-audit` o `npm audit`.
+- Validate inputs with Pydantic.
+- Don't store secrets, `.env` or real data in the repo; version only `.env.example`.
+- Don't log personal data.
+- New dependencies must pass `pip-audit` or `npm audit`.
 
-**Migraciones**
+**Migrations**
 
-- Solo agregan, por ejemplo columnas nuevas opcionales.
-- Borrar algo toma dos PR: primero se deja de usar y después se elimina.
+- They only add, for example new optional columns.
+- Removing something takes two PRs: first stop using it, then remove it.
 
-## Convenciones de código
+## Code conventions
 
 **API**
 
-- Rutas en `app/routers/`, lógica en `app/services/`, modelos en `app/models/` y esquemas Pydantic en `app/schemas/`.
-- Type hints en todo.
-- Errores con `HTTPException` y un mensaje claro.
-- El idioma se decide solo en `app/services/locale.py`, en una función que recibe el país y `Accept-Language` (ADR 0002).
-- El correo se envía solo desde `app/services/mail.py` (ADR 0005).
+- Routes in `app/routers/`, logic in `app/services/`, models in `app/models/` and Pydantic schemas in `app/schemas/`.
+- Type hints everywhere.
+- Errors with `HTTPException` and a clear message.
+- The language is decided only in `app/services/locale.py`, in a function that receives the country and `Accept-Language` (ADR 0002).
+- Email is sent only from `app/services/mail.py` (ADR 0005).
 
-**Contenido bilingüe**
+**Bilingual content**
 
-- Las columnas van con sufijo `_es` y `_en` (ADR 0003).
-- Los textos fijos de la interfaz viven en `web/src/i18n/{es,en}.json`. No hay textos en duro dentro de los componentes.
+- Columns use the `_es` and `_en` suffixes (ADR 0003).
+- Fixed UI text lives in `web/src/i18n/{es,en}.json`. No hardcoded text inside components.
 
 **Web**
 
-- Componentes funcionales; los datos del servidor se cargan con TanStack Query.
-- Un componente por archivo, en `web/src/components/`. Las páginas van en `web/src/pages/`.
+- Functional components; server data is loaded with TanStack Query.
+- One component per file, in `web/src/components/`. Pages go in `web/src/pages/`.
 
 **General**
 
-- Nombres de código en inglés; textos para el usuario y documentación en español.
+- Code names and documentation in English; user-facing text is bilingual.
 
-## Ahorro de tokens (ADR 0009)
+## Token saving (ADR 0009)
 
-**Contexto**
+**Context**
 
-- Una tarea del plan por sesión. Al terminar, se usa `/clear`.
-- Lee solo los documentos y archivos que la tarea nombra. Para búsquedas amplias en el código, usa un subagente.
-- No leas `node_modules/`, `dist/`, `.venv/`, lockfiles ni `/media`.
-- Muestra solo un resumen de la salida de tests y lint, con los errores, no todo el log.
+- One plan task per session. When done, use `/clear`.
+- Read only the documents and files the task names. For broad code searches, use a subagent.
+- Don't read `node_modules/`, `dist/`, `.venv/`, lockfiles or `/media`.
+- Show only a summary of test and lint output, with the errors, not the whole log.
 
-**Forma de trabajo**
+**Way of working**
 
-- Si la tarea toca más de 3 archivos, propón primero un plan corto y espera aprobación.
-- Si una tarea falla dos veces, detente y propón dividirla en el plan, en vez de reintentarla.
+- If the task touches more than 3 files, first propose a short plan and wait for approval.
+- If a task fails twice, stop and propose splitting it in the plan, instead of retrying it.
 
-**Modelo**
+**Model**
 
-- Sonnet para lo rutinario.
-- Si la tarea es de diseño, de seguridad o un error difícil, sugiere cambiar a Opus.
+- Sonnet for routine work.
+- If the task is about design, security or a hard bug, suggest switching to Opus.
 
-## Al terminar cada tarea
+## When each task is done
 
-1. Corre tests, lint, typecheck y `pre-commit`, y confirma que todo está en verde.
-2. Abre el PR a `dev` y entrega el enlace.
-3. Agrega arriba en `CHANGELOG.md`, en inglés, la sección con la versión de tu PR: `feat` sube MINOR y los demás tipos suben PATCH. La guía está al final de ese archivo.
-4. Agrega una fila en `docs/prompts/log.md` con la tarea, el modelo, los tokens de `/cost`, las sesiones y el PR. Completa "Resultado" y "Lecciones" en el archivo del prompt.
-5. Si cambió un comando o una convención, actualiza este archivo en el mismo PR.
+1. Run tests, lint, typecheck and `pre-commit`, and confirm everything is green.
+2. Open the PR to `dev` and share the link.
+3. Add at the top of `CHANGELOG.md`, in English, the section with your PR's version: `feat` bumps MINOR and the other types bump PATCH. The guide is at the end of that file.
+4. Add a row to `docs/prompts/log.md` with the task, the model, the tokens from `/cost`, the sessions and the PR. Fill in "Result" and "Lessons" in the prompt file.
+5. If a command or a convention changed, update this file in the same PR.
 
-## Lo que no se hace sin preguntar
+## What is not done without asking
 
-- Cambiar el stack, una versión mayor o una decisión de una ADR.
-- Agregar un servicio externo o algo que tenga costo. El despliegue a servidores reales es del hito 5 del plan.
-- Tocar `deploy/`, los workflows o los rulesets fuera de las tareas del plan que los nombran.
+- Changing the stack, a major version or an ADR decision.
+- Adding an external service or anything that has a cost. Deployment to real servers belongs to milestone 5 of the plan.
+- Touching `deploy/`, the workflows or the rulesets outside the plan tasks that name them.
