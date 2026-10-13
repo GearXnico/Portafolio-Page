@@ -1,4 +1,4 @@
-"""POST /api/contact contra el Postgres real. Solo se simula el servidor de correo."""
+"""POST /api/contact against the real Postgres. Only the mail server is faked."""
 
 import logging
 import smtplib
@@ -30,7 +30,7 @@ VALIDO: dict[str, Any] = {
 
 
 class SmtpFalso:
-    """Reemplaza a smtplib.SMTP: guarda lo que se envía o falla si se le pide."""
+    """Replaces smtplib.SMTP: stores what is sent, or fails when asked to."""
 
     enviados: list[EmailMessage] = []
     error: Exception | None = None
@@ -67,9 +67,9 @@ Guardados = Callable[[], list[ContactMessage]]
 
 @pytest.fixture(autouse=True)
 def guardados() -> Iterator[Guardados]:
-    """Lee de la base los mensajes que guardó el test, y los borra al terminar.
+    """Read from the database the messages the test saved, and delete them at the end.
 
-    La ruta hace commit, así que aquí no sirve la transacción revertida de `db_session`.
+    The route commits, so the rolled-back transaction of `db_session` doesn't work here.
     """
     with SessionLocal() as session:
         ultimo = session.scalar(select(func.coalesce(func.max(ContactMessage.id), 0)))
@@ -101,10 +101,10 @@ def enviar(client: TestClient, **cambios: Any) -> Any:
     return client.post("/api/contact", json=VALIDO | cambios)
 
 
-# Envío
+# Sending
 
 
-def test_guarda_el_mensaje(client: TestClient, guardados: Guardados) -> None:
+def test_saves_the_message(client: TestClient, guardados: Guardados) -> None:
     response = enviar(client)
 
     assert response.status_code == 201
@@ -116,7 +116,7 @@ def test_guarda_el_mensaje(client: TestClient, guardados: Guardados) -> None:
     assert (mensaje.read, mensaje.emailed) == (False, False)
 
 
-def test_limpia_espacios_y_utm_vacias(client: TestClient, guardados: Guardados) -> None:
+def test_trims_spaces_and_empty_utm(client: TestClient, guardados: Guardados) -> None:
     response = enviar(client, name="  Ana  ", utm_source="", utm_campaign=None)
 
     assert response.status_code == 201
@@ -125,11 +125,11 @@ def test_limpia_espacios_y_utm_vacias(client: TestClient, guardados: Guardados) 
     assert (mensaje.utm_source, mensaje.utm_campaign) == (None, None)
 
 
-def test_el_contenido_se_guarda_tal_cual_sin_interpretarlo(
+def test_content_is_saved_as_is_without_interpreting_it(
     client: TestClient, guardados: Guardados
 ) -> None:
-    # La API no escapa ni ejecuta nada: guarda el texto. Quien lo muestre (React, el correo
-    # de texto plano) lo escapa al mostrarlo.
+    # The API doesn't escape or run anything: it saves the text. Whoever shows it (React, the
+    # plain-text email) escapes it when showing it.
     texto = "<script>alert(1)</script> ' OR 1=1; --"
 
     assert enviar(client, message=texto, name="<b>Ana</b>").status_code == 201
@@ -138,7 +138,7 @@ def test_el_contenido_se_guarda_tal_cual_sin_interpretarlo(
     assert (mensaje.message, mensaje.name) == (texto, "<b>Ana</b>")
 
 
-def test_acepta_los_largos_maximos(client: TestClient, guardados: Guardados) -> None:
+def test_accepts_the_maximum_lengths(client: TestClient, guardados: Guardados) -> None:
     response = enviar(
         client,
         name="ñ" * 200,
@@ -152,7 +152,7 @@ def test_acepta_los_largos_maximos(client: TestClient, guardados: Guardados) -> 
     assert len(guardados()) == 1
 
 
-# Entradas inválidas
+# Invalid input
 
 
 @pytest.mark.parametrize(
@@ -186,7 +186,7 @@ def test_acepta_los_largos_maximos(client: TestClient, guardados: Guardados) -> 
         {"name": 123},
     ],
 )
-def test_rechaza_entradas_invalidas(
+def test_rejects_invalid_input(
     client: TestClient, guardados: Guardados, cambios: dict[str, Any]
 ) -> None:
     response = enviar(client, **cambios)
@@ -196,7 +196,7 @@ def test_rechaza_entradas_invalidas(
 
 
 @pytest.mark.parametrize("campo", ["name", "email", "message", "lang"])
-def test_exige_los_campos_obligatorios(
+def test_requires_the_mandatory_fields(
     client: TestClient, guardados: Guardados, campo: str
 ) -> None:
     datos = {k: v for k, v in VALIDO.items() if k != campo}
@@ -205,7 +205,7 @@ def test_exige_los_campos_obligatorios(
     assert guardados() == []
 
 
-def test_rechaza_lo_que_no_es_json(client: TestClient, guardados: Guardados) -> None:
+def test_rejects_what_is_not_json(client: TestClient, guardados: Guardados) -> None:
     response = client.post(
         "/api/contact", content=b"name=Ana", headers={"content-type": "text/plain"}
     )
@@ -214,7 +214,7 @@ def test_rechaza_lo_que_no_es_json(client: TestClient, guardados: Guardados) -> 
     assert guardados() == []
 
 
-def test_rechaza_un_cuerpo_demasiado_grande(client: TestClient, guardados: Guardados) -> None:
+def test_rejects_a_body_that_is_too_large(client: TestClient, guardados: Guardados) -> None:
     response = client.post(
         "/api/contact",
         content=b"x" * (MAX_BODY_BYTES + 1),
@@ -225,7 +225,7 @@ def test_rechaza_un_cuerpo_demasiado_grande(client: TestClient, guardados: Guard
     assert guardados() == []
 
 
-def test_rechaza_un_cuerpo_sin_largo_declarado(client: TestClient) -> None:
+def test_rejects_a_body_without_declared_length(client: TestClient) -> None:
     def por_partes() -> Iterator[bytes]:
         yield b"{}"
 
@@ -239,7 +239,7 @@ def test_rechaza_un_cuerpo_sin_largo_declarado(client: TestClient) -> None:
 # Spam
 
 
-def test_honeypot_lleno_responde_igual_pero_no_guarda(
+def test_filled_honeypot_responds_the_same_but_saves_nothing(
     client: TestClient, guardados: Guardados, smtp: type[SmtpFalso]
 ) -> None:
     response = enviar(client, website="https://spam.example.com")
@@ -250,7 +250,7 @@ def test_honeypot_lleno_responde_igual_pero_no_guarda(
     assert smtp.enviados == []
 
 
-def test_limita_a_5_mensajes_por_hora_por_ip(client: TestClient, guardados: Guardados) -> None:
+def test_limits_to_5_messages_per_hour_per_ip(client: TestClient, guardados: Guardados) -> None:
     for _ in range(5):
         assert enviar(client).status_code == 201
 
@@ -261,14 +261,14 @@ def test_limita_a_5_mensajes_por_hora_por_ip(client: TestClient, guardados: Guar
     assert len(guardados()) == 5
 
 
-def test_el_honeypot_tambien_cuenta_para_el_limite(client: TestClient) -> None:
+def test_honeypot_also_counts_toward_the_limit(client: TestClient) -> None:
     for _ in range(5):
         enviar(client, website="spam")
 
     assert enviar(client).status_code == 429
 
 
-def test_sin_proxy_de_confianza_ignora_x_forwarded_for(client: TestClient) -> None:
+def test_without_trusted_proxy_ignores_x_forwarded_for(client: TestClient) -> None:
     for i in range(5):
         client.post("/api/contact", json=VALIDO, headers={"x-forwarded-for": f"203.0.113.{i}"})
 
@@ -277,8 +277,8 @@ def test_sin_proxy_de_confianza_ignora_x_forwarded_for(client: TestClient) -> No
     assert response.status_code == 429
 
 
-def test_detras_del_proxy_de_confianza_limita_por_la_ip_del_visitante() -> None:
-    # Como en producción: Caddy es el proxy de confianza (TRUSTED_PROXIES) y manda la IP real.
+def test_behind_the_trusted_proxy_limits_by_the_visitor_ip() -> None:
+    # As in production: Caddy is the trusted proxy (TRUSTED_PROXIES) and sends the real IP.
     detras_de_caddy: Any = ProxyHeadersMiddleware(cast(Any, app), trusted_hosts="testclient")
 
     with TestClient(detras_de_caddy) as client:
@@ -293,10 +293,10 @@ def test_detras_del_proxy_de_confianza_limita_por_la_ip_del_visitante() -> None:
         assert desde("198.51.100.1") == 201
 
 
-# Aviso por correo
+# Email notice
 
 
-def test_envia_el_aviso_y_marca_el_mensaje(
+def test_sends_the_notice_and_marks_the_message(
     client: TestClient, guardados: Guardados, smtp: type[SmtpFalso]
 ) -> None:
     assert enviar(client).status_code == 201
@@ -316,7 +316,7 @@ def test_envia_el_aviso_y_marca_el_mensaje(
 @pytest.mark.parametrize(
     "error", [smtplib.SMTPAuthenticationError(535, b"no"), TimeoutError(), ConnectionRefusedError()]
 )
-def test_correo_fallido_igual_guarda_el_mensaje(
+def test_failed_email_still_saves_the_message(
     client: TestClient,
     guardados: Guardados,
     smtp: type[SmtpFalso],
@@ -332,11 +332,11 @@ def test_correo_fallido_igual_guarda_el_mensaje(
     [mensaje] = guardados()
     assert mensaje.emailed is False
     assert f"Could not send the notice for message {mensaje.id}" in caplog.text
-    # El log no lleva datos personales.
+    # The log carries no personal data.
     assert "ana@example.com" not in caplog.text and "Ana" not in caplog.text
 
 
-def test_sin_smtp_configurado_guarda_y_lo_anota_en_el_log(
+def test_without_smtp_configured_saves_and_notes_it_in_the_log(
     client: TestClient,
     guardados: Guardados,
     caplog: pytest.LogCaptureFixture,
@@ -352,14 +352,14 @@ def test_sin_smtp_configurado_guarda_y_lo_anota_en_el_log(
     assert "SMTP not configured" in caplog.text
 
 
-def test_send_to_owner_sin_configurar_falla(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_send_to_owner_fails_when_not_configured(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "smtp_password", None)
 
     with pytest.raises(mail.MailError):
         mail.send_to_owner(subject="x", body="y")
 
 
-def test_aviso_de_un_mensaje_que_ya_no_existe_no_hace_nada(smtp: type[SmtpFalso]) -> None:
+def test_notice_for_a_message_that_no_longer_exists_does_nothing(smtp: type[SmtpFalso]) -> None:
     contact.notify_new_message(2_000_000_000)
 
     assert smtp.enviados == []
