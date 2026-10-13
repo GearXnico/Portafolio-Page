@@ -8,7 +8,7 @@ import { FormStatus } from "./FormStatus";
 const CATEGORIES: readonly SkillCategory[] = ["language", "framework", "tool"];
 const EMPTY: SkillInput = { name: "", category: "language", position: 0 };
 
-/** Una habilidad del panel: sin `skill`, crea una nueva y deja el formulario en blanco. */
+/** One admin panel skill: without `skill`, it creates a new one and leaves the form blank. */
 export function SkillForm({ skill }: { skill?: Skill }) {
   const { t } = useLang();
   const save = useSaveSkill();

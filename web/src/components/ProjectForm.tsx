@@ -26,19 +26,20 @@ function errorKey(error: Error): MessageKey {
 }
 
 interface Props {
-  /** Sin proyecto, el formulario crea uno nuevo. */
+  /** Without a project, the form creates a new one. */
   project?: AdminProject;
   onSaved: () => void;
 }
 
 /**
- * Formulario de un proyecto: los textos en español e inglés lado a lado, y abajo el slug, el
- * stack, los enlaces, el orden y si se ve en la página. La API valida todo de nuevo al guardar.
+ * Project form: the Spanish and English texts side by side, and below them the slug, the stack,
+ * the links, the order and whether it shows on the page. The API (application programming
+ * interface) validates everything again on save.
  */
 export function ProjectForm({ project, onSaved }: Props) {
   const { t } = useLang();
   const save = useSaveProject(project?.id);
-  // La API rechaza campos de más (id, capturas, fechas), así que solo se copian los editables.
+  // The API rejects extra fields (id, screenshots, dates), so only the editable ones are copied.
   const [values, setValues] = useState<ProjectInput>(() =>
     project
       ? (Object.fromEntries(

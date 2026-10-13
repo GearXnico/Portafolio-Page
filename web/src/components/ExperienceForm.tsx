@@ -21,7 +21,7 @@ const EMPTY: ExperienceInput = {
   position: 0,
 };
 
-/** Un trabajo del panel: sin `item`, crea uno nuevo y deja el formulario en blanco. */
+/** One admin panel job: without `item`, it creates a new one and leaves the form blank. */
 export function ExperienceForm({ item }: { item?: Experience }) {
   const { t } = useLang();
   const save = useSaveExperience();
@@ -30,7 +30,8 @@ export function ExperienceForm({ item }: { item?: Experience }) {
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    // Solo los campos que acepta la API (la respuesta trae además el id).
+    // Only the fields the API (application programming interface) accepts (the response also
+    // includes the id).
     const { company, role_es, role_en, description_es, description_en } = form;
     const { start_date, end_date, position } = form;
     save.mutate(
