@@ -1,6 +1,6 @@
 // Textos fijos de la interfaz e idioma de la página (ADR 0002). La API decide el idioma
 // inicial según el navegador; la elección del selector se guarda en localStorage y manda.
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 
 import en from "./en.json";
 import es from "./es.json";
@@ -63,4 +63,31 @@ export const LangContext = createContext<LangState>({
 export function useLang() {
   const { lang, setLang } = useContext(LangContext);
   return { lang, setLang, t: (key: MessageKey) => translate(lang, key) };
+}
+
+/**
+ * Idioma, título y descripción del documento (SEO y lectores de pantalla). Hay una sola URL
+ * para los dos idiomas, así que no se usa `hreflang`: el idioma va en `<html lang>`.
+ */
+export function useDocumentMeta(lang: Lang, title: string, noindex = false): void {
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title = title;
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "description";
+      document.head.append(meta);
+    }
+    meta.content = translate(lang, "meta.description");
+    // El panel no se indexa: robots.txt solo pide no rastrearlo, y un enlace externo bastaría.
+    if (!noindex) return;
+    const robots = document.createElement("meta");
+    robots.name = "robots";
+    robots.content = "noindex";
+    document.head.append(robots);
+    return () => {
+      robots.remove();
+    };
+  }, [lang, title, noindex]);
 }

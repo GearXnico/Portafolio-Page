@@ -1,7 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Outlet } from "react-router";
 
-import { DEFAULT_LANG, LangContext, storedLang, storeLang, type Lang } from "../i18n";
+import {
+  DEFAULT_LANG,
+  LangContext,
+  storedLang,
+  storeLang,
+  translate,
+  useDocumentMeta,
+  type Lang,
+} from "../i18n";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 /**
@@ -11,9 +19,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 export function AdminLayout() {
   const [lang, setLang] = useState<Lang>(() => storedLang() ?? DEFAULT_LANG);
 
-  useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
+  useDocumentMeta(lang, translate(lang, "admin.title"), true);
 
   const value = useMemo(
     () => ({

@@ -34,5 +34,7 @@
   "admin.login.invalid": "Wrong email or password.",
   "admin.login.tooMany": "Too many attempts. Try again in 15 minutes.",
   "admin.error": "Could not reach the server. Try again in a few minutes.",
-  "admin.logout": "Sign out"
+  "admin.logout": "Sign out",
+  "meta.title": "Portfolio",
+  "meta.description": "Portfolio: profile, experience, projects and contact form."
 }
