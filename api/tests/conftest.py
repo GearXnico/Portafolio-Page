@@ -1,4 +1,4 @@
-"""Fixtures compartidas. Los tests usan el Postgres real de DATABASE_URL, sin mocks de la base."""
+"""Shared fixtures. Tests use the real Postgres from DATABASE_URL, with no database mocks."""
 
 from collections.abc import Iterator
 
@@ -14,7 +14,7 @@ from app.main import app
 
 @pytest.fixture(scope="session", autouse=True)
 def migraciones_aplicadas() -> None:
-    """Deja la base en la última migración antes de correr cualquier test."""
+    """Bring the database to the latest migration before running any test."""
     command.upgrade(Config("alembic.ini"), "head")
 
 
@@ -27,10 +27,10 @@ def client() -> Iterator[TestClient]:
 
 @pytest.fixture
 def db_session() -> Iterator[Session]:
-    """Sesión en una transacción que se revierte al final: cada test parte con la base limpia.
+    """Session in a transaction that is rolled back at the end: each test starts with a clean DB.
 
-    Los errores de una restricción solo revierten un savepoint, así que el test puede seguir
-    usando la sesión después de un IntegrityError.
+    Constraint errors only roll back a savepoint, so the test can keep using the session after
+    an IntegrityError.
     """
     with engine.connect() as connection:
         transaction = connection.begin()
