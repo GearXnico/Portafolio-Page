@@ -4,7 +4,7 @@ import { useAdminSkills } from "../api/adminProfile";
 import { SkillForm } from "../components/SkillForm";
 import { useLang } from "../i18n";
 
-/** Habilidades: una fila editable por cada una y un formulario para agregar otra. */
+/** Skills: one editable row for each and a form to add another. */
 export function AdminSkillsPage() {
   const { t } = useLang();
   const { data, isError } = useAdminSkills();

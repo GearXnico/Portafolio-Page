@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { useLogout } from "../api/admin";
 import { useLang, type MessageKey } from "../i18n";
 
-// Secciones del panel: cada pantalla nueva suma aquí su enlace.
+// Admin panel sections: each new screen adds its link here.
 const SECTIONS: readonly [string, MessageKey][] = [
   ["projects", "admin.projects.title"],
   ["profile", "admin.profile.title"],
@@ -13,7 +13,7 @@ const SECTIONS: readonly [string, MessageKey][] = [
   ["visits", "admin.visits.title"],
 ];
 
-/** Inicio del panel: el menú de secciones y el cierre de sesión. */
+/** Admin panel home: the section menu and logout. */
 export function AdminPage() {
   const { t } = useLang();
   const navigate = useNavigate();

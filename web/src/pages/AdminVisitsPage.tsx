@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { useVisits } from "../api/activity";
 import { useLang } from "../i18n";
 
-/** Visitas agrupadas por `utm_source` y `utm_campaign`: qué enlace trajo cuántas visitas. */
+/** Visits grouped by `utm_source` and `utm_campaign`: which link brought how many visits. */
 export function AdminVisitsPage() {
   const { t } = useLang();
   const visits = useVisits();

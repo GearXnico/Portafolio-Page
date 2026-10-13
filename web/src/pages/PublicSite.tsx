@@ -14,16 +14,17 @@ import {
 } from "../i18n";
 import { HomePage } from "./HomePage";
 
-/** La página pública: carga `bootstrap` una vez y decide el idioma. */
+/** The public page: loads `bootstrap` once and decides the language. */
 export function PublicSite() {
   const { data, isPending, isError } = useBootstrap();
   const [chosen, setChosen] = useState<Lang | null>(storedLang);
 
-  // Manda la elección del selector; si no hay, el idioma que decidió la API.
+  // The switcher choice wins; if there is none, the language the API (application programming
+  // interface) decided.
   const apiLang = isLang(data?.lang) ? data.lang : null;
   const lang = chosen ?? apiLang ?? DEFAULT_LANG;
 
-  // Título de la pestaña y de los buscadores: el titular del perfil, si ya llegó.
+  // Title for the browser tab and search engines: the profile headline, if it has arrived.
   const metaTitle = translate(lang, "meta.title");
   const profile = data?.profile;
   useDocumentMeta(
@@ -42,7 +43,7 @@ export function PublicSite() {
     [lang],
   );
 
-  // Sin elección guardada, se espera a la API para no mostrar un idioma y luego cambiarlo.
+  // With no saved choice, it waits for the API so it doesn't show one language and then switch.
   if (chosen === null && isPending) return null;
 
   return (

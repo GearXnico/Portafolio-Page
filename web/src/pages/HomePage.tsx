@@ -13,8 +13,8 @@ interface Props {
 }
 
 /**
- * La página pública. El contenido llega de App, que hace la única llamada a `bootstrap`
- * (cada llamada registra una visita, así que no se pide de nuevo desde aquí).
+ * The public page. Content comes from App, which makes the only call to `bootstrap`
+ * (each call records a visit, so it isn't fetched again from here).
  */
 export function HomePage({ data, isError }: Props) {
   const { t } = useLang();

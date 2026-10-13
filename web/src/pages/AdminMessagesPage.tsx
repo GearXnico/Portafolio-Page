@@ -4,7 +4,7 @@ import { useMarkMessage, useMessages } from "../api/activity";
 import { MessageItem } from "../components/MessageItem";
 import { useLang } from "../i18n";
 
-/** Mensajes del formulario de contacto, el más nuevo primero, con su estado de lectura. */
+/** Contact form messages, newest first, with their read status. */
 export function AdminMessagesPage() {
   const { t } = useLang();
   const messages = useMessages();
