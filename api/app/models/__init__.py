@@ -1,6 +1,6 @@
-"""Modelos de SQLAlchemy. Alembic usa `Base.metadata` para autogenerar migraciones.
+"""SQLAlchemy models. Alembic uses `Base.metadata` to autogenerate migrations.
 
-Importar este paquete registra todas las tablas en `Base.metadata`.
+Importing this package registers every table in `Base.metadata`.
 """
 
 from app.models.base import Base

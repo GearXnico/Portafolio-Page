@@ -1,11 +1,11 @@
-"""Habilidades técnicas que muestra la página, agrupadas por categoría."""
+"""Technical skills shown on the page, grouped by category."""
 
 from sqlalchemy import CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
 
-# Valores guardados en la base; el frontend los traduce a cada idioma.
+# Values stored in the database; the frontend translates them into each language.
 SKILL_CATEGORIES = ("language", "framework", "tool")
 
 

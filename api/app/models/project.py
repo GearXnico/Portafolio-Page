@@ -1,4 +1,4 @@
-"""Proyectos del portafolio y sus capturas."""
+"""Portfolio projects and their screenshots."""
 
 from datetime import datetime
 
@@ -12,7 +12,7 @@ from app.models.base import URL_HTTPS_REGEX, URL_MAX_LENGTH, Base
 class Project(Base):
     __tablename__ = "project"
     __table_args__ = (
-        # El slug va en la URL: minúsculas, números y guiones simples.
+        # The slug goes in the URL: lowercase letters, digits and single hyphens.
         CheckConstraint("slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'", name="slug_format"),
         CheckConstraint("position >= 0", name="position"),
         CheckConstraint(
@@ -31,13 +31,13 @@ class Project(Base):
     title_en: Mapped[str]
     summary_es: Mapped[str]
     summary_en: Mapped[str]
-    # Cuerpo en Markdown.
+    # Body in Markdown.
     body_es: Mapped[str] = mapped_column(server_default="")
     body_en: Mapped[str] = mapped_column(server_default="")
     stack: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
     demo_url: Mapped[str | None]
     repo_url: Mapped[str | None]
-    # Un proyecto nuevo queda oculto hasta que se publica desde el panel.
+    # A new project stays hidden until it is published from the panel.
     visible: Mapped[bool] = mapped_column(server_default=text("false"))
     position: Mapped[int] = mapped_column(server_default="0")
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
@@ -48,7 +48,7 @@ class Project(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by="ProjectImage.position",
-        # El panel y la página siempre muestran las capturas con su proyecto.
+        # The panel and the page always show the screenshots with their project.
         lazy="selectin",
     )
 
@@ -57,7 +57,7 @@ class ProjectImage(Base):
     __tablename__ = "project_image"
     __table_args__ = (
         CheckConstraint("position >= 0", name="position"),
-        # Ruta relativa dentro de /media: sin "..", sin "/" inicial ni barras invertidas.
+        # Relative path inside /media: no "..", no leading "/" and no backslashes.
         CheckConstraint(
             r"path ~ '^[A-Za-z0-9_-][A-Za-z0-9_./-]*$' AND path !~ '\.\.'", name="path"
         ),
@@ -67,7 +67,7 @@ class ProjectImage(Base):
     project_id: Mapped[int] = mapped_column(
         ForeignKey("project.id", ondelete="CASCADE"), index=True
     )
-    # Ruta relativa a /media.
+    # Path relative to /media.
     path: Mapped[str]
     alt_es: Mapped[str] = mapped_column(server_default="")
     alt_en: Mapped[str] = mapped_column(server_default="")
@@ -77,5 +77,5 @@ class ProjectImage(Base):
 
     @property
     def url(self) -> str:
-        """Dirección pública de la captura, que sirve Caddy."""
+        """Public address of the screenshot, served by Caddy."""
         return f"/media/{self.path}"

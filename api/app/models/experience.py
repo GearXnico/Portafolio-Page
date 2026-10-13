@@ -1,4 +1,4 @@
-"""Experiencia laboral. `end_date` vacío significa el trabajo actual."""
+"""Work experience. An empty `end_date` means the current job."""
 
 from datetime import date
 

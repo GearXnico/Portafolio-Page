@@ -1,7 +1,7 @@
-"""Visitas a la página, con su origen (UTM, parámetros de origen del enlace).
+"""Page visits, with their source (UTM, Urchin Tracking Module: the link's source parameters).
 
-No se guarda la IP: solo un hash de IP, user agent y una sal que cambia cada día,
-suficiente para contar visitantes únicos por día.
+The IP is not stored: only a hash of the IP, user agent and a salt that changes every day,
+enough to count unique visitors per day.
 """
 
 from datetime import datetime
@@ -16,21 +16,21 @@ class Visit(Base):
     __tablename__ = "visit"
     __table_args__ = (
         CheckConstraint("lang IN ('es', 'en')", name="lang"),
-        # sha256 en hexadecimal.
+        # sha256 in hexadecimal.
         CheckConstraint("visitor_hash ~ '^[0-9a-f]{64}$'", name="visitor_hash"),
-        # UTM y referrer vienen de la URL y de los headers del visitante: se limita su largo.
+        # UTM and referrer come from the visitor's URL and headers: their length is limited.
         CheckConstraint(
             "char_length(utm_source) <= 200 AND char_length(utm_medium) <= 200"
             " AND char_length(utm_campaign) <= 200 AND char_length(utm_content) <= 200",
             name="utm_length",
         ),
         CheckConstraint("char_length(referrer) <= 2048", name="referrer_length"),
-        # Código de país ISO 3166-1 de dos letras.
+        # Two-letter ISO 3166-1 country code.
         CheckConstraint("country ~ '^[A-Z]{2}$'", name="country"),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    # Índice para los reportes del panel, que filtran por fecha.
+    # Index for the panel's reports, which filter by date.
     created_at: Mapped[datetime] = mapped_column(server_default=func.now(), index=True)
     utm_source: Mapped[str | None]
     utm_medium: Mapped[str | None]
