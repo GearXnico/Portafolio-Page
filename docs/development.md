@@ -1,62 +1,62 @@
-# Reglas de desarrollo
+# Development rules
 
-Cómo se construye este repositorio. Es la versión corta: el porqué de cada regla está en la ADR (registro de decisión de arquitectura) 0007, y los comandos en el README.
+How this repository is built. This is the short version: the reasoning behind each rule is in ADR (architecture decision record) 0007, and the commands are in the README.
 
-## Principio
+## Principle
 
-**No overengineer. Keep it simple and secure.** Ante dos soluciones seguras, se elige la más simple. La seguridad no se recorta: se resuelve con lo más directo que funcione.
+**No overengineer. Keep it simple and secure.** Between two secure solutions, pick the simpler one. Security is not cut back: it is solved with the most direct thing that works.
 
-La idea de fondo es que el dueño del proyecto pueda leer cualquier parte del código y entender qué hace y por qué. Código que nadie entiende no se puede mantener ni defender en una entrevista.
+The underlying idea is that the project owner can read any part of the code and understand what it does and why. Code nobody understands cannot be maintained or defended in an interview.
 
-## Qué se construye ahora
+## What gets built now
 
-- Solo lo que nombra una tarea de `docs/plan.md`, dentro del alcance de `docs/brief.md`.
-- Lo que el brief deja en "Fuera del MVP" no se adelanta, aunque parezca fácil.
-- Si una tarea necesita algo que el plan no nombra (una tabla, un servicio, una dependencia), se pregunta antes y, si se aprueba, se anota en el plan o en una ADR.
+- Only what a task in `docs/plan.md` names, within the scope of `docs/brief.md`.
+- What the brief leaves "Outside the MVP" is not brought forward, even if it looks easy.
+- If a task needs something the plan does not name (a table, a service, a dependency), ask first and, if approved, record it in the plan or in an ADR.
 
-## Cuándo no crear una capa
+## When not to create a layer
 
-Antes de agregar una abstracción, una variable de configuración o un archivo nuevo, revisa esta lista. Si la respuesta es "no", no se agrega.
+Before adding an abstraction, a configuration variable or a new file, go through this list. If the answer is "no", it is not added.
 
-| Antes de... | Pregúntate | Ejemplo de "no" |
+| Before... | Ask yourself | Example of "no" |
 |---|---|---|
-| Extraer una función o clase compartida | ¿Ya hay tres lugares que la usan igual? | Dos rutas con un `if` parecido: se deja repetido |
-| Agregar una variable de entorno | ¿Cambia entre local, staging y producción, o es un secreto? | El largo máximo de un mensaje va en el código |
-| Crear una tabla o columna | ¿Lo pide el plan o el modelo de datos de `docs/architecture.md`? | Una tabla de usuarios cuando hay un solo administrador (ADR 0004) |
-| Agregar una dependencia | ¿Lo que ya está instalado no alcanza, y pasa `pip-audit` o `npm audit`? | Una librería de fechas para formatear mes y año |
-| Hacer algo configurable | ¿Hoy hay dos casos reales? | Soportar un tercer idioma "por si acaso" cuando el brief pide español e inglés |
+| Extracting a shared function or class | Are there already three places that use it the same way? | Two routes with a similar `if`: leave it repeated |
+| Adding an environment variable | Does it change between local, staging and production, or is it a secret? | The maximum length of a message goes in the code |
+| Creating a table or column | Does the plan or the data model in `docs/architecture.md` ask for it? | A users table when there is a single administrator (ADR 0004) |
+| Adding a dependency | Is what is already installed not enough, and does it pass `pip-audit` or `npm audit`? | A date library to format month and year |
+| Making something configurable | Are there two real cases today? | Supporting a third language "just in case" when the brief asks for Spanish and English |
 
-Hay dos excepciones decididas a propósito: el idioma se decide solo en `api/app/services/locale.py` (ADR 0002) y el correo se envía solo desde `api/app/services/mail.py` (ADR 0005). Son un punto único porque se sabe que van a cambiar.
+There are two exceptions, decided on purpose: the language is decided only in `api/app/services/locale.py` (ADR 0002) and email is sent only from `api/app/services/mail.py` (ADR 0005). They are a single point because they are known to change.
 
-## Dónde va cada cosa
+## Where each thing goes
 
-El mapa completo está en el README. Al escribir código:
+The full map is in the README. When writing code:
 
-- **API:** la ruta en `app/routers/` solo recibe, llama y responde. La lógica va en `app/services/`, la validación de lo que entra y sale en `app/schemas/` (Pydantic) y las tablas en `app/models/`.
-- **Web:** una página por archivo en `src/pages/`, un componente por archivo en `src/components/`, las llamadas a la API en `src/api/` y los textos en `src/i18n/es.json` y `en.json`, nunca escritos dentro de un componente.
-- **Nombres:** el código en inglés; los textos para el usuario, los tests y la documentación en español.
-- **Comentarios:** explican el porqué, no el qué. Cada archivo de `services/` abre con un párrafo que dice de qué se encarga.
+- **API (application programming interface):** the route in `app/routers/` only receives, calls and responds. The logic goes in `app/services/`, validation of what comes in and goes out in `app/schemas/` (Pydantic) and the tables in `app/models/`.
+- **Web:** one page per file in `src/pages/`, one component per file in `src/components/`, API calls in `src/api/` and texts in `src/i18n/es.json` and `en.json`, never written inside a component.
+- **Names and language:** code, tests, code comments and documentation in English; user-facing texts in both languages, from `src/i18n/`.
+- **Comments:** they explain the why, not the what. Each file in `services/` opens with a paragraph that says what it is responsible for.
 
-## Ramas, commits y PR (pull request)
+## Branches, commits and PRs (pull requests)
 
-Resumen de la ADR 0007:
+Summary of ADR 0007:
 
-1. Se parte desde `dev` en una rama `feature/`, `fix/`, `docs/` o `chore/` con 2 a 4 palabras en español, por ejemplo `feature/formulario-contacto`. `hotfix/` sale de `main`.
-2. Commits con Conventional Commits (formato estándar de mensajes) en español: `feat: agrega formulario de contacto`. Cada commit hace una sola cosa y deja los tests en verde, porque llega tal cual a `dev`.
-3. Un PR por tarea del plan, hacia `dev`, idealmente con menos de ~400 líneas, con la plantilla: Antes, Después, Cómo probar y la checklist.
-4. Se mergea solo con rebase & merge, y la rama se borra después.
-5. Nunca se suben secretos, `.env` ni datos personales: el repositorio es público.
+1. Start from `dev` on a `feature/`, `fix/`, `docs/` or `chore/` branch with 2 to 4 English words, lowercase and hyphenated, for example `feature/contact-form`. `hotfix/` branches off `main`.
+2. Commits in English with Conventional Commits (a standard message format): `feat: add contact form`. Each commit does one thing and leaves the tests green, because it reaches `dev` as is.
+3. One PR per plan task, into `dev`, ideally under ~400 lines, in English and with the template: Before, After, How to test and the checklist.
+4. Merge only with rebase & merge, and delete the branch afterwards.
+5. Never push secrets, `.env` or personal data: the repository is public.
 
-## Cómo se revisa un PR
+## How a PR is reviewed
 
-1. **CI (integración continua):** tests, lint, tipos, seguridad y E2E (prueba de punta a punta) tienen que estar en verde. Sin eso no se puede mergear.
-2. **Revisión con IA:** `ai-review.yml` deja comentarios en los PR de código, nunca aprueba y no bloquea. Cada comentario se corrige o se responde en su hilo.
-3. **Revisión del dueño:** lee el PR en este orden y lo aprueba (o mergea con bypass registrado) solo si responde que sí a todo:
-   - ¿Hace lo que pide la tarea, y nada más?
-   - ¿Entiendo cada archivo que cambió? Si no, se pide una explicación en el PR antes de seguir.
-   - ¿Es lo más simple que funciona? (tabla de arriba)
-   - ¿Las entradas se validan, las rutas de `/api/admin/*` exigen sesión y los logs no guardan datos personales?
-   - ¿Los tests prueban lo que importa? (`docs/testing.md`)
-   - ¿El README o `docs/` quedaron al día si cambió algo visible?
+1. **CI (continuous integration):** tests, lint, types, security and E2E (end-to-end tests) must be green. Without that, it cannot be merged.
+2. **AI (artificial intelligence) review:** `ai-review.yml` leaves comments on code PRs, never approves and does not block. Each comment is fixed or answered in its thread.
+3. **Owner review:** reads the PR in this order and approves it (or merges with a recorded bypass) only if the answer to everything is yes:
+   - Does it do what the task asks, and nothing more?
+   - Do I understand every file that changed? If not, ask for an explanation in the PR before going on.
+   - Is it the simplest thing that works? (table above)
+   - Are inputs validated, do `/api/admin/*` routes require a session, and do the logs keep personal data out?
+   - Do the tests test what matters? (`docs/testing.md`)
+   - Are the README or `docs/` up to date if something visible changed?
 
-Para entender un PR grande, conviene leerlo commit por commit: cada uno hace una sola cosa y su mensaje dice cuál.
+To understand a large PR, it helps to read it commit by commit: each one does one thing and its message says which.
