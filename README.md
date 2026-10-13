@@ -74,14 +74,14 @@ CLAUDE.md               Instrucciones para Claude Code
 | Documento | Para qué leerlo |
 |---|---|
 | `docs/api.md` | Referencia de la API: rutas, validaciones, protecciones y usuarios de la base |
-| `docs/desarrollo.md` | Reglas de desarrollo: qué se construye, cuándo no agregar capas, ramas, commits y cómo se revisa |
+| `docs/development.md` | Reglas de desarrollo: qué se construye, cuándo no agregar capas, ramas, commits y cómo se revisa |
 | `docs/testing.md` | Qué se prueba, qué no y por qué existe cada tipo de prueba |
 | `docs/brief.md` | Qué problema resuelve el sitio y qué queda fuera |
-| `docs/arquitectura.md` | Componentes, modelo de datos, seguridad y despliegue |
+| `docs/architecture.md` | Componentes, modelo de datos, seguridad y despliegue |
 | `docs/adr/` | El porqué de cada decisión, una ADR (registro de decisión de arquitectura) por archivo |
 | `docs/plan.md` | Hitos y tareas, con su criterio de terminado |
-| `docs/guia-despliegue-local.md` | Cómo completar el `.env`, levantar todo en local y comprobar que funciona |
-| `docs/prompts/` y `docs/notas/` | Registro de prompts por tarea y notas de cierre de cada hito |
+| `docs/local-deployment-guide.md` | Cómo completar el `.env`, levantar todo en local y comprobar que funciona |
+| `docs/prompts/` y `docs/notes/` | Registro de prompts por tarea y notas de cierre de cada hito |
 
 ## API: tests y lint
 
@@ -141,7 +141,7 @@ alembic upgrade head                                   # aplicar
 
 ## Cómo se trabaja
 
-El detalle está en `docs/desarrollo.md` y `docs/testing.md`. En corto:
+El detalle está en `docs/development.md` y `docs/testing.md`. En corto:
 
 - Se parte desde `dev`, en una rama `feature/<nombre>`, `fix/<nombre>`, `docs/<nombre>` o `chore/<nombre>`.
 - Commits con Conventional Commits en español, por ejemplo `feat: agrega formulario de contacto`.

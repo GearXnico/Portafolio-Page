@@ -36,7 +36,7 @@ B, con estas reglas.
 **Menos retrabajo**
 
 - Las tareas que tocan varios archivos parten en modo plan: Claude propone, Nicolas aprueba y después se escribe.
-- Cada prompt sale de la plantilla `prompts/plantilla.md`, con el criterio de terminado copiado del plan.
+- Cada prompt sale de la plantilla `prompts/template.md`, con el criterio de terminado copiado del plan.
 - Los hooks de `pre-commit` y los tests locales corren antes del PR, para no gastar una revisión de IA ni un ciclo de CI en errores de formato.
 - La salida de tests y lint se pide resumida (`pytest -q --maxfail=1`, solo los errores del lint).
 
@@ -50,8 +50,8 @@ B, con estas reglas.
 
 **Medición**
 
-- Cada tarea registra sus tokens (`/cost`) en `prompts/registro.md`.
-- Al cerrar cada hito se comparan los tokens y las horas con el plan, y se anota en `docs/notas/` qué ajustar.
+- Cada tarea registra sus tokens (`/cost`) en `prompts/log.md`.
+- Al cerrar cada hito se comparan los tokens y las horas con el plan, y se anota en `docs/notes/` qué ajustar.
 - Si un hito consume más del doble que el anterior por tarea, se revisan los prompts antes de seguir.
 
 **Lo que nunca se recorta**

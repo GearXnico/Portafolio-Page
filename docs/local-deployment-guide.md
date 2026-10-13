@@ -33,7 +33,7 @@ python3 -c "import secrets; print(secrets.token_urlsafe(48))"   # JWT_SECRET (64
 | `POSTGRES_USER` | Sí | Dueño de las tablas. Solo lo usan las migraciones (Alembic) y los tests, en el servicio `migrate`. |
 | `POSTGRES_PASSWORD` | Sí | Clave del dueño. Genérala con `token_urlsafe(32)`. |
 | `POSTGRES_DB` | Sí | Nombre de la base. |
-| `APP_DB_USER` | Sí | Usuario de la API, que solo lee y escribe filas. Lo crea `db/init/01-usuario-api.sh`. Tiene que ser distinto de `POSTGRES_USER`. |
+| `APP_DB_USER` | Sí | Usuario de la API, que solo lee y escribe filas. Lo crea `db/init/01-api-user.sh`. Tiene que ser distinto de `POSTGRES_USER`. |
 | `APP_DB_PASSWORD` | Sí | Clave del usuario de la API. Genérala con `token_urlsafe(32)`. |
 | `DATABASE_URL` | Solo fuera de Docker | URL del usuario de la API, para correr la API o pytest desde tu máquina. Dentro de Docker, `compose.yml` la arma solo. |
 | `MIGRATION_DATABASE_URL` | Solo fuera de Docker | URL del dueño, para Alembic y pytest desde tu máquina. |
