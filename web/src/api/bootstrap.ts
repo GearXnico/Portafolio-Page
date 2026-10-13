@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { storedLang, type Lang } from "../i18n";
+import { readUtm } from "../utm";
 
 export interface PublicProfile {
   headline_es: string;
@@ -64,8 +65,10 @@ export async function fetchBootstrap(
   signal?: AbortSignal,
   timeoutMs = BOOTSTRAP_TIMEOUT_MS,
 ): Promise<Bootstrap> {
-  // El idioma guardado viaja como `lang` para que la API lo use y lo registre en la visita.
-  const params = new URLSearchParams();
+  // Las UTM de la URL y el dominio de origen quedan registrados en la visita (tarea 3.5). El
+  // idioma guardado viaja como `lang` para que la API lo use y lo registre en la visita.
+  const params = new URLSearchParams(readUtm());
+  if (document.referrer) params.set("referrer", document.referrer);
   const lang = storedLang();
   if (lang) params.set("lang", lang);
   const query = params.toString();

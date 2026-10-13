@@ -2,6 +2,7 @@ import { useState, type SubmitEvent } from "react";
 
 import { ContactError, useSendContact } from "../api/contact";
 import { useLang, type MessageKey } from "../i18n";
+import { readUtm } from "../utm";
 
 // Largos máximos de la API (docs/api.md): el navegador corta antes de enviar.
 const MAX = { name: 200, email: 320, message: 5000 } as const;
@@ -31,6 +32,8 @@ export function ContactForm() {
       return typeof value === "string" ? value : "";
     };
     setSent(false);
+    // La API de contacto solo guarda estas dos UTM; cualquier otro campo lo rechaza.
+    const { utm_source, utm_campaign } = readUtm();
     send.mutate(
       {
         name: field("name"),
@@ -38,6 +41,8 @@ export function ContactForm() {
         message: field("message"),
         website: field("hp_field"),
         lang,
+        ...(utm_source && { utm_source }),
+        ...(utm_campaign && { utm_campaign }),
       },
       {
         onSuccess: () => {

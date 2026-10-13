@@ -1,5 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ContactForm } from "../src/components/ContactForm";
 import { LangContext, type Lang } from "../src/i18n";
@@ -29,6 +29,10 @@ function fillAndSubmit() {
 }
 
 describe("ContactForm", () => {
+  afterEach(() => {
+    window.history.replaceState(null, "", "/");
+  });
+
   it("envía los campos, el idioma y el campo trampa vacío, y avisa que llegó", async () => {
     const fetchMock = stubContact(new Response('{"status":"ok"}', { status: 201 }));
     renderForm();
@@ -98,5 +102,22 @@ describe("ContactForm", () => {
 
     expect(await screen.findByText(/Your message arrived/)).toBeInTheDocument();
     expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('"lang":"en"');
+  });
+
+  it("envía utm_source y utm_campaign de la URL, y no las UTM que la API no guarda", async () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/?utm_source=linkedin&utm_medium=social&utm_campaign=postulacion",
+    );
+    const fetchMock = stubContact(new Response("{}", { status: 201 }));
+    renderForm();
+
+    fillAndSubmit();
+
+    await screen.findByText(/Tu mensaje llegó/);
+    const body = JSON.parse(fetchMock.mock.calls[0]?.[1].body as string) as Record<string, string>;
+    expect(body).toMatchObject({ utm_source: "linkedin", utm_campaign: "postulacion" });
+    expect(body).not.toHaveProperty("utm_medium");
   });
 });
