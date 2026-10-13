@@ -1,3 +1,3 @@
-# Notas de cierre de hito
+# Milestone closing notes
 
-Al cerrar cada hito se comparan los tokens y las horas reales con el plan, y se anota aquí qué ajustar en los prompts o en las estimaciones (ADR 0009). Un archivo por hito, por ejemplo `hito-1.md`.
+When each milestone closes, the real tokens and hours are compared with the plan, and what to adjust in the prompts or the estimates is written down here (ADR (architecture decision record) 0009). One file per milestone, for example `milestone-1.md`.
