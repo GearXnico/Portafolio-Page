@@ -122,6 +122,8 @@ npm run build && npx vite preview &
 E2E_BASE_URL=http://localhost:4173 npm run e2e
 ```
 
+Los E2E del panel entran con el admin de prueba que leen de `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD` (los de tu `.env`, con la clave sin hashear). Sin esas variables fallan con un aviso. En el CI, cada corrida genera una clave al azar.
+
 El E2E abre la página en Chromium y espera que `/api/bootstrap` responda bien y se vea el título, así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
 
 ## Referencia de la API

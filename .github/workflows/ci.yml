@@ -16,6 +16,11 @@ concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # Hash Argon2 de la clave del admin de prueba de los E2E, calculado dentro de la imagen de la API.
+  # La clave llega por la variable E2E_ADMIN_PASSWORD (no como argumento, que se ve en `ps`).
+  HASH_PY: "import os; from argon2 import PasswordHasher; print(PasswordHasher().hash(os.environ['E2E_ADMIN_PASSWORD']))"
+
 jobs:
   # ruff (lint y formato), Prettier y detección de llaves privadas, igual que el hook local.
   pre-commit:
@@ -109,8 +114,22 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Admin de prueba para los E2E del panel, con una clave al azar en cada corrida.
       - name: Levantar la base, las migraciones y la API
-        run: cp ../.env.example ../.env && docker compose up -d --build --wait api
+        run: |
+          cp ../.env.example ../.env
+          docker compose build api
+          export E2E_ADMIN_PASSWORD=$(openssl rand -hex 16)
+          echo "::add-mask::$E2E_ADMIN_PASSWORD"
+          hash=$(docker compose run --rm --no-deps -T -e E2E_ADMIN_PASSWORD api python -c "$HASH_PY")
+          {
+            echo "ADMIN_EMAIL=e2e@example.com"
+            echo "ADMIN_PASSWORD_HASH='$hash'"
+            echo "JWT_SECRET=$(openssl rand -hex 32)"
+          } >> ../.env
+          echo "E2E_ADMIN_EMAIL=e2e@example.com" >> "$GITHUB_ENV"
+          echo "E2E_ADMIN_PASSWORD=$E2E_ADMIN_PASSWORD" >> "$GITHUB_ENV"
+          docker compose up -d --build --wait api
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
@@ -140,16 +159,25 @@ jobs:
           persist-credentials: false
       # Claves de ejemplo y de prueba, solo para la base desechable del runner. Las variables
       # que .env.example deja vacías y producción exige van al final (gana la última).
+      # El admin de prueba de los E2E del panel lleva una clave al azar en cada corrida. El hash
+      # se calcula con la imagen ya construida, así que primero va uno provisorio.
       - name: Construir las imágenes de producción y levantar la base
         run: |
           cp .env.example deploy/.env
           {
             echo "SITE_ADDRESS=http://localhost"
-            echo "ADMIN_EMAIL=ci@example.com"
-            echo "ADMIN_PASSWORD_HASH=no-es-un-hash"
+            echo "ADMIN_EMAIL=e2e@example.com"
+            echo "ADMIN_PASSWORD_HASH=provisorio"
             echo "JWT_SECRET=$(openssl rand -hex 32)"
           } >> deploy/.env
-          $COMPOSE up -d --build --wait db
+          $COMPOSE build
+          export E2E_ADMIN_PASSWORD=$(openssl rand -hex 16)
+          echo "::add-mask::$E2E_ADMIN_PASSWORD"
+          hash=$($COMPOSE run --rm --no-deps -T -e E2E_ADMIN_PASSWORD api python -c "$HASH_PY")
+          echo "ADMIN_PASSWORD_HASH='$hash'" >> deploy/.env
+          echo "E2E_ADMIN_EMAIL=e2e@example.com" >> "$GITHUB_ENV"
+          echo "E2E_ADMIN_PASSWORD=$E2E_ADMIN_PASSWORD" >> "$GITHUB_ENV"
+          $COMPOSE up -d --wait db
       - name: Respaldo antes de migrar
         run: |
           $COMPOSE exec -T db pg_dump -U app -d app --format=custom > respaldo.dump
