@@ -4,7 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import { App } from "../src/App";
 import { renderWithQuery } from "./render";
 
-/** Simula la API del panel: cada ruta responde con el código que indica `statuses`. */
+/**
+ * Fakes the admin panel API (application programming interface): each route responds with the
+ * status code given in `statuses`.
+ */
 function stubAdminApi(statuses: { session?: number; login?: number; logout?: number }) {
   const fetchMock = vi.fn((input: string) => {
     const status =
@@ -25,8 +28,8 @@ function fillLogin() {
   fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
 }
 
-describe("panel /admin", () => {
-  it("sin sesión redirige al login", async () => {
+describe("admin panel /admin", () => {
+  it("without a session redirects to the login", async () => {
     stubAdminApi({ session: 401 });
 
     renderWithQuery(<App />, "/admin");
@@ -34,7 +37,7 @@ describe("panel /admin", () => {
     expect(await screen.findByRole("heading", { name: "Iniciar sesión" })).toBeInTheDocument();
   });
 
-  it("con sesión muestra el panel", async () => {
+  it("with a session shows the admin panel", async () => {
     stubAdminApi({ session: 200 });
 
     renderWithQuery(<App />, "/admin");
@@ -44,7 +47,7 @@ describe("panel /admin", () => {
     ).toBeInTheDocument();
   });
 
-  it("si la API no responde, avisa en vez de mandar al login", async () => {
+  it("if the API doesn't respond, shows a notice instead of sending to the login", async () => {
     stubAdminApi({ session: 500 });
 
     renderWithQuery(<App />, "/admin");
@@ -53,7 +56,7 @@ describe("panel /admin", () => {
     expect(screen.queryByRole("heading", { name: "Iniciar sesión" })).not.toBeInTheDocument();
   });
 
-  it("el login correcto envía las credenciales y entra al panel", async () => {
+  it("a correct login sends the credentials and enters the admin panel", async () => {
     const fetchMock = stubAdminApi({ session: 401, login: 200 });
     renderWithQuery(<App />, "/admin/login");
 
@@ -75,7 +78,7 @@ describe("panel /admin", () => {
     [401, "Correo o contraseña incorrectos."],
     [429, "Demasiados intentos. Intenta de nuevo en 15 minutos."],
     [503, "No se pudo conectar con el servidor. Intenta de nuevo en unos minutos."],
-  ])("si el login responde %i, muestra el mensaje y sigue en el login", async (status, text) => {
+  ])("if the login responds %i, shows the message and stays on the login", async (status, text) => {
     stubAdminApi({ login: status });
     renderWithQuery(<App />, "/admin/login");
 
@@ -85,7 +88,7 @@ describe("panel /admin", () => {
     expect(screen.getByRole("heading", { name: "Iniciar sesión" })).toBeInTheDocument();
   });
 
-  it("cerrar sesión llama al logout y vuelve al login", async () => {
+  it("logging out calls logout and goes back to the login", async () => {
     const fetchMock = stubAdminApi({ session: 200 });
     renderWithQuery(<App />, "/admin");
 
@@ -98,7 +101,7 @@ describe("panel /admin", () => {
     );
   });
 
-  it("si el logout falla, lo avisa y sigue en el panel", async () => {
+  it("if logout fails, shows a notice and stays in the admin panel", async () => {
     stubAdminApi({ session: 200, logout: 500 });
     renderWithQuery(<App />, "/admin");
 
@@ -108,7 +111,7 @@ describe("panel /admin", () => {
     expect(screen.getByRole("heading", { name: "Panel de administración" })).toBeInTheDocument();
   });
 
-  it("usa el idioma elegido en el selector", async () => {
+  it("uses the language picked in the switcher", async () => {
     localStorage.setItem("lang", "en");
     stubAdminApi({ session: 401 });
 
@@ -122,7 +125,7 @@ describe("panel /admin", () => {
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute("content", "noindex");
   });
 
-  it("el selector cambia el idioma del panel y lo recuerda", async () => {
+  it("the switcher changes the admin panel language and remembers it", async () => {
     stubAdminApi({ session: 401 });
     renderWithQuery(<App />, "/admin/login");
 
@@ -132,7 +135,7 @@ describe("panel /admin", () => {
     expect(localStorage.getItem("lang")).toBe("en");
   });
 
-  it("el panel no pide bootstrap, para no registrar una visita", async () => {
+  it("the admin panel doesn't fetch bootstrap, so no visit is recorded", async () => {
     const fetchMock = stubAdminApi({ session: 401 });
 
     renderWithQuery(<App />, "/admin");
