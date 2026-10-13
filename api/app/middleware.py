@@ -1,4 +1,4 @@
-"""Middlewares ASGI (interfaz entre el servidor y la app) propios de la API."""
+"""The API's own ASGI (interface between the server and the app) middlewares."""
 
 import re
 from collections.abc import Callable
@@ -11,14 +11,13 @@ METHODS_WITH_BODY = {"POST", "PUT", "PATCH"}
 
 
 class BodySizeLimitMiddleware:
-    """Rechaza cuerpos más grandes que `max_bytes` antes de leerlos.
+    """Reject bodies larger than `max_bytes` before reading them.
 
-    Las rutas que calzan con `upload_paths` (la subida de capturas) tienen su propio límite,
-    `upload_max_bytes`, y solo lo usa quien pasa `upload_allowed` (el administrador): FastAPI
-    lee el formulario antes de revisar la sesión, así que sin esto un anónimo podría mandar
-    5 MB por request. Exige `Content-Length`, que los navegadores siempre mandan con
-    `fetch`: sin él, un cuerpo por partes (chunked) no se puede medir de antemano. Caddy pone
-    otro límite delante.
+    Routes matching `upload_paths` (the screenshot upload) have their own limit,
+    `upload_max_bytes`, and only whoever passes `upload_allowed` (the administrator) gets it:
+    FastAPI reads the form before checking the session, so without this an anonymous user could
+    send 5 MB per request. Requires `Content-Length`, which browsers always send with `fetch`:
+    without it, a chunked body can't be measured in advance. Caddy puts another limit in front.
     """
 
     def __init__(
@@ -40,7 +39,7 @@ class BodySizeLimitMiddleware:
             headers = dict(scope["headers"])
             length = headers.get(b"content-length")
             if length is None or not length.isdigit():
-                response = JSONResponse({"detail": "Falta Content-Length"}, status_code=411)
+                response = JSONResponse({"detail": "Content-Length is missing"}, status_code=411)
                 return await response(scope, receive, send)
             is_upload = self.upload_paths is not None and self.upload_paths.fullmatch(scope["path"])
             if is_upload and not self.upload_allowed(Request(scope)):
@@ -48,6 +47,6 @@ class BodySizeLimitMiddleware:
                 return await response(scope, receive, send)
             max_bytes = self.upload_max_bytes if is_upload else self.max_bytes
             if int(length) > max_bytes:
-                response = JSONResponse({"detail": "El cuerpo es demasiado grande"}, 413)
+                response = JSONResponse({"detail": "The body is too large"}, 413)
                 return await response(scope, receive, send)
         await self.app(scope, receive, send)

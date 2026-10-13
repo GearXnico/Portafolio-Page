@@ -1,4 +1,4 @@
-"""Punto de entrada de la API."""
+"""API entry point."""
 
 import re
 
@@ -10,11 +10,11 @@ from app.middleware import BodySizeLimitMiddleware
 from app.routers import admin, admin_activity, admin_content, bootstrap, contact, health
 from app.services.images import MAX_IMAGE_BYTES
 
-# Los JSON de la API son chicos: el más grande es un proyecto con sus dos cuerpos en Markdown
-# (hasta 10.000 caracteres cada uno, ~25 KB en español).
+# The API's JSON bodies are small: the largest is a project with its two Markdown bodies
+# (up to 10,000 characters each, ~25 KB in Spanish).
 MAX_BODY_BYTES = 64 * 1024
-# La subida de capturas: la imagen (5 MB) más los textos alternativos y los separadores del
-# formulario. El tamaño exacto de la imagen lo revisa app/services/images.py.
+# Screenshot upload: the image (5 MB) plus the alt texts and the form's separators.
+# app/services/images.py checks the exact image size.
 UPLOAD_PATHS = re.compile(r"/api/admin/projects/\d+/images")
 MAX_UPLOAD_BYTES = MAX_IMAGE_BYTES + 64 * 1024
 
@@ -38,6 +38,6 @@ app.add_middleware(
     upload_max_bytes=MAX_UPLOAD_BYTES,
     upload_allowed=_is_admin,
 )
-# Va por fuera (se agrega al final) para que todo lo demás vea la IP real del visitante.
+# Goes outermost (added last) so everything else sees the visitor's real IP.
 if settings.trusted_proxies:
     app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=settings.trusted_proxies)

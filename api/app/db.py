@@ -1,4 +1,4 @@
-"""Conexión a Postgres con SQLAlchemy."""
+"""Postgres connection with SQLAlchemy."""
 
 from collections.abc import Iterator
 
@@ -12,6 +12,6 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False)
 
 
 def get_session() -> Iterator[Session]:
-    """Entrega una sesión por request y la cierra al terminar."""
+    """Yield one session per request and close it when done."""
     with SessionLocal() as session:
         yield session
