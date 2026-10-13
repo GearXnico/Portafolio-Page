@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [0.20.9] - 2026-10-13
+
+### Changed
+
+- Comments and JSDoc in the web code (`web/src`, the Dockerfiles and the Vite, Playwright and security header configs) are now in English, along with developer-facing error messages (#37).
+
 ## [0.20.8] - 2026-10-13
 
 ### Changed
