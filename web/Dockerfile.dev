@@ -1,7 +1,7 @@
-# Imagen solo para desarrollo local (compose.yml). La de producción es Dockerfile (Caddy).
+# Image for local development only (compose.yml). The production one is Dockerfile (Caddy).
 FROM node:24-alpine
 
-# Corre con el usuario sin privilegios que trae la imagen, no como root.
+# Runs as the unprivileged user that ships with the image, not as root.
 WORKDIR /code
 RUN chown node:node /code
 USER node

@@ -1,8 +1,8 @@
-# Imagen de producción del sitio: Caddy con el build de web (deploy/compose.prod.yml).
-# Necesita el contexto extra `deploy` con el Caddyfile:
+# Production image for the site: Caddy with the web build (deploy/compose.prod.yml).
+# It needs the extra `deploy` build context with the Caddyfile:
 #   docker build --build-context deploy=deploy web
 
-# 1. Build estático de la página.
+# 1. Static build of the page.
 FROM node:24-alpine AS build
 
 WORKDIR /code
@@ -11,11 +11,12 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# 2. Imagen final: Caddy, la página y el Caddyfile, sin Node ni npm.
+# 2. Final image: Caddy, the page and the Caddyfile, without Node or npm.
 FROM caddy:2.11-alpine
 
-# El binario trae un permiso para abrir los puertos 80 y 443; Docker ya deja abrirlos sin él,
-# y quitarlo permite correr sin ninguna capability. /data y /config guardan los certificados.
+# The binary ships with a permission to bind ports 80 and 443; Docker already allows binding them
+# without it, and removing it lets the container run with no capabilities. /data and /config hold
+# the certificates.
 RUN setcap -r /usr/bin/caddy \
     && adduser -S -D -H -u 10002 caddy \
     && chown caddy /data /config
