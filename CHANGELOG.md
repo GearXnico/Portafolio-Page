@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [0.20.7] - 2026-10-13
+
+### Changed
+
+- API code comments, docstrings, error messages and log messages are now in English, in the app, the Alembic setup, the Dockerfiles and `pyproject.toml` (#37).
+
 ## [0.20.6] - 2026-10-13
 
 ### Changed
