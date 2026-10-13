@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./login";
 
-// Criterio de la tarea 4.2: un proyecto creado desde el panel se ve en la página pública.
-test("un proyecto creado en el panel se ve en la página pública", async ({ page }) => {
-  // Slug y título únicos, para poder correr el test varias veces sobre la misma base.
+// Task 4.2 criterion: a project created from the admin panel shows up on the public page.
+test("a project created in the admin panel shows up on the public page", async ({ page }) => {
+  // Unique slug and title, so the test can run several times against the same database.
   const id = String(Date.now());
   await loginAsAdmin(page);
 
@@ -25,7 +25,7 @@ test("un proyecto creado en el panel se ve en la página pública", async ({ pag
   await page.getByRole("button", { name: "Guardar" }).click();
   const { id: projectId } = (await (await created).json()) as { id: number };
 
-  // Limpieza aunque falle una aserción: la sesión del panel sigue en las cookies del navegador.
+  // Cleanup even if an assertion fails: the admin panel session is still in the browser cookies.
   try {
     await expect(page.getByRole("link", { name: `Proyecto E2E ${id}` })).toBeVisible();
 
