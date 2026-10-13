@@ -8,7 +8,7 @@ La documentación interactiva, generada desde el código, está en http://localh
 
 La página llama a `GET /api/bootstrap` al abrirse. La API registra la visita, decide el idioma y devuelve todo el contenido visible en una sola respuesta, con `Cache-Control: no-store`.
 
-Parámetros (todos opcionales; el frontend los pasa en la tarea 3.5):
+Parámetros (todos opcionales). La página pasa las UTM que trae su URL, `document.referrer` y el idioma guardado; al formulario de contacto le pasa `utm_source` y `utm_campaign` (`web/src/utm.ts`):
 
 | Parámetro | Qué es | Cómo se guarda |
 |---|---|---|

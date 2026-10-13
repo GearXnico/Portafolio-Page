@@ -38,6 +38,7 @@ Regla práctica para elegir el nivel: **un caso se prueba una vez, en el nivel m
 | El usuario de la API no puede cambiar tablas | Limita el daño de una inyección de SQL | `test_permisos_db.py` |
 | Las migraciones se aplican, se revierten y calzan con los modelos | Una migración rota tumba el despliegue | `test_migrations.py` |
 | Un mensaje enviado desde el formulario de contacto llega a la API y se guarda | Es la única forma de contacto; si el formulario y la API dejan de calzar, nadie avisa | `web/e2e/contact.spec.ts` (el 201 llega solo después de guardar, como prueba `test_contact.py`) |
+| Una visita con UTM queda registrada con su origen: la página lee las UTM de la URL y las pasa a `bootstrap` y al contacto | Sin el origen no se sabe qué enlace de postulación funcionó | `web/e2e/utm.spec.ts` (llegan a la API por el proxy), `web/tests/utm.test.ts` (limpieza y largo) y `test_bootstrap.py` y `test_contact.py` (se guardan) |
 | La página carga, cambia de idioma y no tiene errores de consola ni le faltan cabeceras de seguridad | Es lo que ve cualquier visitante | `web/e2e/` |
 
 Cada `fix/*` empieza con un test que reproduce el error y falla antes de la corrección.
