@@ -1,76 +1,76 @@
-# Brief · Sitio web de portafolio
+# Brief · Portfolio website
 
-ID: 2026-10-08-sitio-portafolio · Activada: 2026-10-11
+ID: 2026-10-08-sitio-portafolio · Activated: 2026-10-11
 
-## Problema
+## Problem
 
-Nicolas quiere mostrar su trabajo como desarrollador full stack, backend Python y con IA, tanto a equipos que contratan como a clientes de proyectos. Hoy no tiene un lugar donde quien lo evalúa vea en un minuto qué sabe hacer, qué ha construido y cómo contactarlo. GitHub muestra el código, pero no muestra bien los juegos ni las apps, ni las decisiones de arquitectura.
+Nicolas wants to show his work as a full stack developer, Python backend developer and AI (artificial intelligence) developer, both to hiring teams and to project clients. Today he has no place where an evaluator can see, in one minute, what he can do, what he has built and how to contact him. GitHub shows the code, but it does not show the games or apps well, nor the architecture decisions.
 
-Las ofertas de trabajo revisadas no exigen portafolio. Sí piden React+TS, API en Python, SQL, tests, Docker, CI/CD y despliegue. Por eso la página vale por dos cosas: lo que muestra y cómo está construida.
+The job postings reviewed do not require a portfolio. They do ask for React+TS (TypeScript), a Python API (application programming interface), SQL, tests, Docker, CI/CD (continuous integration and continuous deployment) and deployment. That is why the page is worth two things: what it shows and how it is built.
 
-## Usuarios y sus tareas principales
+## Users and their main tasks
 
-| Usuario | Tarea | Qué necesita ver o hacer |
+| User | Task | What they need to see or do |
 |---|---|---|
-| Reclutador o líder técnico (llega desde una postulación) | Decidir en 1-2 minutos si vale la pena una entrevista | Perfil, stack, experiencia y proyectos con demo, todo en una página y en su idioma |
-| Cliente referido (pyme que llega por recomendación) | Verificar que Nicolas es confiable y escribirle | Servicios, un caso escrito y un formulario de contacto |
-| Nicolas (administrador) | Mantener el portafolio al día sin tocar código, y saber qué postulación o referido trajo visitas | Panel de administración simple; visitas y contactos por enlace |
+| Recruiter or tech lead (arrives from a job application) | Decide in 1-2 minutes whether an interview is worth it | Profile, stack, experience and projects with a demo, all on one page and in their language |
+| Referred client (a small business that arrives through a recommendation) | Check that Nicolas is trustworthy and write to him | Services, a written case study and a contact form |
+| Nicolas (administrator) | Keep the portfolio up to date without touching code, and know which application or referral brought visits | A simple admin panel; visits and contacts per link |
 
-## Alcance del MVP (versión 1)
+## MVP (minimum viable product) scope (version 1)
 
-1. Página única con perfil (texto, sin foto), habilidades, experiencia y contacto.
-2. **Español e inglés según la ubicación del visitante**, con un selector para cambiar de idioma a mano. Todo el contenido editable existe en los dos idiomas.
-3. Sección de proyectos servida por la API. El primer caso es la propia página: arquitectura, pipeline y qué hizo la IA y qué decidió Nicolas.
-4. **Panel de administración** con un solo usuario (Nicolas), protegido con contraseña. Permite crear, editar, ordenar y ocultar proyectos (título, descripción en los dos idiomas, stack, enlaces a demo y repositorio, capturas) y editar el perfil, las habilidades y la experiencia. También muestra los mensajes de contacto y las visitas por enlace. La meta es que agregar un proyecto tome menos de 10 minutos.
-5. Formulario de contacto que guarda el mensaje y avisa a Nicolas por correo.
-6. Enlaces con UTM por postulación y por referido. Un UTM es un parámetro que se agrega al final del enlace para saber de dónde viene la visita, por ejemplo `?utm_source=portal&utm_campaign=empresa-x`. Así cada postulación o referido tiene su propio enlace, y el sitio registra cuántas visitas y contactos trajo cada uno.
-7. Pieza técnica completa: frontend en React+TS, API en FastAPI, Postgres, tests (pytest y frontend), Docker y GitHub Actions que prueba y despliega en cada merge.
-8. ~~La plantilla del repositorio queda separada y reutilizable para el siguiente producto.~~ Sale de este MVP (Nicolas, 2026-10-12): la plantilla se hace después como proyecto aparte (`Product-template`), extraída del portafolio terminado.
+1. A single page with a profile (text, no photo), skills, experience and contact.
+2. **Spanish and English based on the visitor's location**, with a selector to switch language by hand. All editable content exists in both languages.
+3. A projects section served by the API. The first case study is the page itself: architecture, pipeline, and what the AI did and what Nicolas decided.
+4. **Admin panel** with a single user (Nicolas), protected with a password. It lets him create, edit, order and hide projects (title, description in both languages, stack, demo and repository links, screenshots) and edit the profile, skills and experience. It also shows contact messages and visits per link. The goal is that adding a project takes less than 10 minutes.
+5. A contact form that saves the message and notifies Nicolas by email.
+6. Links with UTM (Urchin Tracking Module) parameters per job application and per referral. A UTM is a parameter added to the end of a link to know where the visit comes from, for example `?utm_source=portal&utm_campaign=empresa-x`. This way each application or referral has its own link, and the site records how many visits and contacts each one brought.
+7. A complete technical piece: React+TS frontend, FastAPI API, Postgres, tests (pytest and frontend), Docker and GitHub Actions that tests and deploys on every merge.
+8. ~~The repository template stays separate and reusable for the next product.~~ Removed from this MVP (Nicolas, 2026-10-12): the template is done later as a separate project (`Product-template`), extracted from the finished portfolio.
 
-## Fuera del MVP
+## Outside the MVP
 
-- Blog y editor de texto enriquecido: las descripciones son texto simple o Markdown.
-- Más de un usuario administrador o roles.
-- Video o foto de Nicolas (regla de no ser rostro público).
-- Juegos o apps embebidos: se agregan desde el panel cuando existan, como enlace con captura.
-- Los agentes de la fábrica de software (issue → PR). Solo se hace la plantilla.
-- Dominio propio, si complica el despliegue de la primera semana: se puede publicar primero con el subdominio del hosting.
+- Blog and rich text editor: descriptions are plain text or Markdown.
+- More than one administrator user, or roles.
+- Video or photo of Nicolas (rule of not being a public face).
+- Embedded games or apps: they are added from the panel when they exist, as a link with a screenshot.
+- The software factory agents (issue → PR). Only the template is made.
+- A custom domain, if it complicates the first week's deployment: the site can be published first on the hosting subdomain.
 
-## Tiempo de desarrollo estimado
+## Estimated development time
 
-Estimación a 40 h por semana. Supone que Claude Code escribe gran parte del código y que React y el despliegue toman más tiempo que el resto, porque son tus puntos más débiles.
+Estimate at 40 h per week. It assumes Claude Code writes a large part of the code and that React and deployment take more time than the rest, because they are your weakest areas.
 
-| Bloque | Horas |
+| Block | Hours |
 |---|---|
-| Plantilla del repositorio: estructura, Docker, tests y CI/CD con despliegue de una página vacía | 14 |
-| API y base de datos: proyectos, perfil, contacto y visitas por UTM | 14 |
-| Frontend público: página, sección de proyectos e idiomas según ubicación | 18 |
-| Panel de administración: login y edición de proyectos, perfil y mensajes | 18 |
-| Contenido en dos idiomas y caso de la propia página | 8 |
-| Pruebas finales, ajustes y publicación | 8 |
-| **Total** | **80 h (unas 2 semanas)** |
+| Repository template: structure, Docker, tests and CI/CD deploying an empty page | 14 |
+| API and database: projects, profile, contact and visits by UTM | 14 |
+| Public frontend: page, projects section and languages based on location | 18 |
+| Admin panel: login and editing of projects, profile and messages | 18 |
+| Content in two languages and the case study of the page itself | 8 |
+| Final testing, adjustments and launch | 8 |
+| **Total** | **80 h (about 2 weeks)** |
 
-Rango: entre 65 h (optimista) y 110 h (pesimista, si el despliegue o el panel se complican). Fecha objetivo de la versión 1: **2026-10-25**; con el escenario pesimista, 2026-10-30.
+Range: between 65 h (optimistic) and 110 h (pessimistic, if deployment or the panel get complicated). Target date for version 1: **2026-10-25**; in the pessimistic scenario, 2026-10-30.
 
-## Métricas de éxito
+## Success metrics
 
-Del portafolio como producto:
+For the portfolio as a product:
 
-- **Más de 1 desarrollo nuevo agregado al portafolio en menos de 1 mes desde la publicación.**
-- Visitas desde 5 postulaciones o más en las primeras 8 semanas.
-- Al menos una entrevista en que lo mencionen o un contacto de un cliente por el formulario.
+- **More than 1 new development added to the portfolio in less than 1 month after launch.**
+- Visits from 5 or more job applications in the first 8 weeks.
+- At least one interview where it is mentioned, or one contact from a client through the form.
 
-Técnicas, de la versión 1:
+Technical, for version 1:
 
-- Despliegue automático en cada merge a la rama principal, con tests verdes en CI.
-- Agregar un proyecto desde el panel toma menos de 10 minutos.
-- ~~La plantilla permite partir el siguiente producto en 1 día o menos.~~ Pasa al proyecto de la plantilla (2026-10-12).
+- Automatic deployment on every merge to the main branch, with green tests in CI.
+- Adding a project from the panel takes less than 10 minutes.
+- ~~The template lets the next product start in 1 day or less.~~ Moved to the template project (2026-10-12).
 
-## Criterio de abandono
+## Abandonment criterion
 
-No aplica. Es el portafolio propio y se mantiene en el tiempo (decisión de Nicolas, 2026-10-11).
+Not applicable. It is his own portfolio and is maintained over time (Nicolas's decision, 2026-10-11).
 
-## Supuestos a confirmar
+## Assumptions to confirm
 
-- Sin foto.
-- El formulario avisa por correo.
+- No photo.
+- The form notifies by email.
