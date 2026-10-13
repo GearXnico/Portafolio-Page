@@ -1,5 +1,6 @@
-// Textos fijos de la interfaz e idioma de la página (ADR 0002). La API decide el idioma
-// inicial según el navegador; la elección del selector se guarda en localStorage y manda.
+// Fixed UI (user interface) text and page language (ADR (architecture decision record) 0002).
+// The API (application programming interface) decides the initial language based on the browser;
+// the switcher choice is saved in localStorage and takes precedence.
 import { createContext, useContext, useEffect } from "react";
 
 import en from "./en.json";
@@ -8,7 +9,7 @@ import es from "./es.json";
 export type Lang = "es" | "en";
 export type MessageKey = keyof typeof es;
 
-// El tipo obliga a que en.json tenga las mismas claves que es.json.
+// The type forces en.json to have the same keys as es.json.
 const messages: Record<Lang, Record<MessageKey, string>> = { es, en };
 
 export const LANGS: readonly Lang[] = ["es", "en"];
@@ -23,7 +24,10 @@ export function translate(lang: Lang, key: MessageKey): string {
   return messages[lang][key];
 }
 
-/** Elige el texto del idioma en un objeto de la API: `localized(project, "title", "en")` → `title_en`. */
+/**
+ * Picks the text for the language from an API object: `localized(project, "title", "en")` →
+ * `title_en`.
+ */
 export function localized<F extends string>(
   item: Record<`${F}_${Lang}`, string>,
   field: F,
@@ -32,7 +36,7 @@ export function localized<F extends string>(
   return item[`${field}_${lang}`];
 }
 
-// localStorage puede fallar (modo privado o bloqueado); entonces la elección dura solo la visita.
+// localStorage can fail (private or blocked mode); then the choice lasts only for the visit.
 export function storedLang(): Lang | null {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
@@ -46,7 +50,7 @@ export function storeLang(lang: Lang): void {
   try {
     localStorage.setItem(STORAGE_KEY, lang);
   } catch {
-    // Sin almacenamiento disponible: se ignora.
+    // No storage available: ignored.
   }
 }
 
@@ -66,8 +70,9 @@ export function useLang() {
 }
 
 /**
- * Idioma, título y descripción del documento (SEO y lectores de pantalla). Hay una sola URL
- * para los dos idiomas, así que no se usa `hreflang`: el idioma va en `<html lang>`.
+ * Document language, title and description (SEO (search engine optimization) and screen
+ * readers). There is a single URL for both languages, so `hreflang` isn't used: the language goes
+ * in `<html lang>`.
  */
 export function useDocumentMeta(lang: Lang, title: string, noindex = false): void {
   useEffect(() => {
@@ -80,7 +85,8 @@ export function useDocumentMeta(lang: Lang, title: string, noindex = false): voi
       document.head.append(meta);
     }
     meta.content = translate(lang, "meta.description");
-    // El panel no se indexa: robots.txt solo pide no rastrearlo, y un enlace externo bastaría.
+    // The admin panel isn't indexed: robots.txt only asks crawlers not to crawl it, and an
+    // external link would be enough.
     if (!noindex) return;
     const robots = document.createElement("meta");
     robots.name = "robots";

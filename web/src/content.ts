@@ -1,9 +1,10 @@
-// Ayudas para mostrar el contenido que llega de `bootstrap`.
+// Helpers to display the content that comes from `bootstrap`.
 import type { Lang } from "./i18n";
 
 /**
- * Devuelve la URL solo si es https. La API ya lo exige al guardar, pero un enlace con
- * `javascript:` en un `href` ejecutaría código, así que la página también lo revisa.
+ * Returns the URL only if it is https. The API (application programming interface) already
+ * requires it on save, but a `javascript:` link in an `href` would run code, so the page checks
+ * it too.
  */
 export function httpsUrl(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -14,7 +15,10 @@ export function httpsUrl(value: string | null | undefined): string | null {
   }
 }
 
-/** Mes y año de una fecha `YYYY-MM-DD`, en UTC para que no cambie de mes según la zona. */
+/**
+ * Month and year of a `YYYY-MM-DD` date, in UTC (Coordinated Universal Time) so the month
+ * doesn't change with the time zone.
+ */
 export function monthYear(isoDate: string, lang: Lang): string {
   return new Intl.DateTimeFormat(lang, {
     month: "short",

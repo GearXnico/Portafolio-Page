@@ -13,13 +13,13 @@ import { AdminSkillsPage } from "./pages/AdminSkillsPage";
 import { AdminVisitsPage } from "./pages/AdminVisitsPage";
 import { PublicSite } from "./pages/PublicSite";
 
-/** Rutas de la web: el panel en `/admin` y la página pública en todo lo demás. */
+/** Web routes: the admin panel at `/admin` and the public page everywhere else. */
 export function App() {
   return (
     <Routes>
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="login" element={<AdminLoginPage />} />
-        {/* Todo lo que va dentro de RequireAdmin exige sesión; sin ella, redirige al login. */}
+        {/* Everything inside RequireAdmin requires a session; without one, it redirects to the login. */}
         <Route element={<RequireAdmin />}>
           <Route index element={<AdminPage />} />
           <Route path="projects" element={<AdminProjectsPage />} />

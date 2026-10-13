@@ -8,7 +8,7 @@ import "./styles.css";
 
 const root = document.getElementById("root");
 if (!root) {
-  throw new Error("No se encontró el elemento #root");
+  throw new Error("The #root element was not found");
 }
 
 const queryClient = new QueryClient();
