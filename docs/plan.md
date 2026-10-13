@@ -1,127 +1,127 @@
-# Plan · Sitio web de portafolio
+# Plan · Portfolio website
 
-ID: 2026-10-08-sitio-portafolio · Versión: borrador 3 (2026-10-12) · Base: `brief.md`, `architecture.md` y `adr/`
+ID: 2026-10-08-sitio-portafolio · Version: draft 3 (2026-10-12) · Based on: `brief.md`, `architecture.md` and `adr/`
 
-## Resumen
+## Summary
 
-Este plan es solo del **sitio de portafolio**. El repositorio nació como `plantilla-producto`, pero el código de los hitos 2 y 3 ya es el portafolio, así que se renombró a `Portafolio-Page` y aquí se termina (decisión de Nicolas, 2026-10-12). La plantilla reutilizable se hace después, como un proyecto aparte, extrayendo lo que de verdad se repite.
+This plan covers only the **portfolio site**. The repository started as `plantilla-producto`, but the code of milestones 2 and 3 is already the portfolio, so it was renamed to `Portafolio-Page` and it is finished here (Nicolas's decision, 2026-10-12). The reusable template is made later, as a separate project, by extracting what really repeats.
 
-El orden general del trabajo (decisión de Nicolas, 2026-10-12) es este:
+The overall order of work (Nicolas's decision, 2026-10-12) is this:
 
-1. **Terminar el desarrollo del portafolio:** hitos 3 y 4 de este plan.
-2. **Crear la plantilla** como proyecto nuevo, con su propio brief y plan, a partir del portafolio terminado.
-3. **Uno o dos proyectos rápidos** creados desde la plantilla, que después se muestran en el portafolio.
-4. **Recién entonces, el gasto:** el hito 5 de este plan despliega el portafolio, y los otros productos se despliegan en el mismo VPS (servidor virtual privado).
+1. **Finish developing the portfolio:** milestones 3 and 4 of this plan.
+2. **Create the template** as a new project, with its own brief and plan, from the finished portfolio.
+3. **One or two quick projects** created from the template, which are then shown in the portfolio.
+4. **Only then, the spending:** milestone 5 of this plan deploys the portfolio, and the other products are deployed on the same VPS (virtual private server).
 
-Los puntos 2 y 3 no son parte de este plan: cada uno tendrá sus propios documentos. La plantilla es parte del ecosistema (Nicolas, 2026-10-12), así que no ocupa el cupo de idea activa; los proyectos rápidos sí siguen las reglas de activación.
+Points 2 and 3 are not part of this plan: each one will have its own documents. The template is part of the ecosystem (Nicolas, 2026-10-12), so it does not take the active idea slot; the quick projects do follow the activation rules.
 
-**El desarrollo no tiene costo.** Los hitos 0 a 4 usan solo herramientas gratis: GitHub, Actions en un repo público y Docker en local. El hito 5 contrata los servidores y el dominio. El hito 1 ya armó las imágenes de producción y las prueba en CI (integración continua) con `deploy-check` (el staging efímero de la ADR 0008), así que en el hito 5 quedan solo los servidores, el DNS (sistema de nombres de dominio), los secretos y el `deploy.yml`.
+**Development costs nothing.** Milestones 0 to 4 use only free tools: GitHub, Actions on a public repo and Docker locally. Milestone 5 pays for the servers and the domain. Milestone 1 already built the production images and tests them in CI (continuous integration) with `deploy-check` (the ephemeral staging of ADR 0008), so milestone 5 is left with only the servers, the DNS (Domain Name System), the secrets and `deploy.yml`.
 
-**Las fechas son una guía**, para ver si vamos bien, no plazos (Nicolas, 2026-10-12).
+**The dates are a guide**, to see whether we are on track, not deadlines (Nicolas, 2026-10-12).
 
-Cada tarea está pensada para terminarse en una sesión de Claude Code. Se entrega como una rama `feature/*`, `fix/*`, `docs/*` o `chore/*` con su PR (pull request) a `dev`, según la ADR (registro de decisión de arquitectura) 0007. "Terminado" significa que se cumple el criterio de la tabla y la checklist de terminado de esa ADR. Cada tarea parte con un prompt hecho desde `prompts/template.md` y queda en `prompts/log.md` (ADR 0009).
+Each task is meant to be finished in one Claude Code session. It is delivered as a `feature/*`, `fix/*`, `docs/*` or `chore/*` branch with its PR (pull request) to `dev`, following ADR (architecture decision record) 0007. "Done" means the criterion in the table and that ADR's done checklist are met. Each task starts with a prompt made from `prompts/template.md` and is recorded in `prompts/log.md` (ADR 0009).
 
-| Hito | Entrega | Horas | Estado |
+| Milestone | Deliverable | Hours | Status |
 |---|---|---|---|
-| 0 | Accesos gratuitos listos | 2 | Terminado |
-| 1 | Base con CI, seguridad y prueba de despliegue en CI | 22,5 | Terminado (1.9 en este PR) |
-| 2 | API y base de datos | 14 | Terminado |
-| 3 | Frontend público bilingüe | 17 | 3.1 y 3.2 terminadas |
-| 4 | Panel de administración | 18 | Pendiente |
-| 5 | Despliegue, contenido y publicación de la versión 1 (~US$13,20 al mes más $9.990 al año por el dominio) | 20,5 | Después de la plantilla y los proyectos rápidos |
+| 0 | Free accounts ready | 2 | Done |
+| 1 | Base with CI, security and a deployment test in CI | 22.5 | Done (1.9 in this PR) |
+| 2 | API (application programming interface) and database | 14 | Done |
+| 3 | Bilingual public frontend | 17 | 3.1 and 3.2 done |
+| 4 | Admin panel | 18 | Pending |
+| 5 | Deployment, content and release of version 1 (~US$13.20 a month plus CLP 9,990 a year for the domain) | 20.5 | After the template and the quick projects |
 | | **Total** | **94** | |
 
-Quedan ~28 h de desarrollo (3.3 a 3.6 y el hito 4) y las 20,5 h del hito 5.
+About 28 h of development remain (3.3 to 3.6 and milestone 4), plus the 20.5 h of milestone 5.
 
-## Hito 0 · Accesos gratuitos (lo haces tú, sin Claude Code)
+## Milestone 0 · Free accounts (you do it, without Claude Code)
 
-**Terminado el 2026-10-11:** contraseña de Gmail, repo `plantilla-producto` (público, `dev` por defecto, con acceso de Claude), cuotas revisadas (Actions y GHCR gratis en repos públicos) y token generado.
+**Done on 2026-10-11:** Gmail password, `plantilla-producto` repo (public, `dev` as default, with Claude access), quotas reviewed (Actions and GHCR free on public repos) and token generated.
 
-| # | Tarea | Horas | Terminado cuando |
+| # | Task | Hours | Done when |
 |---|---|---|---|
-| 0.1 | Crear la contraseña de aplicación de Gmail (requiere verificación en dos pasos) | 0,5 | La tienes guardada en tu gestor de contraseñas |
-| 0.2 | Crear el repo público `plantilla-producto` en GitHub, vacío y con `dev` como rama por defecto | 0,5 | El repo existe y Claude Code tiene acceso |
-| 0.3 | Revisar con Claude Code las cuotas gratuitas de GitHub Actions y GHCR (el registro de imágenes de GitHub) para repos públicos | 0,5 | No hay sorpresas de costo |
-| 0.4 | Generar `CLAUDE_CODE_OAUTH_TOKEN` con `claude setup-token`, para la revisión automática | 0,5 | Tienes el token guardado |
+| 0.1 | Create the Gmail app password (requires two-step verification) | 0.5 | You have it saved in your password manager |
+| 0.2 | Create the public `plantilla-producto` repo on GitHub, empty and with `dev` as the default branch | 0.5 | The repo exists and Claude Code has access |
+| 0.3 | Review with Claude Code the free quotas of GitHub Actions and GHCR (GitHub's image registry) for public repos | 0.5 | There are no cost surprises |
+| 0.4 | Generate `CLAUDE_CODE_OAUTH_TOKEN` with `claude setup-token`, for the automatic review | 0.5 | You have the token saved |
 
-## Hito 1 · Base con CI y prueba de despliegue, sin costo
+## Milestone 1 · Base with CI and a deployment test, at no cost
 
-El repo se llamó `plantilla-producto` porque al principio iba a ser la plantilla. La tarea 1.9 lo renombró a `Portafolio-Page`; ya no se marca como "template repository". El repo vacío que se llamaba `portfolio-page` quedó como `Product-template`, para la futura plantilla.
+The repo was called `plantilla-producto` because at first it was going to be the template. Task 1.9 renamed it to `Portafolio-Page`; it is no longer marked as a "template repository". The empty repo that was called `portfolio-page` became `Product-template`, for the future template.
 
-| # | Tarea | Horas | Terminado cuando |
+| # | Task | Hours | Done when |
 |---|---|---|---|
-| 1.1 | Estructura del monorepo (`api/`, `web/`, `deploy/`), `compose.yml` local, README, `.env.example`, `.gitignore` y plantilla de PR | 2 | `docker compose up` levanta todo en local |
-| 1.2 | Esqueleto de la API: FastAPI, `GET /api/health` que consulta la base, Alembic iniciado, pytest contra Postgres, `ruff` y `mypy` | 3 | Los tests pasan en local y `/api/health` responde 200 |
-| 1.3 | Esqueleto web: Vite, React y TypeScript estricto, ESLint, Prettier, Vitest y un E2E (prueba de punta a punta) con Playwright que abre la página | 3 | Los tests y el E2E pasan en local |
-| 1.4 | `ci.yml`: jobs de API y web en paralelo, caché, mínimos de cobertura (80 % y 60 %) y `pre-commit` | 3 | Un PR de prueba muestra todos los checks en verde, y un test roto lo deja en rojo |
-| 1.5 | Seguridad en CI: CodeQL, reglas de seguridad de `ruff`, `pip-audit`, `npm audit`, Trivy y `dependabot.yml` | 3 | Los checks corren en el PR; una dependencia vulnerable de prueba lo bloquea |
-| 1.6 | Imágenes de producción: Dockerfiles multi-stage de la API y de Caddy (con el build de web dentro), `compose.prod.yml` (con red interna fija y `TRUSTED_PROXIES` apuntando a ella, ADR 0004), Caddyfile y job `deploy-check` en CI, con respaldo y migraciones como en producción | 4 | `deploy-check` levanta el compose de producción en el runner, aplica las migraciones y pasa el E2E |
-| 1.7 | Reglas de GitHub: rulesets de `main` y `dev` (1 aprobación con bypass tuyo, historial lineal, solo rebase & merge, checks obligatorios) y `sync-dev.yml`. El gate de staging se agrega en el hito 5. | 3 | Un PR sin checks en verde no se puede mergear, y después de un PR de versión de prueba `dev` queda sincronizada |
-| 1.8 | `ai-review.yml`: revisión automática con IA en los PR a `dev`, con `CLAUDE_CODE_OAUTH_TOKEN` (ADR 0007) | 1 | Un PR de prueba recibe comentarios del revisor y el PR de documentación se salta |
-| 1.9 | Renombre. **Lo hiciste tú (2026-10-12):** `plantilla-producto` pasó a `Portafolio-Page` y el repo vacío `portfolio-page` pasó a `Product-template` (GitHub conserva el historial, los PR y una redirección desde los nombres viejos). **Con Claude Code:** actualizar el README, `architecture.md` (sección 7), el brief (punto 8 y la métrica de la plantilla pasan al proyecto de la plantilla) y este plan | 0,5 | El CI corre en verde y ningún documento presenta este repo como la plantilla |
+| 1.1 | Monorepo structure (`api/`, `web/`, `deploy/`), local `compose.yml`, README, `.env.example`, `.gitignore` and PR template | 2 | `docker compose up` brings everything up locally |
+| 1.2 | API skeleton: FastAPI, `GET /api/health` that queries the database, Alembic initialized, pytest against Postgres, `ruff` and `mypy` | 3 | Tests pass locally and `/api/health` responds 200 |
+| 1.3 | Web skeleton: Vite, React and strict TypeScript, ESLint, Prettier, Vitest and an E2E (end-to-end) test with Playwright that opens the page | 3 | The tests and the E2E test pass locally |
+| 1.4 | `ci.yml`: API and web jobs in parallel, cache, coverage minimums (80% and 60%) and `pre-commit` | 3 | A test PR shows all checks green, and a broken test turns it red |
+| 1.5 | Security in CI: CodeQL, `ruff` security rules, `pip-audit`, `npm audit`, Trivy and `dependabot.yml` | 3 | The checks run on the PR; a test vulnerable dependency blocks it |
+| 1.6 | Production images: multi-stage Dockerfiles for the API and for Caddy (with the web build inside), `compose.prod.yml` (with a fixed internal network and `TRUSTED_PROXIES` pointing to it, ADR 0004), Caddyfile and a `deploy-check` job in CI, with backup and migrations as in production | 4 | `deploy-check` brings up the production compose on the runner, applies the migrations and passes the E2E test |
+| 1.7 | GitHub rules: rulesets for `main` and `dev` (1 approval with your bypass, linear history, rebase & merge only, required checks) and `sync-dev.yml`. The staging gate is added in milestone 5. | 3 | A PR without green checks cannot be merged, and after a test release PR `dev` is synced |
+| 1.8 | `ai-review.yml`: automatic AI (artificial intelligence) review on PRs to `dev`, with `CLAUDE_CODE_OAUTH_TOKEN` (ADR 0007) | 1 | A test PR gets comments from the reviewer and the documentation PR is skipped |
+| 1.9 | Rename. **You did it (2026-10-12):** `plantilla-producto` became `Portafolio-Page` and the empty `portfolio-page` repo became `Product-template` (GitHub keeps the history, the PRs and a redirect from the old names). **With Claude Code:** update the README, `architecture.md` (section 7), the brief (point 8 and the template metric move to the template project) and this plan | 0.5 | CI runs green and no document presents this repo as the template |
 
-**Fin del hito:** cada PR pasa por tests, seguridad, revisión con IA y una prueba del despliegue completo en CI, todo sin costo, en el repo `Portafolio-Page`.
+**End of milestone:** every PR goes through tests, security, AI review and a test of the full deployment in CI, all at no cost, in the `Portafolio-Page` repo.
 
-## Hito 2 · API y base de datos
+## Milestone 2 · API and database
 
-| # | Tarea | Horas | Terminado cuando |
+| # | Task | Hours | Done when |
 |---|---|---|---|
-| 2.1 | Modelos y migración inicial: perfil, habilidades, experiencia, proyectos, imágenes, visitas y mensajes | 2 | `alembic upgrade head` crea las 7 tablas, con tests de restricciones |
-| 2.2 | `GET /api/bootstrap`: registra la visita con UTM (parámetros de origen del enlace) y hash diario, decide el idioma y devuelve el contenido visible | 3 | Tests de idioma (es, en y sin header), de UTM y de proyectos ocultos |
-| 2.3 | Login del administrador: Argon2, JWT (token firmado) en cookie, límite de intentos y comando para generar el hash | 3 | Tests de login correcto, incorrecto, bloqueo y acceso sin sesión a `/api/admin/*` |
-| 2.4 | CRUD (crear, leer, actualizar y borrar) de administración: proyectos (con orden y visibilidad), perfil, habilidades y experiencia | 3 | Tests de cada ruta, con cobertura de la API ≥ 80 % |
-| 2.5 | Subida de capturas: máximo 5 MB, conversión a WebP y guardado en `/media` | 1,5 | Tests con imagen válida, archivo muy grande y archivo que no es imagen |
-| 2.6 | Contacto: guarda el mensaje, honeypot, límite por IP (dirección de red) y correo en tarea de fondo | 1,5 | Tests de envío, spam bloqueado y correo fallido que igual guarda el mensaje |
+| 2.1 | Models and initial migration: profile, skills, experience, projects, images, visits and messages | 2 | `alembic upgrade head` creates the 7 tables, with constraint tests |
+| 2.2 | `GET /api/bootstrap`: records the visit with UTM (Urchin Tracking Module: link source parameters) and a daily hash, decides the language and returns the visible content | 3 | Tests for language (es, en and no header), UTM and hidden projects |
+| 2.3 | Administrator login: Argon2, JWT (JSON Web Token, a signed token) in a cookie, attempt limit and a command to generate the hash | 3 | Tests for correct login, wrong login, lockout and access without a session to `/api/admin/*` |
+| 2.4 | Admin CRUD (create, read, update and delete): projects (with order and visibility), profile, skills and experience | 3 | Tests for each route, with API coverage ≥ 80% |
+| 2.5 | Screenshot upload: 5 MB maximum, conversion to WebP and storage in `/media` | 1.5 | Tests with a valid image, a file that is too large and a file that is not an image |
+| 2.6 | Contact: saves the message, honeypot, per-IP (network address) limit and email in a background task | 1.5 | Tests for sending, blocked spam and a failed email that still saves the message |
 
-## Hito 3 · Frontend público
+## Milestone 3 · Public frontend
 
-| # | Tarea | Horas | Terminado cuando |
+| # | Task | Hours | Done when |
 |---|---|---|---|
-| 3.1 | Layout de una página: perfil, habilidades, experiencia, proyectos y contacto, responsive | 4 | Se ve bien en un celular y en escritorio, con tests de render |
-| 3.2 | Idiomas: textos fijos en JSON, idioma según `bootstrap`, selector y `localStorage` | 3 | E2E: con el navegador en inglés sale en inglés, y el selector cambia y se recuerda |
-| 3.3 | Sección de proyectos con capturas, stack y enlaces a demo y repositorio | 3 | Los proyectos ocultos no aparecen; tests de componente |
-| 3.4 | Formulario de contacto con validación y mensajes de éxito y error en los dos idiomas | 3 | E2E: un mensaje enviado aparece en la base |
-| 3.5 | UTM: se leen de la URL (dirección web) y se pasan a `bootstrap` y al contacto | 1 | E2E: una visita con UTM queda registrada con su origen |
-| 3.6 | SEO (posicionamiento en buscadores) y accesibilidad: títulos, `meta` por idioma, `hreflang` y contraste | 3 | Lighthouse ≥ 90 en accesibilidad y SEO |
+| 3.1 | Single-page layout: profile, skills, experience, projects and contact, responsive | 4 | It looks good on a phone and on desktop, with render tests |
+| 3.2 | Languages: fixed texts in JSON, language from `bootstrap`, selector and `localStorage` | 3 | E2E: with the browser in English it shows in English, and the selector switches and is remembered |
+| 3.3 | Projects section with screenshots, stack and demo and repository links | 3 | Hidden projects do not appear; component tests |
+| 3.4 | Contact form with validation and success and error messages in both languages | 3 | E2E: a sent message shows up in the database |
+| 3.5 | UTM: read from the URL (web address) and passed to `bootstrap` and to the contact form | 1 | E2E: a visit with UTM is recorded with its source |
+| 3.6 | SEO (search engine optimization) and accessibility: titles, `meta` per language, `hreflang` and contrast | 3 | Lighthouse ≥ 90 in accessibility and SEO |
 
-## Hito 4 · Panel de administración
+## Milestone 4 · Admin panel
 
-| # | Tarea | Horas | Terminado cuando |
+| # | Task | Hours | Done when |
 |---|---|---|---|
-| 4.1 | Ruta `/admin` con login, logout y protección de rutas | 3 | E2E: sin sesión redirige al login |
-| 4.2 | Lista y edición de proyectos: formulario con los dos idiomas lado a lado, orden y ocultar | 5 | E2E: crear un proyecto y verlo en la página pública |
-| 4.3 | Subida de capturas desde el formulario de proyecto | 2 | E2E: la captura se ve en la página pública |
-| 4.4 | Edición de perfil, habilidades y experiencia | 4 | E2E: un cambio de perfil se ve en la página |
-| 4.5 | Mensajes de contacto (marcar como leído) y visitas agrupadas por `utm_source` y `utm_campaign` | 3 | Se ven los mensajes y los conteos de una visita de prueba con UTM |
-| 4.6 | Prueba de la meta del brief: agregar un proyecto real cronometrado | 1 | Toma menos de 10 minutos |
+| 4.1 | `/admin` route with login, logout and route protection | 3 | E2E: without a session it redirects to the login |
+| 4.2 | Project list and editing: form with both languages side by side, ordering and hiding | 5 | E2E: create a project and see it on the public page |
+| 4.3 | Screenshot upload from the project form | 2 | E2E: the screenshot shows on the public page |
+| 4.4 | Editing of profile, skills and experience | 4 | E2E: a profile change shows on the page |
+| 4.5 | Contact messages (mark as read) and visits grouped by `utm_source` and `utm_campaign` | 3 | The messages and the counts of a test visit with UTM are visible |
+| 4.6 | Test of the brief's goal: add a real project, timed | 1 | It takes less than 10 minutes |
 
-## Hito 5 · Despliegue, contenido y publicación (aquí empieza el gasto)
+## Milestone 5 · Deployment, content and release (spending starts here)
 
-Se inicia cuando el hito 4 está terminado y probado en local y en CI, **y además** la plantilla y al menos un proyecto rápido están terminados (orden decidido por Nicolas el 2026-10-12). Antes de empezar, se revisa cómo comparten el VPS y Caddy los productos que haya.
+It starts when milestone 4 is done and tested locally and in CI, **and also** the template and at least one quick project are done (order decided by Nicolas on 2026-10-12). Before starting, review how the existing products share the VPS and Caddy.
 
-| # | Tarea | Horas | Terminado cuando |
+| # | Task | Hours | Done when |
 |---|---|---|---|
-| 5.1 | Crear la cuenta en DigitalOcean con alerta de facturación y tu llave SSH (acceso remoto cifrado), y registrar el dominio .cl en NIC Chile ($9.990 al año). Lo haces tú. | 1 | Puedes crear un droplet y el dominio está a tu nombre |
-| 5.2 | Servidores de staging y producción: droplets, usuario `deploy`, `ufw`, `unattended-upgrades`, Docker, DNS, `staging.<dominio>` con usuario, contraseña y `noindex` | 4 | `ssh deploy@` funciona en los dos y Caddy responde con HTTPS (conexión cifrada) |
-| 5.3 | `deploy.yml` y `deploy/deploy.sh` por ambiente: respaldo, migraciones, cambio de contenedores, health check y rollback; botón manual por SHA (identificador del commit). Se activa el gate de staging en el ruleset de `main`. | 4,5 | Un merge a `dev` despliega staging, un health check roto a propósito vuelve solo a la versión anterior y el PR a `main` exige staging en verde |
-| 5.4 | `backup.sh` con cron, respaldo semanal de DigitalOcean activo y prueba de restauración | 1 | Restauraste un respaldo en staging y los datos coinciden |
-| 5.5 | Cargar el perfil, las habilidades y la experiencia en los dos idiomas, desde el panel en producción | 3 | El contenido está completo en `es` y `en` |
-| 5.6 | Escribir el caso de la propia página: arquitectura, pipeline, y qué hizo la IA y qué decidiste tú | 3 | El proyecto está publicado con capturas y enlace al repo |
-| 5.7 | Repaso final en staging: E2E completos, prueba en celular y restauración de respaldo | 2 | Todo en verde y sin errores en los logs |
-| 5.8 | PR de versión a `main`, etiqueta `v1.0.0` y enlaces con UTM para las próximas postulaciones | 2 | El sitio está público y tienes 5 enlaces listos para usar |
+| 5.1 | Create the DigitalOcean account with a billing alert and your SSH (Secure Shell, encrypted remote access) key, and register the .cl domain at NIC Chile (CLP 9,990 a year). You do it. | 1 | You can create a droplet and the domain is in your name |
+| 5.2 | Staging and production servers: droplets, `deploy` user, `ufw`, `unattended-upgrades`, Docker, DNS, `staging.<domain>` with user, password and `noindex` | 4 | `ssh deploy@` works on both and Caddy responds over HTTPS (encrypted connection) |
+| 5.3 | `deploy.yml` and `deploy/deploy.sh` per environment: backup, migrations, container swap, health check and rollback; manual button by SHA (the commit identifier). The staging gate is turned on in the `main` ruleset. | 4.5 | A merge to `dev` deploys staging, a health check broken on purpose rolls back to the previous version on its own, and the PR to `main` requires green staging |
+| 5.4 | `backup.sh` with cron, DigitalOcean weekly backup turned on and a restore test | 1 | You restored a backup on staging and the data matches |
+| 5.5 | Load the profile, skills and experience in both languages, from the panel in production | 3 | The content is complete in `es` and `en` |
+| 5.6 | Write the case study of the page itself: architecture, pipeline, and what the AI did and what you decided | 3 | The project is published with screenshots and a link to the repo |
+| 5.7 | Final pass on staging: full E2E tests, a test on a phone and a backup restore | 2 | Everything green and no errors in the logs |
+| 5.8 | Release PR to `main`, `v1.0.0` tag and UTM links for upcoming job applications | 2 | The site is public and you have 5 links ready to use |
 
-## Riesgos del plan
+## Plan risks
 
-| Riesgo | Señal | Qué hacer |
+| Risk | Signal | What to do |
 |---|---|---|
-| El despliegue real, el área menos practicada, queda para el final | Las tareas 5.2 o 5.3 pasan de 4 h cada una | `deploy-check` ya probó las imágenes, el compose y las migraciones en el hito 1, así que lo que queda es servidor, DNS y secretos. Si se traba, se publica primero solo producción y staging se suma unos días después. |
-| El portafolio tarda en publicarse porque el hito 5 espera a la plantilla y a los proyectos rápidos | Pasan semanas con el portafolio terminado y sin publicar | Decisión consciente para ahorrar costos. Si una postulación lo necesita antes, se puede adelantar el hito 5 solo para el portafolio. |
-| El panel crece | El hito 4 pasa de 18 h | Se publica sin el reorden de proyectos (4.2) y sin las visitas por UTM (4.5); se agregan después |
-| La futura plantilla no puede actualizar al portafolio | Al crear la plantilla | Aceptado: el portafolio no se sincroniza con la plantilla. Si después conviene, se conecta con un merge único y se resuelven los conflictos una vez. |
+| The real deployment, the least practiced area, is left for the end | Tasks 5.2 or 5.3 go over 4 h each | `deploy-check` already tested the images, the compose and the migrations in milestone 1, so what remains is the server, DNS and secrets. If it gets stuck, publish production first and add staging a few days later. |
+| The portfolio takes long to publish because milestone 5 waits for the template and the quick projects | Weeks go by with the portfolio finished and unpublished | A conscious decision to save costs. If a job application needs it sooner, milestone 5 can be brought forward for the portfolio only. |
+| The panel grows | Milestone 4 goes over 18 h | Publish without project reordering (4.2) and without visits by UTM (4.5); add them later |
+| The future template cannot update the portfolio | When the template is created | Accepted: the portfolio is not synced with the template. If it is worth it later, connect them with a one-time merge and resolve the conflicts once. |
 
-## Después de la versión 1
+## After version 1
 
-- Métrica del brief: agregar más de 1 desarrollo nuevo en el primer mes.
-- Detección de idioma por país con Cloudflare (ADR 0002).
-- Revisión de las métricas de visitas por postulación a las 8 semanas.
-- Agregar al portafolio los proyectos rápidos hechos con la plantilla, cada uno con su caso.
+- Brief metric: add more than 1 new development in the first month.
+- Language detection by country with Cloudflare (ADR 0002).
+- Review of the visit metrics per job application at 8 weeks.
+- Add to the portfolio the quick projects made with the template, each with its case study.
