@@ -1,24 +1,24 @@
-# 0005 · Aviso de contacto por SMTP de Gmail
+# 0005 · Contact notice via Gmail SMTP
 
-Estado: aceptada · Fecha: 2026-10-11 · Decidió: Nicolas
+Status: accepted · Date: 2026-10-11 · Decided by: Nicolas
 
-## Contexto
+## Context
 
-Cada mensaje del formulario de contacto se guarda en la base y además tiene que llegarle a Nicolas por correo. El único destinatario es él.
+Each message from the contact form is saved in the database and also has to reach Nicolas by email. He is the only recipient.
 
-## Opciones consideradas
+## Options considered
 
-| Opción | Costo | Contras |
+| Option | Cost | Cons |
 |---|---|---|
-| A. SMTP (protocolo de envío de correo) de Gmail con contraseña de aplicación | Gratis, ~30 min | Requiere verificación en dos pasos; el correo sale desde su propia cuenta |
-| B. Resend (3.000 correos al mes y 100 al día gratis) | Gratis, ~1 h | Hay que verificar el dominio con registros DNS (sistema de nombres de dominio) |
+| A. Gmail SMTP (Simple Mail Transfer Protocol) with an app password | Free, ~30 min | Requires two-step verification; the email is sent from his own account |
+| B. Resend (3,000 emails a month and 100 a day for free) | Free, ~1 h | The domain has to be verified with DNS (domain name system) records |
 
-## Decisión
+## Decision
 
-A. El envío corre en una tarea de fondo de FastAPI y queda detrás de una sola función.
+A. Sending runs in a FastAPI background task and sits behind a single function.
 
-## Consecuencias
+## Consequences
 
-- Si el correo falla, el mensaje igual queda guardado y se ve en el panel (columna `emailed`).
-- Si más adelante hace falta enviar correos a terceros, se cambia a B tocando solo esa función.
-- La contraseña de aplicación vive solo en el `.env` del servidor.
+- If the email fails, the message is still saved and shows up in the panel (`emailed` column).
+- If sending email to third parties is needed later, it switches to B by touching only that function.
+- The app password lives only in the server's `.env`.
