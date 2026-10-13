@@ -1,25 +1,25 @@
-<!-- Un PR (pull request) por tarea del plan, hacia `dev`. Idealmente con menos de ~400 líneas. -->
+<!-- One PR (pull request) per plan task, targeting `dev`. Ideally under ~400 lines. -->
 
-## Antes
+## Before
 
-<!-- Qué pasaba o qué faltaba antes de este cambio. -->
+<!-- What happened, or what was missing, before this change. -->
 
-## Después
+## After
 
-<!-- Qué ve o puede hacer alguien después de este cambio. -->
+<!-- What someone sees or can do after this change. -->
 
-## Cómo probar
+## How to test
 
-<!-- Pasos concretos, por ejemplo: `docker compose up -d` y abrir http://localhost:5173 -->
+<!-- Concrete steps, for example: `docker compose up -d` and open http://localhost:5173 -->
 
 1.
 
-## Checklist de terminado (ADR 0007)
+## Done checklist (ADR 0007)
 
-- [ ] Tests nuevos o actualizados, con la cobertura sobre el mínimo
-- [ ] CI, seguridad y E2E (prueba de punta a punta) en verde
-- [ ] Sin secretos ni datos personales
-- [ ] Documentación actualizada si cambia algo visible (README o docs/), y la versión de este PR anotada en `CHANGELOG.md`
-- [ ] Rama al día con su base
-- [ ] Comentarios de la revisión automática atendidos o respondidos
-- [ ] Aprobado, o mergeado por Nicolas con bypass registrado
+- [ ] New or updated tests, with coverage above the minimum
+- [ ] CI (continuous integration), security and E2E (end-to-end) checks green
+- [ ] No secrets or personal data
+- [ ] Documentation updated if something visible changes (README or docs/), and this PR's version recorded in `CHANGELOG.md`
+- [ ] Branch up to date with its base
+- [ ] Automated review comments addressed or answered
+- [ ] Approved, or merged by Nicolas with a recorded bypass
