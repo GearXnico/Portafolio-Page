@@ -24,7 +24,7 @@ def test_decide_locale(accept_language: str | None, esperado: str) -> None:
     assert decide_locale(None, accept_language) == esperado
 
 
-def test_el_pais_todavia_no_cambia_el_idioma() -> None:
+def test_country_does_not_change_the_language_yet() -> None:
     assert decide_locale("CL", "en-US") == "en"
 
 

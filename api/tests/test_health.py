@@ -8,15 +8,15 @@ from app.db import get_session
 from app.main import app
 
 
-def test_health_responde_200_con_la_base_arriba(client: TestClient) -> None:
+def test_health_responds_200_with_the_database_up(client: TestClient) -> None:
     response = client.get("/api/health")
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "database": "ok"}
 
 
-def test_health_responde_503_si_la_base_no_contesta(client: TestClient) -> None:
-    # Una conexión real a un puerto donde no hay nada escuchando.
+def test_health_responds_503_if_the_database_does_not_answer(client: TestClient) -> None:
+    # A real connection to a port where nothing is listening.
     engine = create_engine("postgresql+psycopg://nadie:nada@127.0.0.1:1/nada")
 
     def session_sin_base() -> Iterator[Session]:
