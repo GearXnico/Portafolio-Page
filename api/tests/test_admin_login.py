@@ -74,7 +74,7 @@ def test_credenciales_malas_responden_401_sin_cookie(
     response = entrar(client, email=email, password=password)
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Correo o contraseña incorrectos."}
+    assert response.json() == {"detail": "Incorrect email or password."}
     assert "set-cookie" not in response.headers
     assert client.get("/api/admin/session").status_code == 401
 
@@ -182,7 +182,7 @@ def test_sin_sesion_responde_401(client: TestClient) -> None:
     response = client.get("/api/admin/session")
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Inicia sesión."}
+    assert response.json() == {"detail": "Log in."}
 
 
 def test_toda_ruta_admin_salvo_login_y_logout_exige_sesion(client: TestClient) -> None:

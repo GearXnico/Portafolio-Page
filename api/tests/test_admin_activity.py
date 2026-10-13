@@ -85,7 +85,7 @@ def test_sin_sesion_responde_401(anonimo: TestClient, metodo: str, ruta: str) ->
     response = anonimo.request(metodo, ruta, json={})
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Inicia sesión."}
+    assert response.json() == {"detail": "Log in."}
 
 
 def test_sin_sesion_no_marca_el_mensaje(anonimo: TestClient, db_session: Session) -> None:

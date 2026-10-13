@@ -127,7 +127,7 @@ def test_sin_sesion_responde_401(anonimo: TestClient, metodo: str, ruta: str) ->
     response = anonimo.request(metodo, url, json={})
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Inicia sesión."}
+    assert response.json() == {"detail": "Log in."}
 
 
 def test_sin_sesion_no_cambia_nada(anonimo: TestClient, db_session: Session) -> None:
@@ -318,7 +318,7 @@ def test_sin_perfil_responde_404(admin: TestClient) -> None:
     response = admin.get("/api/admin/profile")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Todavía no hay perfil."}
+    assert response.json() == {"detail": "There is no profile yet."}
 
 
 def test_el_primer_put_crea_el_perfil_y_los_siguientes_lo_reemplazan(admin: TestClient) -> None:
@@ -745,7 +745,7 @@ def test_sin_sesion_la_subida_no_lee_el_formulario(
     response = subir(anonimo, 1, b"\0" * MAX_IMAGE_BYTES)
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Inicia sesión."}
+    assert response.json() == {"detail": "Log in."}
     assert leidos == []
 
 

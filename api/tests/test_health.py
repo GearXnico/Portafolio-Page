@@ -28,4 +28,4 @@ def test_health_responde_503_si_la_base_no_contesta(client: TestClient) -> None:
     response = client.get("/api/health")
 
     assert response.status_code == 503
-    assert response.json() == {"detail": "La base de datos no responde"}
+    assert response.json() == {"detail": "The database is not responding"}
