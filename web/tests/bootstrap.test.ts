@@ -9,7 +9,7 @@ describe("fetchBootstrap", () => {
     localStorage.clear();
   });
 
-  it("envía las UTM de la URL, el referrer y el idioma guardado", async () => {
+  it("sends the UTM (Urchin Tracking Module) parameters from the URL, the referrer and the saved language", async () => {
     window.history.replaceState(null, "", "/?utm_source=linkedin&utm_campaign=postulacion&x=1");
     vi.spyOn(document, "referrer", "get").mockReturnValue("https://www.linkedin.com/feed/");
     localStorage.setItem("lang", "en");
@@ -27,7 +27,7 @@ describe("fetchBootstrap", () => {
     });
   });
 
-  it("no envía lang si no hay uno guardado válido", async () => {
+  it("doesn't send lang if there is no valid saved one", async () => {
     localStorage.setItem("lang", "fr");
     const fetchMock = vi.fn().mockResolvedValue(new Response('{"lang":"es"}'));
     vi.stubGlobal("fetch", fetchMock);
@@ -38,24 +38,24 @@ describe("fetchBootstrap", () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it("falla si la API responde con error", async () => {
+  it("fails if the API (application programming interface) responds with an error", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 503 })));
 
     await expect(fetchBootstrap()).rejects.toThrow("503");
   });
 
-  it("se corta si la API no responde a tiempo", async () => {
-    // Un fetch que nunca responde y solo termina si se aborta.
+  it("aborts if the API doesn't respond in time", async () => {
+    // A fetch that never responds and only ends if it is aborted.
     const hangingFetch = vi.fn(
       (_url: string, init: RequestInit) =>
         new Promise((_resolve, reject) => {
           init.signal?.addEventListener("abort", () => {
-            reject(new Error("abortado"));
+            reject(new Error("aborted"));
           });
         }),
     );
     vi.stubGlobal("fetch", hangingFetch);
 
-    await expect(fetchBootstrap(undefined, 10)).rejects.toThrow("abortado");
+    await expect(fetchBootstrap(undefined, 10)).rejects.toThrow("aborted");
   });
 });
