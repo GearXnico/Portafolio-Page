@@ -1,29 +1,29 @@
-# Seguridad de cada PR (pull request), de cada push a dev y main, y una vez por semana. ADR 0007.
-# Las reglas de seguridad de ruff (S, las de Bandit) corren en el job pre-commit de ci.yml.
-# Secret scanning y push protection son ajustes del repo en GitHub, no de este workflow.
-name: seguridad
+# Security checks for every PR (pull request), every push to dev and main, and once a week. ADR (architecture decision record) 0007.
+# The ruff security rules (S, the Bandit ones) run in the pre-commit job of ci.yml.
+# Secret scanning and push protection are repo settings on GitHub, not part of this workflow.
+name: security
 
 on:
   pull_request:
     branches: [dev, main]
   push:
     branches: [dev, main]
-  # Los lunes a las 09:00 UTC, para ver vulnerabilidades nuevas aunque nadie haga push.
+  # Mondays at 09:00 UTC (Coordinated Universal Time), to catch new vulnerabilities even if nobody pushes.
   schedule:
     - cron: "0 9 * * 1"
 
-# Sin permisos por defecto; cada job pide solo lo que usa.
+# No permissions by default; each job asks only for what it uses.
 permissions: {}
 
 concurrency:
-  # En un PR, un push nuevo cancela el escaneo anterior. En dev y main el grupo es el SHA de cada
-  # commit, así que ningún escaneo se cancela ni queda descartado en la cola.
+  # On a PR, a new push cancels the previous scan. On dev and main the group is the SHA of each
+  # commit, so no scan is cancelled or discarded from the queue.
   group: seguridad-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
-  # Análisis estático de GitHub. El check "CodeQL" del PR falla con hallazgos de severidad alta
-  # o crítica (el umbral por defecto del repo, en Settings > Code security).
+  # GitHub static analysis. The PR's "CodeQL" check fails on high or critical severity
+  # findings (the repo's default threshold, in Settings > Code security).
   codeql:
     name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-latest
@@ -34,24 +34,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # actions revisa los propios workflows (inyección en `run:`, permisos de más).
+        # actions checks the workflows themselves (injection in `run:`, excess permissions).
         language: [actions, python, javascript-typescript]
     steps:
-      # Acciones fijadas por SHA (hash del commit) para que un tag movido no cambie el código que corre.
+      # Actions pinned by SHA (commit hash) so that a moved tag can't change the code that runs.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           languages: ${{ matrix.language }}
-          # Ninguno de los tres lenguajes necesita compilar para el análisis.
+          # None of the three languages needs a build for the analysis.
           build-mode: none
       - uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           category: /language:${{ matrix.language }}
 
-  # Vulnerabilidades conocidas en las dependencias de Python, incluidas las de desarrollo.
-  # pip-audit no filtra por severidad: falla con cualquier vulnerabilidad conocida.
+  # Known vulnerabilities in the Python dependencies, including the development ones.
+  # pip-audit doesn't filter by severity: it fails on any known vulnerability.
   pip-audit:
     name: pip-audit
     runs-on: ubuntu-latest
@@ -71,10 +71,10 @@ jobs:
           cache: pip
           cache-dependency-path: api/pyproject.toml
       - run: pip install -e ".[dev]" "pip-audit==2.10.*"
-      # --skip-editable: el paquete `api` es este repo, no está publicado en PyPI.
+      # --skip-editable: the `api` package is this repo, it is not published on PyPI.
       - run: pip-audit --skip-editable
 
-  # Vulnerabilidades altas o críticas en las dependencias de web. Lee solo package-lock.json.
+  # High or critical vulnerabilities in the web dependencies. It reads only package-lock.json.
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
@@ -93,9 +93,9 @@ jobs:
           node-version: "24"
       - run: npm audit --audit-level=high
 
-  # Trivy sobre las imágenes de producción: vulnerabilidades altas o críticas que ya tienen
-  # corrección. No revisa postgres:18-alpine, que no se construye aquí; sus hallazgos están en
-  # gosu, que no se ejecuta porque compose.prod.yml arranca la base con el usuario postgres.
+  # Trivy on the production images: high or critical vulnerabilities that already have a
+  # fix. It doesn't check postgres:18-alpine, which isn't built here; its findings are in
+  # gosu, which never runs because compose.prod.yml starts the database as the postgres user.
   trivy:
     name: Trivy (${{ matrix.image }})
     runs-on: ubuntu-latest
@@ -110,13 +110,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # La de web es Caddy con el build de la página, y toma el Caddyfile de deploy/.
-      - name: Construir la imagen
+      # The web one is Caddy with the page build, and it takes the Caddyfile from deploy/.
+      - name: Build the image
         env:
           IMAGE: ${{ matrix.image }}
         run: docker build -t "producto-$IMAGE:ci" --build-context deploy=deploy "$IMAGE"
-      # v0.36.0 es posterior al compromiso de los tags de esta acción (marzo de 2026), y el SHA
-      # fijo evita que un tag movido cambie lo que corre.
+      # v0.36.0 is newer than the compromise of this action's tags (March 2026), and the pinned
+      # SHA keeps a moved tag from changing what runs.
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           version: v0.75.0
@@ -124,5 +124,5 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
-          # Hallazgos aceptados uno a uno, con fecha de vencimiento: un CVE nuevo sigue fallando.
+          # Findings accepted one by one, with an expiry date: a new CVE (Common Vulnerabilities and Exposures entry) still fails.
           trivyignores: .trivyignore
