@@ -1,9 +1,9 @@
-"""Registro de visitas (limpia lo que manda el visitante y calcula el hash diario) y sus conteos
-para el panel.
+"""Visit recording (cleans what the visitor sends and computes the daily hash) and its counts
+for the panel.
 
-Lo que llega en la URL o en los headers lo controla cualquiera, así que se limpia y se
-recorta antes de guardarlo. Nunca se rechaza la visita por eso: la página tiene que cargar
-aunque el enlace traiga basura.
+Anyone controls what arrives in the URL or the headers, so it is cleaned and trimmed before
+saving it. The visit is never rejected because of that: the page has to load even if the
+link carries garbage.
 """
 
 import hashlib
@@ -22,30 +22,30 @@ from app.models.visit import Visit
 from app.models.visitor_salt import SALT_BYTES, VisitorSalt
 from app.schemas.visits import VisitCountOut
 
-# Los mismos límites que las restricciones de la tabla `visit`.
+# The same limits as the constraints of the `visit` table.
 UTM_MAX_LENGTH = 200
 REFERRER_MAX_LENGTH = 2048
-# El user agent solo entra al hash; se recorta para no hashear megabytes.
+# The user agent only goes into the hash; it is trimmed so megabytes aren't hashed.
 USER_AGENT_MAX_LENGTH = 512
 
-# Unicode: control, formato (invisibles), sustitutos, uso privado, sin asignar, y separadores
-# de línea y de párrafo.
+# Unicode: control, format (invisible), surrogates, private use, unassigned, and line and
+# paragraph separators.
 _REMOVED_CATEGORIES = frozenset({"Cc", "Cf", "Cs", "Co", "Cn", "Zl", "Zp"})
 
 _VALID_HOST = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$")
 
 
 def clean_text(value: str | None, max_length: int) -> str | None:
-    """Quita caracteres de control e invisibles, recorta espacios y largo. Vacío pasa a None.
+    """Remove control and invisible characters, trim spaces and length. Empty becomes None.
 
-    Las categorías quitadas incluyen el byte nulo (Postgres no lo acepta en un `text`), los
-    saltos de línea (también U+2028 y U+2029) y los caracteres que invierten la dirección del
-    texto, que podrían disfrazar un valor en el panel o romper un export CSV.
+    The removed categories include the null byte (Postgres doesn't accept it in a `text`), line
+    breaks (also U+2028 and U+2029) and the characters that reverse the text direction, which
+    could disguise a value in the panel or break a CSV export.
     """
     if value is None:
         return None
-    # Se recorta antes de filtrar, para no recorrer un valor de muchos KB (kilobytes). El margen
-    # deja espacio a los caracteres que el filtro quita.
+    # Trim before filtering, so a value of many KB (kilobytes) isn't walked through. The margin
+    # leaves room for the characters the filter removes.
     cleaned = "".join(
         c for c in value[: max_length * 4] if unicodedata.category(c) not in _REMOVED_CATEGORIES
     )
@@ -54,10 +54,10 @@ def clean_text(value: str | None, max_length: int) -> str | None:
 
 
 def referrer_origin(referrer: str | None) -> str | None:
-    """Deja solo el origen (`https://dominio`) de la página de la que vino el visitante.
+    """Keep only the origin (`https://domain`) of the page the visitor came from.
 
-    La URL completa puede traer datos personales (búsquedas, correos, tokens); para saber de
-    dónde viene la visita basta con el dominio.
+    The full URL can carry personal data (searches, emails, tokens); the domain is enough to
+    know where the visit comes from.
     """
     if not referrer or len(referrer) > REFERRER_MAX_LENGTH:
         return None
@@ -73,10 +73,10 @@ def referrer_origin(referrer: str | None) -> str | None:
 
 
 def daily_salt(session: Session, day: date) -> bytes:
-    """Devuelve la sal de `day`, creándola si no existe, y borra las de días anteriores.
+    """Return the salt for `day`, creating it if it doesn't exist, and delete earlier days' salts.
 
-    Lo normal es que ya exista y basta con leerla. Solo la primera visita del día escribe; si
-    dos llegan a la vez, `ON CONFLICT DO NOTHING` deja una sola sal.
+    Usually it already exists and reading it is enough. Only the first visit of the day writes;
+    if two arrive at once, `ON CONFLICT DO NOTHING` leaves a single salt.
     """
     query = select(VisitorSalt.salt).where(VisitorSalt.day == day)
     salt = session.scalars(query).one_or_none()
@@ -92,16 +92,16 @@ def daily_salt(session: Session, day: date) -> bytes:
 
 
 def visitor_hash(salt: bytes, ip: str, user_agent: str) -> str:
-    """HMAC-SHA256 (hash con clave) de IP y user agent, en hexadecimal de 64 caracteres."""
+    """HMAC-SHA256 (keyed hash) of IP and user agent, as 64 hexadecimal characters."""
     message = f"{ip}\n{user_agent[:USER_AGENT_MAX_LENGTH]}".encode()
     return hmac.new(salt, message, hashlib.sha256).hexdigest()
 
 
 def count_by_utm(session: Session) -> list[VisitCountOut]:
-    """Visitas y visitantes únicos por `utm_source` y `utm_campaign`, las más visitadas primero.
+    """Visits and unique visitors by `utm_source` and `utm_campaign`, most visited first.
 
-    Las visitas sin UTM salen en el grupo con los dos en `null` (tráfico directo), que en un
-    empate va al final.
+    Visits without UTM (Urchin Tracking Module) parameters fall in the group with both set to
+    `null` (direct traffic), which goes last in a tie.
     """
     visits = func.count().label("visits")
     query = (

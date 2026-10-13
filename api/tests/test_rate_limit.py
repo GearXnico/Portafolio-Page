@@ -53,7 +53,7 @@ def test_no_guarda_mas_claves_que_el_tope_y_avisa_al_botar_una_vigente(
         for ip in ["a", "b", "c", "d"]:
             assert limite.hit(ip) is None
 
-    assert "se botó una clave con eventos vigentes" in caplog.text
+    assert "dropped a key with current events" in caplog.text
 
     assert len(limite._hits) == 3
     # Se botó la clave usada hace más tiempo.
@@ -87,7 +87,7 @@ def pedido(host: str | None) -> Request:
         ("2001:db8:1:2:bbbb::9", "2001:db8:1:2::/64"),
         ("::ffff:203.0.113.7", "203.0.113.7"),
         ("testclient", "testclient"),
-        (None, "desconocido"),
+        (None, "unknown"),
     ],
 )
 def test_client_key(host: str | None, clave: str) -> None:

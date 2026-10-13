@@ -331,7 +331,7 @@ def test_correo_fallido_igual_guarda_el_mensaje(
     assert response.status_code == 201
     [mensaje] = guardados()
     assert mensaje.emailed is False
-    assert f"No se pudo enviar el aviso del mensaje {mensaje.id}" in caplog.text
+    assert f"Could not send the notice for message {mensaje.id}" in caplog.text
     # El log no lleva datos personales.
     assert "ana@example.com" not in caplog.text and "Ana" not in caplog.text
 
@@ -349,7 +349,7 @@ def test_sin_smtp_configurado_guarda_y_lo_anota_en_el_log(
 
     [mensaje] = guardados()
     assert mensaje.emailed is False
-    assert "SMTP sin configurar" in caplog.text
+    assert "SMTP not configured" in caplog.text
 
 
 def test_send_to_owner_sin_configurar_falla(monkeypatch: pytest.MonkeyPatch) -> None:

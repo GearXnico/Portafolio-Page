@@ -1,6 +1,7 @@
-"""Envío de correo por SMTP (protocolo de envío de correo), hoy con Gmail (ADR 0005).
+"""Email sending over SMTP (Simple Mail Transfer Protocol), currently with Gmail
+(ADR (Architecture Decision Record) 0005).
 
-Es el único lugar que envía correo: cambiar de proveedor toca solo este archivo.
+It is the only place that sends email: changing providers touches only this file.
 """
 
 import smtplib
@@ -13,7 +14,7 @@ TIMEOUT_SECONDS = 10
 
 
 class MailError(Exception):
-    """El correo no se pudo enviar."""
+    """The email could not be sent."""
 
 
 def is_configured() -> bool:
@@ -26,15 +27,15 @@ def is_configured() -> bool:
 
 
 def send_to_owner(*, subject: str, body: str, reply_to: str | None = None) -> None:
-    """Envía un correo de texto plano (sin HTML) a `CONTACT_NOTIFY_TO`.
+    """Send a plain-text email (no HTML) to `CONTACT_NOTIFY_TO`.
 
-    Lanza MailError si el correo no está configurado o si el servidor falla.
+    Raises MailError if email is not configured or if the server fails.
     """
-    # Mismas variables que is_configured(), leídas aquí para que mypy sepa que no son None.
-    # No se usa `assert`, porque Python lo omite con `-O` (regla S101 de ruff).
+    # Same variables as is_configured(), read here so mypy knows they aren't None.
+    # `assert` is not used, because Python skips it with `-O` (ruff rule S101).
     host, user, password = settings.smtp_host, settings.smtp_user, settings.smtp_password
     if not (host and user and password and settings.contact_notify_to):
-        raise MailError("SMTP sin configurar")
+        raise MailError("SMTP not configured")
 
     email = EmailMessage()
     email["From"] = user
@@ -46,7 +47,7 @@ def send_to_owner(*, subject: str, body: str, reply_to: str | None = None) -> No
 
     try:
         with smtplib.SMTP(host, settings.smtp_port, timeout=TIMEOUT_SECONDS) as smtp:
-            # STARTTLS con verificación del certificado: la clave nunca viaja en texto plano.
+            # STARTTLS with certificate verification: the password never travels in plain text.
             smtp.starttls(context=ssl.create_default_context())
             smtp.login(user, password.get_secret_value())
             smtp.send_message(email)

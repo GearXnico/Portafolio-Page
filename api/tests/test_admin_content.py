@@ -227,7 +227,7 @@ def test_un_slug_repetido_responde_409(admin: TestClient) -> None:
 
     for response in (al_crear, al_editar):
         assert response.status_code == 409
-        assert response.json() == {"detail": "Ya existe un proyecto con ese slug."}
+        assert response.json() == {"detail": "A project with that slug already exists."}
     # Después del error, la API sigue funcionando y el proyecto no cambió.
     assert admin.get(f"/api/admin/projects/{otro['id']}").json()["slug"] == "otro"
 
@@ -587,7 +587,7 @@ def test_un_archivo_que_no_es_imagen_aceptada_responde_415(
     response = subir(admin, proyecto["id"], contenido)
 
     assert response.status_code == 415
-    assert response.json() == {"detail": "El archivo no es una imagen JPEG, PNG o WebP."}
+    assert response.json() == {"detail": "The file is not a JPEG, PNG or WebP image."}
     assert archivos(media) == []
     assert db_session.scalars(select(ProjectImage)).all() == []
 
@@ -601,7 +601,7 @@ def test_una_imagen_de_mas_de_5_mb_responde_413(
     response = subir(admin, proyecto["id"], contenido)
 
     assert response.status_code == 413
-    assert response.json() == {"detail": "La captura supera los 5 MB."}
+    assert response.json() == {"detail": "The screenshot exceeds 5 MB."}
     assert archivos(media) == []
 
 
@@ -649,7 +649,7 @@ def test_una_imagen_danada_responde_422(admin: TestClient, proyecto: Any, media:
     response = subir(admin, proyecto["id"], cortada)
 
     assert response.status_code == 422
-    assert response.json() == {"detail": "La imagen está dañada o no se puede leer."}
+    assert response.json() == {"detail": "The image is damaged or can't be read."}
     assert archivos(media) == []
 
 
@@ -661,7 +661,7 @@ def test_una_imagen_con_demasiados_pixeles_responde_422(
     response = subir(admin, proyecto["id"], imagen(tamano=tamano, modo="1"))
 
     assert response.status_code == 422
-    assert "demasiados píxeles" in response.json()["detail"]
+    assert "too many pixels" in response.json()["detail"]
     assert archivos(media) == []
 
 
@@ -795,4 +795,4 @@ def test_un_archivo_que_no_se_puede_borrar_queda_en_el_log(
 
     images.remove_files(["projects/carpeta.webp", "projects/no-existe.webp"])
 
-    assert "No se pudo borrar la captura projects/carpeta.webp" in caplog.text
+    assert "Could not delete the screenshot projects/carpeta.webp" in caplog.text
