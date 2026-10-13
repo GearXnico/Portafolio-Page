@@ -35,7 +35,7 @@ Regla práctica para elegir el nivel: **un caso se prueba una vez, en el nivel m
 | La IP real detrás de Caddy, y que `X-Forwarded-For` no se crea sin proxy de confianza | Si falla, un atacante se salta los límites cambiando un header | `test_contact.py` (contacto) y `test_admin_login.py` (login): son dos casos, uno por ruta, porque cada una puede quedar mal configurada por separado |
 | Toda entrada inválida responde 422 | Pydantic valida, pero el test confirma que el esquema es el correcto | Un test por recurso |
 | Lo que no debe salir no sale: correo del perfil, IP del visitante, ids internos | Una fuga de datos personales no se ve en la página | `test_bootstrap.py` y `test_admin_content.py` |
-| El usuario de la API no puede cambiar tablas | Limita el daño de una inyección de SQL | `test_permisos_db.py` |
+| El usuario de la API no puede cambiar tablas | Limita el daño de una inyección de SQL | `test_db_permissions.py` |
 | Las migraciones se aplican, se revierten y calzan con los modelos | Una migración rota tumba el despliegue | `test_migrations.py` |
 | Un mensaje enviado desde el formulario de contacto llega a la API y se guarda | Es la única forma de contacto; si el formulario y la API dejan de calzar, nadie avisa | `web/e2e/contact.spec.ts` (el 201 llega solo después de guardar, como prueba `test_contact.py`) |
 | Una visita con UTM queda registrada con su origen: la página lee las UTM de la URL y las pasa a `bootstrap` y al contacto | Sin el origen no se sabe qué enlace de postulación funcionó | `web/e2e/utm.spec.ts` (llegan a la API por el proxy), `web/tests/utm.test.ts` (limpieza y largo) y `test_bootstrap.py` y `test_contact.py` (se guardan) |

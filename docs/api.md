@@ -107,4 +107,4 @@ La API no se conecta como dueña de las tablas. Hay dos usuarios de Postgres:
 | Dueño (`POSTGRES_USER`) | `MIGRATION_DATABASE_URL` | Crear, cambiar y borrar tablas | Solo el servicio `migrate` (Alembic y los tests) |
 | API (`APP_DB_USER`) | `DATABASE_URL` | Leer, insertar, actualizar y borrar filas | La API |
 
-Así, un error o una inyección de SQL en la API no puede borrar ni cambiar tablas. El usuario de la API lo crea `db/init/01-usuario-api.sh` la primera vez que arranca la base. Si tu base local es anterior a ese script, recréala con `docker compose down -v && docker compose up -d` (borra los datos locales). Los tests de `tests/test_permisos_db.py` comprueban estos límites.
+Así, un error o una inyección de SQL en la API no puede borrar ni cambiar tablas. El usuario de la API lo crea `db/init/01-api-user.sh` la primera vez que arranca la base. Si tu base local es anterior a ese script, recréala con `docker compose down -v && docker compose up -d` (borra los datos locales). Los tests de `tests/test_db_permissions.py` comprueban estos límites.

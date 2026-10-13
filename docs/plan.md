@@ -1,6 +1,6 @@
 # Plan · Sitio web de portafolio
 
-ID: 2026-10-08-sitio-portafolio · Versión: borrador 3 (2026-10-12) · Base: `brief.md`, `arquitectura.md` y `adr/`
+ID: 2026-10-08-sitio-portafolio · Versión: borrador 3 (2026-10-12) · Base: `brief.md`, `architecture.md` y `adr/`
 
 ## Resumen
 
@@ -19,7 +19,7 @@ Los puntos 2 y 3 no son parte de este plan: cada uno tendrá sus propios documen
 
 **Las fechas son una guía**, para ver si vamos bien, no plazos (Nicolas, 2026-10-12).
 
-Cada tarea está pensada para terminarse en una sesión de Claude Code. Se entrega como una rama `feature/*`, `fix/*`, `docs/*` o `chore/*` con su PR (pull request) a `dev`, según la ADR (registro de decisión de arquitectura) 0007. "Terminado" significa que se cumple el criterio de la tabla y la checklist de terminado de esa ADR. Cada tarea parte con un prompt hecho desde `prompts/plantilla.md` y queda en `prompts/registro.md` (ADR 0009).
+Cada tarea está pensada para terminarse en una sesión de Claude Code. Se entrega como una rama `feature/*`, `fix/*`, `docs/*` o `chore/*` con su PR (pull request) a `dev`, según la ADR (registro de decisión de arquitectura) 0007. "Terminado" significa que se cumple el criterio de la tabla y la checklist de terminado de esa ADR. Cada tarea parte con un prompt hecho desde `prompts/template.md` y queda en `prompts/log.md` (ADR 0009).
 
 | Hito | Entrega | Horas | Estado |
 |---|---|---|---|
@@ -58,7 +58,7 @@ El repo se llamó `plantilla-producto` porque al principio iba a ser la plantill
 | 1.6 | Imágenes de producción: Dockerfiles multi-stage de la API y de Caddy (con el build de web dentro), `compose.prod.yml` (con red interna fija y `TRUSTED_PROXIES` apuntando a ella, ADR 0004), Caddyfile y job `deploy-check` en CI, con respaldo y migraciones como en producción | 4 | `deploy-check` levanta el compose de producción en el runner, aplica las migraciones y pasa el E2E |
 | 1.7 | Reglas de GitHub: rulesets de `main` y `dev` (1 aprobación con bypass tuyo, historial lineal, solo rebase & merge, checks obligatorios) y `sync-dev.yml`. El gate de staging se agrega en el hito 5. | 3 | Un PR sin checks en verde no se puede mergear, y después de un PR de versión de prueba `dev` queda sincronizada |
 | 1.8 | `ai-review.yml`: revisión automática con IA en los PR a `dev`, con `CLAUDE_CODE_OAUTH_TOKEN` (ADR 0007) | 1 | Un PR de prueba recibe comentarios del revisor y el PR de documentación se salta |
-| 1.9 | Renombre. **Lo hiciste tú (2026-10-12):** `plantilla-producto` pasó a `Portafolio-Page` y el repo vacío `portfolio-page` pasó a `Product-template` (GitHub conserva el historial, los PR y una redirección desde los nombres viejos). **Con Claude Code:** actualizar el README, `arquitectura.md` (sección 7), el brief (punto 8 y la métrica de la plantilla pasan al proyecto de la plantilla) y este plan | 0,5 | El CI corre en verde y ningún documento presenta este repo como la plantilla |
+| 1.9 | Renombre. **Lo hiciste tú (2026-10-12):** `plantilla-producto` pasó a `Portafolio-Page` y el repo vacío `portfolio-page` pasó a `Product-template` (GitHub conserva el historial, los PR y una redirección desde los nombres viejos). **Con Claude Code:** actualizar el README, `architecture.md` (sección 7), el brief (punto 8 y la métrica de la plantilla pasan al proyecto de la plantilla) y este plan | 0,5 | El CI corre en verde y ningún documento presenta este repo como la plantilla |
 
 **Fin del hito:** cada PR pasa por tests, seguridad, revisión con IA y una prueba del despliegue completo en CI, todo sin costo, en el repo `Portafolio-Page`.
 

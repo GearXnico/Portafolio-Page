@@ -91,7 +91,7 @@ jobs:
 
             Contexto que debes leer antes de opinar (si existen):
             - `CLAUDE.md` en la raíz.
-            - Las ADR (registros de decisión de arquitectura) y `arquitectura.md` dentro de `docs/`.
+            - Las ADR (registros de decisión de arquitectura) y `architecture.md` dentro de `docs/`.
             Lee solo las secciones que tengan que ver con lo que cambia el PR.
 
             Cómo revisar:

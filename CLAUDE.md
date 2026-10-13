@@ -14,10 +14,10 @@ Responde en español y deja en inglés los términos técnicos que se usan así 
 | Documento | Para qué |
 |---|---|
 | `docs/api.md` | Referencia de la API: rutas, validaciones y protecciones |
-| `docs/desarrollo.md` | Reglas de desarrollo: cuándo no agregar capas, dónde va cada cosa y cómo se revisa |
+| `docs/development.md` | Reglas de desarrollo: cuándo no agregar capas, dónde va cada cosa y cómo se revisa |
 | `docs/testing.md` | Qué se prueba, qué no y en qué nivel |
 | `docs/brief.md` | Alcance del MVP (producto mínimo viable) y lo que queda fuera |
-| `docs/arquitectura.md` | Componentes, modelo de datos, seguridad y CI/CD (integración y despliegue continuos) |
+| `docs/architecture.md` | Componentes, modelo de datos, seguridad y CI/CD (integración y despliegue continuos) |
 | `docs/adr/` | El porqué de cada decisión (0001 a 0009) |
 | `docs/plan.md` | Hitos y tareas, con su criterio de terminado |
 | `docs/prompts/` | Plantilla y registro de prompts por tarea |
@@ -171,7 +171,7 @@ pre-commit run --all-files
 1. Corre tests, lint, typecheck y `pre-commit`, y confirma que todo está en verde.
 2. Abre el PR a `dev` y entrega el enlace.
 3. Agrega arriba en `CHANGELOG.md`, en inglés, la sección con la versión de tu PR: `feat` sube MINOR y los demás tipos suben PATCH. La guía está al final de ese archivo.
-4. Agrega una fila en `docs/prompts/registro.md` con la tarea, el modelo, los tokens de `/cost`, las sesiones y el PR. Completa "Resultado" y "Lecciones" en el archivo del prompt.
+4. Agrega una fila en `docs/prompts/log.md` con la tarea, el modelo, los tokens de `/cost`, las sesiones y el PR. Completa "Resultado" y "Lecciones" en el archivo del prompt.
 5. Si cambió un comando o una convención, actualiza este archivo en el mismo PR.
 
 ## Lo que no se hace sin preguntar

@@ -22,7 +22,7 @@ Antes de agregar una abstracción, una variable de configuración o un archivo n
 |---|---|---|
 | Extraer una función o clase compartida | ¿Ya hay tres lugares que la usan igual? | Dos rutas con un `if` parecido: se deja repetido |
 | Agregar una variable de entorno | ¿Cambia entre local, staging y producción, o es un secreto? | El largo máximo de un mensaje va en el código |
-| Crear una tabla o columna | ¿Lo pide el plan o el modelo de datos de `docs/arquitectura.md`? | Una tabla de usuarios cuando hay un solo administrador (ADR 0004) |
+| Crear una tabla o columna | ¿Lo pide el plan o el modelo de datos de `docs/architecture.md`? | Una tabla de usuarios cuando hay un solo administrador (ADR 0004) |
 | Agregar una dependencia | ¿Lo que ya está instalado no alcanza, y pasa `pip-audit` o `npm audit`? | Una librería de fechas para formatear mes y año |
 | Hacer algo configurable | ¿Hoy hay dos casos reales? | Soportar un tercer idioma "por si acaso" cuando el brief pide español e inglés |
 
