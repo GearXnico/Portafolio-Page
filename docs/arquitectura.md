@@ -86,6 +86,8 @@ TypeScript 7.0 es la primera versión con el compilador nativo. Si alguna herram
 
 Para que pasar a A sea un cambio pequeño, la API decide el idioma en una sola función que recibe el país (vacío por ahora) y el `Accept-Language`, y la tabla de visitas ya tiene la columna `country`. Cuando el sitio crezca, basta con poner Cloudflare delante y leer `CF-IPCountry` en esa función.
 
+Para SEO (posicionamiento en buscadores), la web pone en `<html lang>`, el título y la `meta description` el idioma que se muestra. No se usa `hreflang`: sirve para enlazar URL distintas por idioma y aquí hay una sola URL para los dos. Si algún día cada idioma tiene su URL (por ejemplo, `/en`), se agrega ahí. `web/public/robots.txt` deja indexar la página y excluye `/admin`, y el panel además lleva `<meta name="robots" content="noindex">`, porque `robots.txt` no impide indexar una página enlazada desde fuera.
+
 ### Aviso por correo
 
 | Opción | Costo | Contras |
