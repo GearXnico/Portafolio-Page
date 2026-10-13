@@ -1,24 +1,24 @@
-"""Validadores de texto compartidos por los esquemas que reciben datos del usuario.
+"""Text validators shared by the schemas that receive user data.
 
-Rechazan caracteres de control: Postgres no acepta el byte nulo (sería un 500) y los demás
-no tienen nada que hacer en un texto que se muestra en la página o va en un correo.
+They reject control characters: Postgres doesn't accept the null byte (it would be a 500) and
+the others have no place in a text shown on the page or sent in an email.
 """
 
 import re
 
-# Caracteres de control (C0, DEL y C1) y los separadores de línea de Unicode.
+# Control characters (C0, DEL and C1) and the Unicode line separators.
 _CONTROL = re.compile("[\x00-\x1f\x7f-\x9f  ]")
-# En los textos largos se permiten saltos de línea y tabulaciones.
+# Line breaks and tabs are allowed in long texts.
 _CONTROL_MULTILINE = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f  ]")
 
 
 def single_line(value: str) -> str:
     if _CONTROL.search(value):
-        raise ValueError("no puede tener saltos de línea ni caracteres de control")
+        raise ValueError("can't contain line breaks or control characters")
     return value
 
 
 def multiline(value: str) -> str:
     if _CONTROL_MULTILINE.search(value):
-        raise ValueError("no puede tener caracteres de control")
+        raise ValueError("can't contain control characters")
     return value

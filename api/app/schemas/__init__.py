@@ -1,1 +1,1 @@
-"""Esquemas Pydantic de entrada y salida de la API."""
+"""Pydantic input and output schemas of the API."""
