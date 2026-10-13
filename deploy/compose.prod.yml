@@ -1,10 +1,10 @@
-# Producción (y staging): base de datos, migraciones, API y Caddy. ADR 0001.
-# Lee las variables de deploy/.env, que nunca se sube al repo (ver deploy/README.md):
+# Production (and staging): database, migrations, API and Caddy. ADR (architecture decision record) 0001.
+# Reads the variables from deploy/.env, which is never committed to the repo (see deploy/README.md):
 #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --wait caddy
 name: ${COMPOSE_PROJECT_NAME:-producto}
 
-# Lo común a todos los servicios: sin root (cada imagen o `user:`), sin capabilities, sin
-# escribir fuera de sus volúmenes y con logs que rotan para no llenar el disco.
+# Shared by all services: no root (each image or `user:`), no capabilities, no
+# writing outside their volumes, and logs that rotate so they don't fill the disk.
 x-base: &base
   restart: unless-stopped
   read_only: true
@@ -18,18 +18,18 @@ x-base: &base
       max-size: 10m
       max-file: "3"
 
-# Imágenes de la API y de Caddy. En CI se construyen aquí; en el servidor se bajan de GHCR
-# por SHA (tarea 5.3) con IMAGE_PREFIX=ghcr.io/<dueño>/<repo> e IMAGE_TAG=<sha>.
+# API and Caddy images. In CI (continuous integration) they are built here; on the server they are pulled from
+# GHCR (GitHub Container Registry) by SHA (task 5.3) with IMAGE_PREFIX=ghcr.io/<owner>/<repo> and IMAGE_TAG=<sha>.
 x-api-image: &api-image
   image: ${IMAGE_PREFIX:-producto}/api:${IMAGE_TAG:-local}
   build: ../api
 
-# Límites de memoria pensados para el VPS de 1 GiB: suman 768 MiB y dejan el resto al sistema.
+# Memory limits sized for the 1 GiB VPS (virtual private server): they add up to 768 MiB and leave the rest to the system.
 services:
   db:
     <<: *base
     image: postgres:18-alpine
-    # El usuario de la imagen, sin pasar por root (no necesita cambiar de usuario al arrancar).
+    # The image's own user, without going through root (it doesn't need to switch users at startup).
     user: postgres
     tmpfs: [/tmp, /var/run/postgresql]
     mem_limit: 384m
@@ -39,7 +39,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?}
       APP_DB_USER: ${APP_DB_USER:?}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD:?}
-    # Sin puertos publicados: solo la ven la API y las migraciones, por la red interna.
+    # No published ports: only the API and the migrations see it, over the internal network.
     volumes:
       - db-data:/var/lib/postgresql
       - ../db/init:/docker-entrypoint-initdb.d:ro
@@ -49,7 +49,7 @@ services:
       timeout: 3s
       retries: 10
 
-  # Aplica las migraciones y termina, antes de cambiar la API. Único con la clave del dueño.
+  # Applies the migrations and exits, before the API is replaced. The only one with the owner's password.
   migrate:
     <<: [*base, *api-image]
     restart: "no"
@@ -67,23 +67,23 @@ services:
     mem_limit: 256m
     environment:
       DATABASE_URL: postgresql+psycopg://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB}
-      # Solo Caddy, desde la red interna de abajo, puede decir la IP real del visitante (ADR 0004).
+      # Only Caddy, from the internal network below, can report the visitor's real IP (ADR 0004).
       TRUSTED_PROXIES: 172.30.0.0/24
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       CONTACT_NOTIFY_TO: ${CONTACT_NOTIFY_TO:-}
-      # Obligatorios: sin ellos el compose no arranca, en vez de dejar el panel sin login.
+      # Required: without them the compose doesn't start, instead of leaving the panel without login.
       ADMIN_EMAIL: ${ADMIN_EMAIL:?}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:?}
       JWT_SECRET: ${JWT_SECRET:?}
-      # Capturas de los proyectos (tarea 2.5), en el volumen que Caddy sirve en /media.
+      # Project screenshots (task 2.5), in the volume Caddy serves at /media.
       MEDIA_DIR: /media
     volumes:
       - media:/media
     healthcheck:
-      # /api/health también consulta la base.
+      # /api/health also queries the database.
       test:
         - CMD
         - python
@@ -118,7 +118,7 @@ services:
       api:
         condition: service_healthy
 
-# Red interna fija, para que TRUSTED_PROXIES no cambie entre despliegues.
+# Fixed internal network, so TRUSTED_PROXIES doesn't change between deployments.
 networks:
   default:
     ipam:

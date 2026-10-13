@@ -1,5 +1,5 @@
-# Desarrollo local: base de datos, API y web con recarga en vivo.
-# Producción usa deploy/compose.prod.yml (ver deploy/README.md).
+# Local development: database, API and web with live reload.
+# Production uses deploy/compose.prod.yml (see deploy/README.md).
 name: ${COMPOSE_PROJECT_NAME:-producto}
 
 services:
@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      # Usuario de la API, con permisos mínimos (lo crea db/init/01-api-user.sh).
+      # API user, with least privilege (created by db/init/01-api-user.sh).
       APP_DB_USER: ${APP_DB_USER}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
     ports:
@@ -23,8 +23,8 @@ services:
       timeout: 3s
       retries: 10
 
-  # Aplica las migraciones y termina. Es el único servicio con la clave del dueño de las
-  # tablas; también corre los tests, que necesitan migrar la base.
+  # Applies the migrations and exits. It is the only service with the table owner's
+  # password; it also runs the tests, which need to migrate the database.
   migrate:
     build:
       context: ./api
@@ -46,7 +46,7 @@ services:
       context: ./api
       dockerfile: Dockerfile.dev
     environment:
-      # Solo el usuario de permisos mínimos: la API no conoce la clave del dueño.
+      # Only the least-privilege user: the API doesn't know the owner's password.
       DATABASE_URL: postgresql+psycopg://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -61,7 +61,7 @@ services:
       - "${API_PORT:-8000}:8000"
     volumes:
       - ./api/app:/code/app
-      # Capturas de los proyectos (MEDIA_DIR); en producción también las monta Caddy.
+      # Project screenshots (MEDIA_DIR); in production Caddy mounts them too.
       - media:/code/media
     depends_on:
       migrate:
