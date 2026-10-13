@@ -5,7 +5,7 @@ import { ContactSection } from "../src/components/ContactSection";
 import { renderWithQuery } from "./render";
 
 describe("ContactSection", () => {
-  it("muestra solo los enlaces https y los abre aparte sin dar acceso a la página", () => {
+  it("shows only https links and opens them separately without giving access to the page", () => {
     renderWithQuery(
       <ContactSection
         links={{
@@ -23,7 +23,7 @@ describe("ContactSection", () => {
     expect(links[0]).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  it("sin enlaces válidos muestra solo el formulario", () => {
+  it("without valid links shows only the form", () => {
     renderWithQuery(<ContactSection links={{ x: "ftp://a" }} />);
 
     expect(screen.queryByRole("list")).not.toBeInTheDocument();

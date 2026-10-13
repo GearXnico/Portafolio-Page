@@ -33,7 +33,7 @@ describe("ContactForm", () => {
     window.history.replaceState(null, "", "/");
   });
 
-  it("envía los campos, el idioma y el campo trampa vacío, y avisa que llegó", async () => {
+  it("sends the fields, the language and the empty honeypot field, and confirms it arrived", async () => {
     const fetchMock = stubContact(new Response('{"status":"ok"}', { status: 201 }));
     renderForm();
 
@@ -56,11 +56,11 @@ describe("ContactForm", () => {
   });
 
   it.each([
-    ["datos inválidos (422)", new Response("{}", { status: 422 }), /Revisa los datos/],
-    ["límite de envíos (429)", new Response("{}", { status: 429 }), /varios mensajes seguidos/],
-    ["error del servidor (500)", new Response("{}", { status: 500 }), /No se pudo enviar/],
-    ["sin conexión", new TypeError("Failed to fetch"), /No se pudo enviar/],
-  ])("con %s muestra el error y conserva lo escrito", async (_caso, response, text) => {
+    ["invalid data (422)", new Response("{}", { status: 422 }), /Revisa los datos/],
+    ["submission limit (429)", new Response("{}", { status: 429 }), /varios mensajes seguidos/],
+    ["server error (500)", new Response("{}", { status: 500 }), /No se pudo enviar/],
+    ["no connection", new TypeError("Failed to fetch"), /No se pudo enviar/],
+  ])("with %s shows the error and keeps what was typed", async (_caso, response, text) => {
     stubContact(response);
     renderForm();
 
@@ -70,7 +70,7 @@ describe("ContactForm", () => {
     expect(screen.getByLabelText("Mensaje")).toHaveValue("Hola");
   });
 
-  it("el campo trampa queda fuera del foco y de los lectores de pantalla", () => {
+  it("the honeypot field is out of focus order and hidden from screen readers", () => {
     renderForm();
 
     const trap = document.querySelector<HTMLInputElement>('input[name="hp_field"]');
@@ -78,12 +78,12 @@ describe("ContactForm", () => {
     expect(trap?.closest('[aria-hidden="true"]')).not.toBeNull();
   });
 
-  it("si el campo trampa viene lleno, lo envía como website para que la API lo descarte", async () => {
+  it("if the honeypot field is filled, sends it as website so the API (application programming interface) discards it", async () => {
     const fetchMock = stubContact(new Response("{}", { status: 201 }));
     renderForm();
 
     const trap = document.querySelector<HTMLInputElement>('input[name="hp_field"]');
-    if (!trap) throw new Error("falta el campo trampa");
+    if (!trap) throw new Error("honeypot field missing");
     fireEvent.change(trap, { target: { value: "https://spam.example.com" } });
     fillAndSubmit();
 
@@ -91,7 +91,7 @@ describe("ContactForm", () => {
     expect(fetchMock.mock.calls[0]?.[1].body).toContain('"website":"https://spam.example.com"');
   });
 
-  it("usa los textos en inglés y envía lang en", async () => {
+  it("uses the English texts and sends lang en", async () => {
     const fetchMock = stubContact(new Response("{}", { status: 201 }));
     renderForm("en");
 
@@ -104,7 +104,7 @@ describe("ContactForm", () => {
     expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('"lang":"en"');
   });
 
-  it("envía utm_source y utm_campaign de la URL, y no las UTM que la API no guarda", async () => {
+  it("sends utm_source and utm_campaign from the URL, and not the UTM (Urchin Tracking Module) parameters the API doesn't store", async () => {
     window.history.replaceState(
       null,
       "",
