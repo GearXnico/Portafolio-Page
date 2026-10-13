@@ -1,11 +1,12 @@
-/* Estilos de la página pública: una columna en el celular y más aire en pantallas anchas. */
+/* Public page styles: one column on phones and more room on wide screens. */
 :root {
   --text: #1c1c1e;
   --muted: #55555c;
   --accent: #0b57d0;
   --surface: #f3f4f6;
   --border: #d9dbe0;
-  /* Bordes de botones y campos: contraste de al menos 3:1 con el fondo (WCAG 1.4.11). */
+  /* Button and field borders: at least 3:1 contrast with the background (WCAG (Web Content
+     Accessibility Guidelines) 1.4.11). */
   --control-border: #80838a;
   color-scheme: light;
   font-family:
@@ -225,7 +226,7 @@ a {
   color: #b3261e;
 }
 
-/* Campo trampa: fuera de la pantalla (no `display: none`, que algunos bots detectan). */
+/* Honeypot field: off screen (not `display: none`, which some bots detect). */
 .trap {
   position: absolute;
   left: -10000px;
@@ -234,7 +235,7 @@ a {
   overflow: hidden;
 }
 
-/* Formularios del panel. */
+/* Admin panel forms. */
 .form {
   display: grid;
   gap: 1rem;
@@ -258,7 +259,7 @@ a {
   justify-self: start;
 }
 
-/* Panel: formulario de proyecto con los dos idiomas lado a lado en pantallas anchas. */
+/* Admin panel: project form with both languages side by side on wide screens. */
 .project-form {
   max-width: none;
 }
@@ -290,7 +291,7 @@ a {
   gap: 0.5rem;
 }
 
-/* Panel: capturas del proyecto como miniaturas, cada una con su botón para borrar. */
+/* Admin panel: project screenshots as thumbnails, each with its delete button. */
 .project-images ul {
   display: flex;
   flex-wrap: wrap;
@@ -316,7 +317,7 @@ a {
   color: var(--muted);
 }
 
-/* Panel: formularios de perfil, habilidades y experiencia, con los dos idiomas lado a lado. */
+/* Admin panel: profile, skills and experience forms, with both languages side by side. */
 .form {
   display: grid;
   gap: 0.75rem;
@@ -360,7 +361,7 @@ a {
   }
 }
 
-/* Panel: mensajes y visitas (tarea 4.5) */
+/* Admin panel: messages and visits (task 4.5) */
 .message {
   border-top: 1px solid currentColor;
   padding: 1rem 0;
