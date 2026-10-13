@@ -13,6 +13,7 @@ Una fila por tarea del plan, en orden. En las sesiones de Claude Code en la nube
 | 3.6 | 2026-10-13 | SEO y accesibilidad | Opus | n/d | n/d | 1 | #31 | En revisión | — |
 | 4.2 | 2026-10-13 | Lista y edición de proyectos en el panel | Opus | n/d | n/d | 1 | #32 | En revisión | — |
 | 4.4 | 2026-10-13 | Edición de perfil, habilidades y experiencia | Opus | n/d | n/d | 1 | #33 | En revisión | — |
+| 4.5 | 2026-10-13 | Mensajes y visitas por UTM en el panel | Opus | n/d | n/d | 1 | #34 | En revisión | — |
 
 ## Totales por hito
 

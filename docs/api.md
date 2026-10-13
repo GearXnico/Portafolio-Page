@@ -85,6 +85,19 @@ Rutas para editar lo que muestra la página. Todas exigen la sesión del adminis
 - **Capturas:** JPEG, PNG o WebP de hasta 5 MB, reconocidos por su contenido y no por la extensión. La API las vuelve a codificar como WebP (máximo 2560 px por lado, sin metadatos como el GPS de una foto ni el perfil de color: una captura en Display P3 se verá un poco menos saturada), con un nombre al azar, en `MEDIA_DIR/projects/` (por defecto `media/`, un volumen en Docker). Cada proyecto las trae en `images`, con su `url` en `/media/...`. Responde 413 si pesa más de 5 MB, 415 si no es una imagen aceptada y 422 si está dañada o pasa los 25 megapíxeles. Sin sesión, la subida responde 401 antes de leer el archivo.
 - **Al borrar un proyecto o una captura** se borran las filas y los archivos.
 
+## Mensajes y visitas en el panel
+
+Rutas para ver lo que llega al sitio. Exigen la sesión del administrador como el resto de `/api/admin/*` (sin ella, 401 antes de mirar el cuerpo).
+
+| Ruta | Qué hace |
+|---|---|
+| `GET /api/admin/messages` | Todos los mensajes de contacto, el más nuevo primero: `id`, `created_at`, `name`, `email`, `message`, `lang`, `utm_source`, `utm_campaign` y `read`. |
+| `PATCH /api/admin/messages/{id}` | Recibe `{"read": true}` o `{"read": false}` y devuelve el mensaje. 404 si no existe; 422 si `read` no es un booleano o llegan campos extra. |
+| `GET /api/admin/visits` | Visitas agrupadas por `utm_source` y `utm_campaign`, las más visitadas primero: `visits` (total) y `unique_visitors` (visitantes únicos por día, sumados, porque el hash cambia cada día). Las visitas sin UTM salen en el grupo con los dos en `null`. |
+
+- **Datos personales:** los mensajes traen el nombre y el correo del remitente; solo salen por estas rutas y nunca van a los logs. Las visitas salen solo como conteos: ni filas sueltas ni el hash del visitante.
+- La columna `read` ya existía en `contact_message`: no hubo migración.
+
 ## Base de datos: dos usuarios
 
 La API no se conecta como dueña de las tablas. Hay dos usuarios de Postgres:
