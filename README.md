@@ -8,7 +8,7 @@ Sitio web de portafolio: una página pública bilingüe (español e inglés) con
 
 En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
 
-> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel. La web tiene la ruta `/admin` con login y logout, y la lista y edición de proyectos en `/admin/projects` (las demás pantallas de edición vienen en el hito 4).
+> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel. La web tiene la ruta `/admin` con login y logout, y las pantallas para editar proyectos, perfil, habilidades y experiencia, y para ver los mensajes y las visitas por UTM (las capturas desde el panel vienen en la tarea 4.3).
 
 ## Requisitos
 
@@ -128,7 +128,7 @@ El E2E abre la página en Chromium y espera que `/api/bootstrap` responda bien y
 
 ## Referencia de la API
 
-Qué hace cada ruta (`GET /api/bootstrap`, contacto, login del administrador y contenido del panel), qué valida, cómo se protege y los dos usuarios de la base: [`docs/api.md`](docs/api.md). Para configurar el login del administrador en el `.env`, sigue su sección "Login del administrador".
+Qué hace cada ruta (`GET /api/bootstrap`, contacto, login del administrador, contenido del panel, mensajes y visitas), qué valida, cómo se protege y los dos usuarios de la base: [`docs/api.md`](docs/api.md). Para configurar el login del administrador en el `.env`, sigue su sección "Login del administrador".
 
 ## Migraciones de la API
 
