@@ -5,7 +5,7 @@ import { ProjectForm } from "../components/ProjectForm";
 import { ProjectImages } from "../components/ProjectImages";
 import { useLang } from "../i18n";
 
-/** Crea un proyecto (`/admin/projects/new`) o edita uno existente (`/admin/projects/:id`). */
+/** Creates a project (`/admin/projects/new`) or edits an existing one (`/admin/projects/:id`). */
 export function AdminProjectEditPage() {
   const { t } = useLang();
   const navigate = useNavigate();
@@ -25,8 +25,8 @@ export function AdminProjectEditPage() {
       <h1>{t(projectId === undefined ? "admin.projects.new" : "admin.projects.edit")}</h1>
       {isError && <p role="alert">{t("admin.projects.notFound")}</p>}
       {projectId === undefined && <ProjectForm onSaved={backToList} />}
-      {/* El formulario espera el dato fresco: guardar reemplaza el proyecto completo, y una copia
-          vieja de la cache pisaría cambios más nuevos. `key` lo rearma con otro proyecto. */}
+      {/* The form waits for fresh data: saving replaces the whole project, and a stale copy from
+          the cache would overwrite newer changes. `key` rebuilds it for another project. */}
       {project && !isFetching && (
         <ProjectForm key={project.id} project={project} onSaved={backToList} />
       )}

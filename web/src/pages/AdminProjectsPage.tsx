@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { useProjects } from "../api/projects";
 import { localized, useLang } from "../i18n";
 
-/** Lista de proyectos del panel, en el orden de la página pública, con los ocultos marcados. */
+/** Admin panel project list, in public page order, with hidden ones marked. */
 export function AdminProjectsPage() {
   const { lang, t } = useLang();
   const { data: projects, isPending, isError } = useProjects();

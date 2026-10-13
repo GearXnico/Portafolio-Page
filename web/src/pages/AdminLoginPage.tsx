@@ -10,7 +10,7 @@ function errorKey(error: Error): MessageKey {
   return "admin.error";
 }
 
-/** Formulario de login del panel. Con las credenciales correctas, entra al panel. */
+/** Admin panel login form. With the correct credentials, it enters the panel. */
 export function AdminLoginPage() {
   const { t } = useLang();
   const navigate = useNavigate();

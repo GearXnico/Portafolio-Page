@@ -4,7 +4,7 @@ import { useAdminExperience } from "../api/adminProfile";
 import { ExperienceForm } from "../components/ExperienceForm";
 import { useLang } from "../i18n";
 
-/** Experiencia: un formulario por cada trabajo y uno para agregar otro. */
+/** Experience: one form per job and one to add another. */
 export function AdminExperiencePage() {
   const { t } = useLang();
   const { data, isError } = useAdminExperience();

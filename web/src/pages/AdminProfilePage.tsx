@@ -13,7 +13,7 @@ const EMPTY: ProfileInput = {
   links: {},
 };
 
-/** Edición del perfil: titular y presentación en los dos idiomas, correo y enlaces. */
+/** Profile editing: headline and introduction in both languages, email and links. */
 export function AdminProfilePage() {
   const { t } = useLang();
   const { data, isPending, isError } = useAdminProfile();
