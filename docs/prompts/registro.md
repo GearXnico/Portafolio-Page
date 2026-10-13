@@ -9,6 +9,7 @@ Una fila por tarea del plan, en orden. En las sesiones de Claude Code en la nube
 | 1.9 | 2026-10-12 | Renombre a Portafolio-Page y plan borrador 3 | n/d | n/d | n/d | 1 | (este PR) | En revisión | — |
 | 3.3 | 2026-10-12 | Proyectos con capturas, stack y enlaces | n/d | n/d | n/d | 1 | #26 | En revisión | — |
 | 3.4 | 2026-10-12 | Formulario de contacto web | n/d | n/d | n/d | 1 | #27 | En revisión | — |
+| 3.5 | 2026-10-13 | UTM de la URL a bootstrap y al contacto | Opus | n/d | n/d | 1 | #30 | En revisión | — |
 
 ## Totales por hito
 
