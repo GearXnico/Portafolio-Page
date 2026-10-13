@@ -114,7 +114,7 @@ def test_las_rutas_del_contenido_estan_en_la_lista() -> None:
     assert ("DELETE", "/api/admin/projects/project_id") in RUTAS_PROTEGIDAS
     assert ("PUT", "/api/admin/profile") in RUTAS_PROTEGIDAS
     assert ("POST", "/api/admin/projects/project_id/images") in RUTAS_PROTEGIDAS
-    assert len(RUTAS_PROTEGIDAS) == 18
+    assert len(RUTAS_PROTEGIDAS) == 21
 
 
 @pytest.mark.parametrize(("metodo", "ruta"), RUTAS_PROTEGIDAS)
@@ -122,7 +122,7 @@ def test_sin_sesion_responde_401(anonimo: TestClient, metodo: str, ruta: str) ->
     # Con un id que no existe y un cuerpo vacío: el 401 llega antes que el 404 o el 422,
     # así que sin sesión no se aprende nada del contenido ni del esquema.
     url = ruta
-    for parametro in ("project_id", "image_id", "skill_id", "experience_id"):
+    for parametro in ("project_id", "image_id", "skill_id", "experience_id", "message_id"):
         url = url.replace(parametro, "1")
     response = anonimo.request(metodo, url, json={})
 

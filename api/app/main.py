@@ -7,7 +7,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.config import settings
 from app.middleware import BodySizeLimitMiddleware
-from app.routers import admin, admin_content, bootstrap, contact, health
+from app.routers import admin, admin_activity, admin_content, bootstrap, contact, health
 from app.services.images import MAX_IMAGE_BYTES
 
 # Los JSON de la API son chicos: el más grande es un proyecto con sus dos cuerpos en Markdown
@@ -30,6 +30,7 @@ app.include_router(contact.router)
 app.include_router(admin.public_router)
 app.include_router(admin.router)
 app.include_router(admin_content.router)
+app.include_router(admin_activity.router)
 app.add_middleware(
     BodySizeLimitMiddleware,
     max_bytes=MAX_BODY_BYTES,

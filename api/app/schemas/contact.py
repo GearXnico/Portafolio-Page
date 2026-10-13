@@ -5,6 +5,7 @@ de control (que Postgres rechaza, como el byte nulo, o que permitirían inyectar
 correo de aviso) y campos que el formulario no envía.
 """
 
+from datetime import datetime
 from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
@@ -63,3 +64,27 @@ class ContactIn(BaseModel):
 
 class ContactOut(BaseModel):
     status: Literal["ok"] = "ok"
+
+
+# Panel: mensajes recibidos. Tienen datos personales del remitente: solo los ve el
+# administrador con sesión y nunca van a los logs.
+
+
+class ContactMessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    name: str
+    email: str
+    message: str
+    lang: str
+    utm_source: str | None
+    utm_campaign: str | None
+    read: bool
+
+
+class MessageReadIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    read: Annotated[bool, Field(strict=True)]
