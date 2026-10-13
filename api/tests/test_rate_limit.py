@@ -1,4 +1,4 @@
-"""Límite de frecuencia, con un reloj controlado por el test."""
+"""Rate limit, with a clock controlled by the test."""
 
 import logging
 
@@ -16,7 +16,7 @@ class Reloj:
         return self.ahora
 
 
-def test_permite_hasta_el_limite_y_vuelve_a_permitir_al_pasar_la_ventana() -> None:
+def test_allows_up_to_the_limit_and_allows_again_after_the_window() -> None:
     reloj = Reloj()
     limite = SlidingWindowLimiter(limit=2, window_seconds=60, clock=reloj)
 
@@ -31,7 +31,7 @@ def test_permite_hasta_el_limite_y_vuelve_a_permitir_al_pasar_la_ventana() -> No
     assert limite.hit("a") == 10
 
 
-def test_un_intento_rechazado_no_alarga_el_bloqueo() -> None:
+def test_a_rejected_attempt_does_not_extend_the_block() -> None:
     reloj = Reloj()
     limite = SlidingWindowLimiter(limit=1, window_seconds=60, clock=reloj)
     limite.hit("a")
@@ -43,7 +43,7 @@ def test_un_intento_rechazado_no_alarga_el_bloqueo() -> None:
     assert limite.hit("a") is None
 
 
-def test_no_guarda_mas_claves_que_el_tope_y_avisa_al_botar_una_vigente(
+def test_keeps_no_more_keys_than_the_cap_and_warns_when_dropping_a_current_one(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     reloj = Reloj()
@@ -56,12 +56,12 @@ def test_no_guarda_mas_claves_que_el_tope_y_avisa_al_botar_una_vigente(
     assert "dropped a key with current events" in caplog.text
 
     assert len(limite._hits) == 3
-    # Se botó la clave usada hace más tiempo.
+    # The least recently used key was dropped.
     assert "a" not in limite._hits
     assert limite.hit("d") is not None
 
 
-def test_al_llenarse_bota_primero_las_claves_vencidas(caplog: pytest.LogCaptureFixture) -> None:
+def test_when_full_drops_expired_keys_first(caplog: pytest.LogCaptureFixture) -> None:
     reloj = Reloj()
     limite = SlidingWindowLimiter(limit=1, window_seconds=60, max_keys=2, clock=reloj)
     limite.hit("vieja")

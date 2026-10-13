@@ -16,25 +16,25 @@ from app.services.visits import clean_text, daily_salt, referrer_origin, visitor
         ("", None),
         ("   ", None),
         (None, None),
-        # Byte nulo, saltos de línea y tabulaciones.
+        # Null byte, line breaks and tabs.
         ("link\x00ed\nin\t", "linkedin"),
-        # Caracteres invisibles y de dirección del texto (U+202E invierte lo que sigue).
+        # Invisible and text-direction characters (U+202E reverses what follows).
         ("‮nideknil​", "nideknil"),
-        # Separadores de línea y de párrafo de Unicode.
+        # Unicode line and paragraph separators.
         ("linked\u2028in\u2029", "linkedin"),
         ("correo de otoño", "correo de otoño"),
     ],
 )
-def test_limpiar_texto(valor: str | None, esperado: str | None) -> None:
+def test_clean_text(valor: str | None, esperado: str | None) -> None:
     assert clean_text(valor, 200) == esperado
 
 
-def test_limpiar_texto_recorta_al_largo_maximo() -> None:
+def test_clean_text_trims_to_the_maximum_length() -> None:
     assert clean_text("a" * 500, 200) == "a" * 200
 
 
-def test_limpiar_texto_no_recorre_todo_un_valor_enorme() -> None:
-    # Solo se mira el comienzo: lo que viene después del margen no entra al resultado.
+def test_clean_text_does_not_walk_a_huge_value() -> None:
+    # Only the start is looked at: whatever comes after the margin doesn't reach the result.
     assert clean_text("\x00" * 10 + "a" * 10 + "b" * 100_000, 5) == "aaaaa"
 
 
@@ -58,11 +58,11 @@ def test_limpiar_texto_no_recorre_todo_un_valor_enorme() -> None:
         (None, None),
     ],
 )
-def test_origen_del_referrer(referrer: str | None, esperado: str | None) -> None:
+def test_referrer_origin(referrer: str | None, esperado: str | None) -> None:
     assert referrer_origin(referrer) == esperado
 
 
-def test_el_hash_es_estable_en_el_dia_y_no_contiene_la_ip() -> None:
+def test_hash_is_stable_within_the_day_and_does_not_contain_the_ip() -> None:
     sal = b"s" * 32
     hash_1 = visitor_hash(sal, "203.0.113.7", "Firefox")
 
@@ -74,7 +74,7 @@ def test_el_hash_es_estable_en_el_dia_y_no_contiene_la_ip() -> None:
     assert hash_1 != visitor_hash(b"t" * 32, "203.0.113.7", "Firefox")
 
 
-def test_la_sal_se_crea_una_vez_por_dia(db_session: Session) -> None:
+def test_salt_is_created_once_per_day(db_session: Session) -> None:
     dia = date(2030, 1, 15)
 
     sal = daily_salt(db_session, dia)
@@ -83,7 +83,7 @@ def test_la_sal_se_crea_una_vez_por_dia(db_session: Session) -> None:
     assert daily_salt(db_session, dia) == sal
 
 
-def test_al_cambiar_el_dia_la_sal_cambia_y_la_anterior_se_borra(db_session: Session) -> None:
+def test_a_new_day_brings_a_new_salt_and_deletes_the_old_one(db_session: Session) -> None:
     sal_ayer = daily_salt(db_session, date(2030, 1, 15))
 
     sal_hoy = daily_salt(db_session, date(2030, 1, 16))
