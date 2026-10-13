@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-// El título depende del contenido cargado en la base, así que se revisa el idioma de la página
-// y el selector, que no cambian con el contenido.
-test.describe("con el navegador en inglés", () => {
+// The title depends on the content loaded in the database, so the test checks the page language
+// and the switcher, which don't change with the content.
+test.describe("with the browser in English", () => {
   test.use({ locale: "en-US" });
 
-  test("la página sale en inglés", async ({ page }) => {
+  test("the page renders in English", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.getByRole("button", { name: "English" })).toHaveAttribute(
@@ -13,12 +13,12 @@ test.describe("con el navegador en inglés", () => {
       "true",
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    // Termina igual con o sin perfil cargado ("<titular> · Portfolio" o "Portfolio").
+    // Ends the same with or without a loaded profile ("<headline> · Portfolio" or "Portfolio").
     await expect(page).toHaveTitle(/Portfolio$/);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /^Portfolio/);
   });
 
-  test("el selector cambia el idioma y se recuerda al recargar", async ({ page }) => {
+  test("the switcher changes the language and it is remembered on reload", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
 
@@ -35,10 +35,10 @@ test.describe("con el navegador en inglés", () => {
   });
 });
 
-test.describe("con el navegador en español", () => {
+test.describe("with the browser in Spanish", () => {
   test.use({ locale: "es-CL" });
 
-  test("la página sale en español", async ({ page }) => {
+  test("the page renders in Spanish", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.getByRole("button", { name: "Español" })).toHaveAttribute(
