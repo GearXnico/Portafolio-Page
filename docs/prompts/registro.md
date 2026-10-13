@@ -11,6 +11,7 @@ Una fila por tarea del plan, en orden. En las sesiones de Claude Code en la nube
 | 3.4 | 2026-10-12 | Formulario de contacto web | n/d | n/d | n/d | 1 | #27 | En revisión | — |
 | 3.5 | 2026-10-13 | UTM de la URL a bootstrap y al contacto | Opus | n/d | n/d | 1 | #30 | En revisión | — |
 | 3.6 | 2026-10-13 | SEO y accesibilidad | Opus | n/d | n/d | 1 | #31 | En revisión | — |
+| 4.2 | 2026-10-13 | Lista y edición de proyectos en el panel | Opus | n/d | n/d | 1 | #32 | En revisión | — |
 
 ## Totales por hito
 
