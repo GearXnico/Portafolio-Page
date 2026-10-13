@@ -2,17 +2,19 @@ import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./login";
 
-// PNG de 1×1 px: la API lo vuelve a codificar como WebP.
+// 1×1 px PNG (Portable Network Graphics): the API (application programming interface) re-encodes
+// it as WebP.
 const PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
   "base64",
 );
 
-// Criterio de la tarea 4.3: una captura subida desde el formulario se ve en la página pública.
-test("una captura subida en el panel se ve en la página pública", async ({ page }) => {
+// Task 4.3 criterion: a screenshot uploaded from the form shows up on the public page.
+test("a screenshot uploaded in the admin panel shows up on the public page", async ({ page }) => {
   const id = String(Date.now());
   await loginAsAdmin(page);
-  // El proyecto se crea por la API (la 4.2 ya prueba el formulario); la sesión va en las cookies.
+  // The project is created through the API (4.2 already tests the form); the session is in the
+  // cookies.
   const created = await page.request.post("/api/admin/projects", {
     data: {
       slug: `e2e-captura-${id}`,
@@ -44,8 +46,9 @@ test("una captura subida en el panel se ve en la página pública", async ({ pag
     const image = card.getByRole("img", { name: /Captura de prueba|Test screenshot/ });
     await expect(image).toHaveAttribute("src", /^\/media\/projects\/.+\.webp$/);
 
-    // Vite (desarrollo) no sirve /media; Caddy sí, y ahí se comprueba que el archivo existe y es
-    // WebP. El job "Despliegue" del CI corre estos E2E contra Caddy.
+    // Vite (development) doesn't serve /media; Caddy does, and there it checks that the file exists
+    // and is WebP. The CI (continuous integration) "Deployment" job runs these E2E (end-to-end)
+    // tests against Caddy.
     const file = await page.request.get((await image.getAttribute("src")) ?? "");
     if (!file.headers()["content-type"]?.startsWith("text/html")) {
       expect(file.status()).toBe(200);
