@@ -19,13 +19,14 @@ const PROJECT = {
   repo_url: "https://github.com/ejemplo/sitio",
   visible: false,
   position: 2,
-  // Campos que manda la API pero que no se editan: no pueden volver en el PUT.
+  // Fields the API (application programming interface) sends but that aren't edited: they must
+  // not come back in the PUT.
   images: [],
   created_at: "2026-10-01T00:00:00Z",
   updated_at: "2026-10-01T00:00:00Z",
 } as AdminProject;
 
-/** Simula la API del panel con sesión: `routes` da el código y el cuerpo por "MÉTODO url". */
+/** Fakes the admin panel API with a session: `routes` gives the status and body by "METHOD url". */
 function stubApi(routes: Record<string, [number, unknown]>) {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     const [status, body] = routes[`${init?.method ?? "GET"} ${url}`] ?? [200, {}];
@@ -54,8 +55,8 @@ function fillNewProject() {
   fireEvent.click(screen.getByLabelText("Visible en la página"));
 }
 
-describe("proyectos en el panel", () => {
-  it("el inicio del panel enlaza a los proyectos", async () => {
+describe("projects in the admin panel", () => {
+  it("the admin panel home links to the projects", async () => {
     stubApi({});
     renderWithQuery(<App />, "/admin");
 
@@ -64,7 +65,7 @@ describe("proyectos en el panel", () => {
     expect(await screen.findByRole("heading", { name: "Proyectos" })).toBeInTheDocument();
   });
 
-  it("la lista muestra el orden y marca los ocultos", async () => {
+  it("the list shows the order and marks hidden ones", async () => {
     stubApi({ "GET /api/admin/projects": [200, [PROJECT]] });
     renderWithQuery(<App />, "/admin/projects");
 
@@ -76,21 +77,21 @@ describe("proyectos en el panel", () => {
     expect(item).toHaveTextContent("Orden 2 · oculto");
   });
 
-  it("sin proyectos lo dice", async () => {
+  it("says so when there are no projects", async () => {
     stubApi({ "GET /api/admin/projects": [200, []] });
     renderWithQuery(<App />, "/admin/projects");
 
     expect(await screen.findByText("Todavía no hay proyectos.")).toBeInTheDocument();
   });
 
-  it("si la lista no carga, lo avisa", async () => {
+  it("if the list doesn't load, shows a notice", async () => {
     stubApi({ "GET /api/admin/projects": [500, {}] });
     renderWithQuery(<App />, "/admin/projects");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("No se pudo conectar");
   });
 
-  it("crear envía los dos idiomas, el stack y la visibilidad, y vuelve a la lista", async () => {
+  it("creating sends both languages, the stack and the visibility, and goes back to the list", async () => {
     const fetchMock = stubApi({
       "POST /api/admin/projects": [201, PROJECT],
       "GET /api/admin/projects": [200, []],
@@ -122,7 +123,7 @@ describe("proyectos en el panel", () => {
     [409, "Ya existe un proyecto con ese slug."],
     [422, "Revisa los datos"],
     [500, "No se pudo conectar"],
-  ])("si guardar responde %i, lo avisa y sigue en el formulario", async (status, text) => {
+  ])("if saving responds %i, shows a notice and stays on the form", async (status, text) => {
     stubApi({ "POST /api/admin/projects": [status, {}] });
     renderWithQuery(<App />, "/admin/projects/new");
     await screen.findByRole("heading", { name: "Nuevo proyecto" });
@@ -134,7 +135,7 @@ describe("proyectos en el panel", () => {
     expect(screen.getByRole("heading", { name: "Nuevo proyecto" })).toBeInTheDocument();
   });
 
-  it("editar carga el proyecto y el PUT manda solo los campos editables", async () => {
+  it("editing loads the project and the PUT sends only the editable fields", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/projects/7": [200, PROJECT],
       "PUT /api/admin/projects/7": [200, PROJECT],
@@ -164,7 +165,7 @@ describe("proyectos en el panel", () => {
     });
   });
 
-  it("si el proyecto no existe, lo avisa", async () => {
+  it("if the project doesn't exist, shows a notice", async () => {
     stubApi({ "GET /api/admin/projects/99": [404, {}] });
     renderWithQuery(<App />, "/admin/projects/99");
 
