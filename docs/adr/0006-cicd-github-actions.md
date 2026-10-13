@@ -1,49 +1,49 @@
-# 0006 · CI/CD con GitHub Actions
+# 0006 · CI/CD with GitHub Actions
 
-Estado: aceptada · Fecha: 2026-10-11 · Decidió: Nicolas, que pidió completar estas decisiones en la revisión
+Status: accepted · Date: 2026-10-11 · Decided by: Nicolas, who asked to complete these decisions during the review
 
-## Contexto
+## Context
 
-El brief exige pruebas en cada PR (pull request) y despliegue automático en cada merge. Las ofertas de trabajo piden CI/CD (integración y despliegue continuos), y el pipeline debe quedar en la plantilla para reutilizarlo. Una migración o una versión rota no puede dejar el sitio caído hasta que Nicolas lo revise.
+The brief requires tests on every PR (pull request) and automatic deployment on every merge. Job postings ask for CI/CD (continuous integration and continuous deployment), and the pipeline must stay in the template so it can be reused. A migration or a broken release can't leave the site down until Nicolas looks at it.
 
-## Opciones consideradas
+## Options considered
 
-| Opción | Costo | Contras |
+| Option | Cost | Cons |
 |---|---|---|
-| A. GitHub Actions construye y publica las imágenes en GHCR (GitHub Container Registry) y despliega por SSH (acceso remoto cifrado) | Gratis en un repo público, ~6 h | El servidor tiene que poder descargar de GHCR |
-| B. GitHub Actions solo prueba; el servidor hace `git pull` y construye | ~3 h | Con 1 GiB de memoria, construir el frontend en el servidor puede fallar; no hay imágenes versionadas para volver atrás |
-| C. Herramienta de despliegue sobre el VPS (servidor virtual privado), como Coolify o Kamal | ~4 h | Una pieza más que aprender y mantener |
+| A. GitHub Actions builds and publishes the images to GHCR (GitHub Container Registry) and deploys over SSH (encrypted remote access) | Free on a public repo, ~6 h | The server has to be able to pull from GHCR |
+| B. GitHub Actions only tests; the server runs `git pull` and builds | ~3 h | With 1 GiB of memory, building the frontend on the server can fail; there are no versioned images to roll back to |
+| C. A deployment tool on the VPS (virtual private server), such as Coolify or Kamal | ~4 h | One more piece to learn and maintain |
 
-## Decisión
+## Decision
 
-A, con estas reglas:
+A, with these rules:
 
-- **Ramas:** las define la ADR 0007 (`dev` para integración y `main` para producción, con `feature/*`). `ci.yml` corre en cada PR a `dev` o `main` y en cada push a `dev`. Cada merge a `dev` despliega a staging con el mismo `deploy.yml` (ADR 0008).
+- **Branches:** defined by ADR (architecture decision record) 0007 (`dev` for integration and `main` for production, with `feature/*`). `ci.yml` runs on every PR to `dev` or `main` and on every push to `dev`. Every merge to `dev` deploys to staging with the same `deploy.yml` (ADR 0008).
 - **`ci.yml`:**
-  - API: `ruff` y `pytest` contra Postgres 18.
-  - Web: `tsc`, ESLint, Vitest y `vite build`.
-  - Construye las imágenes sin publicarlas.
-  - Los jobs corren en paralelo y con caché.
+  - API (application programming interface): `ruff` and `pytest` against Postgres 18.
+  - Web: `tsc`, ESLint, Vitest and `vite build`.
+  - Builds the images without publishing them.
+  - The jobs run in parallel and with caching.
 - **`deploy.yml`:**
-  - Corre en cada push a `main`, reutiliza `ci.yml` y despliega solo si pasa.
-  - Tiene un botón manual que recibe un SHA (identificador del commit) para volver atrás.
-  - Usa `concurrency: production` sin cancelar el despliegue en curso.
-- **Imágenes:** etiquetadas por SHA y por `latest`; el servidor despliega siempre por SHA.
-- **Secretos:**
-  - El ambiente `production` de GitHub guarda solo el acceso SSH.
-  - Los secretos de la app viven solo en el `.env` del servidor.
-  - El workflow tiene únicamente los permisos `contents: read` y `packages: write`.
-- **Orden del despliegue:**
-  1. Respaldo con `pg_dump`.
+  - Runs on every push to `main`, reuses `ci.yml` and deploys only if it passes.
+  - Has a manual button that takes a SHA (the commit identifier) to roll back.
+  - Uses `concurrency: production` without cancelling the deployment in progress.
+- **Images:** tagged by SHA and by `latest`; the server always deploys by SHA.
+- **Secrets:**
+  - GitHub's `production` environment holds only the SSH access.
+  - The app's secrets live only in the server's `.env`.
+  - The workflow has only the `contents: read` and `packages: write` permissions.
+- **Deployment order:**
+  1. Backup with `pg_dump`.
   2. `alembic upgrade head`.
-  3. Cambio de contenedores.
-  4. `GET /api/health` en menos de 60 s. Si falla, vuelve al SHA anterior y el job queda en rojo.
-- **Migraciones:** solo agregan; nada se borra en el mismo despliegue que lo deja de usar.
-- **Dependabot:** semanal, agrupado por ecosistema de paquetes.
+  3. Container switch.
+  4. `GET /api/health` in under 60 s. If it fails, it goes back to the previous SHA and the job turns red.
+- **Migrations:** additive only; nothing is dropped in the same deployment that stops using it.
+- **Dependabot:** weekly, grouped by package ecosystem.
 
-## Consecuencias
+## Consequences
 
-- Nada llega a producción sin pasar las mismas pruebas que el PR, y volver atrás usa el mismo camino que desplegar.
-- El respaldo previo, junto con las migraciones que solo agregan, permite volver al código anterior sin restaurar la base.
-- Borrar una columna toma dos despliegues: primero se deja de usar y después se elimina.
-- Por decisión de Nicolas (2026-10-11), el pipeline se prueba primero en CI con `deploy-check`, sin costo, y el despliegue a servidores reales se hace en el último hito del plan.
+- Nothing reaches production without passing the same tests as the PR, and rolling back uses the same path as deploying.
+- The prior backup, together with additive-only migrations, makes it possible to go back to the previous code without restoring the database.
+- Dropping a column takes two deployments: first it stops being used, and then it is removed.
+- By Nicolas's decision (2026-10-11), the pipeline is first tested in CI with `deploy-check`, at no cost, and deployment to real servers happens in the last milestone of the plan.
