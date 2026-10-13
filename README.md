@@ -1,98 +1,98 @@
 # Portafolio-Page
 
-Sitio web de portafolio: una página pública bilingüe (español e inglés) con perfil, experiencia, proyectos y contacto, más un panel de administración para editarla. Viene con pruebas, CI/CD (integración y despliegue continuos) y despliegue ya resueltos. Es un monorepo con tres piezas:
+Portfolio website: a bilingual (Spanish and English) public page with profile, experience, projects and contact, plus an admin panel to edit it. It comes with tests, CI/CD (continuous integration and continuous deployment) and deployment already solved. It is a monorepo with three pieces:
 
-- **api/**: API (interfaz de programación) en Python con FastAPI.
-- **web/**: frontend en React y TypeScript que se compila a archivos estáticos con Vite.
+- **api/**: API (application programming interface) in Python with FastAPI.
+- **web/**: frontend in React and TypeScript, built into static files with Vite.
 - **db**: Postgres 18.
 
-En producción, Caddy sirve el frontend y pasa `/api` a la API, todo con Docker Compose en un VPS (servidor virtual privado).
+In production, Caddy serves the frontend and forwards `/api` to the API, all with Docker Compose on a VPS (virtual private server).
 
-> Estado: en construcción. La API y la web tienen su esqueleto (la página muestra si la API y la base responden), la base tiene las tablas del contenido (perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes) y la API ya entrega el contenido con `GET /api/bootstrap`, recibe mensajes de contacto, tiene el login del administrador y deja editar el contenido desde el panel. La web tiene la ruta `/admin` con login y logout, y las pantallas para editar proyectos, perfil, habilidades y experiencia, y para ver los mensajes y las visitas por UTM (las capturas desde el panel vienen en la tarea 4.3).
+> Status: under construction. The API and the web have their skeleton (the page shows whether the API and the database respond), the database has the content tables (profile, skills, experience, projects, screenshots, visits and messages), and the API already serves the content with `GET /api/bootstrap`, receives contact messages, has the admin login and lets you edit the content from the panel. The web has the `/admin` route with login and logout, and the screens to edit projects, profile, skills and experience, and to see the messages and the visits by UTM (Urchin Tracking Module) parameters (screenshots from the panel come in task 4.3).
 
-## Requisitos
+## Requirements
 
-- Docker con Docker Compose v2.
+- Docker with Docker Compose v2.
 - Git.
 
-## Levantar en local
+## Run locally
 
 ```bash
-cp .env.example .env      # valores de desarrollo; nunca subas .env
-docker compose up -d      # db, api (:8000) y web (:5173)
+cp .env.example .env      # development values; never commit .env
+docker compose up -d      # db, api (:8000) and web (:5173)
 ```
 
-- Página: http://localhost:5173
-- API: http://localhost:8000/api/health (responde 200 si la base contesta y 503 si no)
-- Documentación interactiva de la API: http://localhost:8000/docs
+- Page: http://localhost:5173
+- API: http://localhost:8000/api/health (returns 200 if the database answers and 503 if not)
+- Interactive API documentation: http://localhost:8000/docs
 
-Los cambios en `api/app/` y `web/` se recargan solos. Las migraciones de la base se aplican solas en cada `docker compose up`, con el servicio `migrate`, antes de que arranque la API. Para apagar todo: `docker compose down` (agrega `-v` para borrar también la base local).
+Changes in `api/app/` and `web/` reload on their own. Database migrations are applied automatically on every `docker compose up`, by the `migrate` service, before the API starts. To shut everything down: `docker compose down` (add `-v` to also delete the local database).
 
-Si cambias las dependencias (`api/pyproject.toml` o `web/package.json`), reconstruye con `docker compose up -d --build`.
+If you change the dependencies (`api/pyproject.toml` or `web/package.json`), rebuild with `docker compose up -d --build`.
 
-## Mapa del repositorio
+## Repository map
 
-Qué hay en cada carpeta y para qué sirve. Para entender una funcionalidad, sigue el camino de un pedido: `web/src/api/` llama a una ruta de `api/app/routers/`, que usa la lógica de `api/app/services/` y las tablas de `api/app/models/`.
+What is in each folder and what it is for. To understand a feature, follow the path of a request: `web/src/api/` calls a route in `api/app/routers/`, which uses the logic in `api/app/services/` and the tables in `api/app/models/`.
 
 ```
-api/                    La API (interfaz de programación), en Python con FastAPI
+api/                    The API (application programming interface), in Python with FastAPI
   app/
-    main.py             Arma la app: middlewares y rutas
-    config.py           Lee las variables de entorno (.env)
-    db.py               Conexión a Postgres
-    middleware.py       Límite de tamaño de los pedidos
-    hash_password.py    Comando para generar el hash de la clave del administrador
-    routers/            Rutas: reciben el pedido, llaman a un servicio y responden
-    services/           Lógica: login, contenido, capturas, contacto, correo, idioma, visitas y límites
-    schemas/            Qué datos entran y salen de cada ruta, validados con Pydantic
-    models/             Tablas de la base, con SQLAlchemy
-  alembic/versions/     Migraciones: cada cambio a las tablas, en orden
-  tests/                Tests con pytest contra Postgres real (uno por área: test_<área>.py)
-web/                    La página, en React y TypeScript
+    main.py             Builds the app: middlewares and routes
+    config.py           Reads the environment variables (.env)
+    db.py               Connection to Postgres
+    middleware.py       Request size limit
+    hash_password.py    Command to generate the hash of the admin password
+    routers/            Routes: receive the request, call a service and respond
+    services/           Logic: login, content, screenshots, contact, email, language, visits and limits
+    schemas/            What data goes in and out of each route, validated with Pydantic
+    models/             Database tables, with SQLAlchemy
+  alembic/versions/     Migrations: each change to the tables, in order
+  tests/                Tests with pytest against a real Postgres (one per area: test_<area>.py)
+web/                    The page, in React and TypeScript
   src/
-    main.tsx, App.tsx   Arranque de la web y sus rutas (`/admin` y la página pública)
-    pages/              Páginas completas: la página pública, el login y el panel
-    components/         Secciones de la página, un componente por archivo
-    api/                Llamadas a la API
-    i18n/               Textos de la interfaz en es.json y en.json
-  tests/                Tests de componentes con Vitest
-  e2e/                  Pruebas de punta a punta con Playwright
-  security-headers.ts   Cabeceras de seguridad (las mismas que usa Caddy)
-db/init/                Script que crea el usuario de la API al crear la base
-deploy/                 Producción: compose.prod.yml y Caddyfile (ver deploy/README.md)
-docs/                   Documentación del proyecto (tabla de abajo)
+    main.tsx, App.tsx   Web startup and its routes (`/admin` and the public page)
+    pages/              Full pages: the public page, the login and the panel
+    components/         Page sections, one component per file
+    api/                Calls to the API
+    i18n/               UI text in es.json and en.json
+  tests/                Component tests with Vitest
+  e2e/                  End-to-end tests with Playwright
+  security-headers.ts   Security headers (the same ones Caddy uses)
+db/init/                Script that creates the API user when the database is created
+deploy/                 Production: compose.prod.yml and Caddyfile (see deploy/README.md)
+docs/                   Project documentation (table below)
 .github/
-  workflows/            ci.yml (tests), security.yml (escaneos), ai-review.yml (revisión con IA) y sync-dev.yml
-  rulesets/             Protección de dev y main, para importar en GitHub
-  dependabot.yml        Actualización semanal de dependencias
+  workflows/            ci.yml (tests), security.yml (scans), ai-review.yml (review with AI, artificial intelligence) and sync-dev.yml
+  rulesets/             Protection for dev and main, to import into GitHub
+  dependabot.yml        Weekly dependency updates
   pull_request_template.md
-compose.yml             Desarrollo local: db, migrate, api y web
-.env.example            Variables de entorno de ejemplo; el .env real nunca se sube
-CLAUDE.md               Instrucciones para Claude Code
+compose.yml             Local development: db, migrate, api and web
+.env.example            Example environment variables; the real .env is never committed
+CLAUDE.md               Instructions for Claude Code
 ```
 
-| Documento | Para qué leerlo |
+| Document | Why read it |
 |---|---|
-| `docs/api.md` | Referencia de la API: rutas, validaciones, protecciones y usuarios de la base |
-| `docs/development.md` | Reglas de desarrollo: qué se construye, cuándo no agregar capas, ramas, commits y cómo se revisa |
-| `docs/testing.md` | Qué se prueba, qué no y por qué existe cada tipo de prueba |
-| `docs/brief.md` | Qué problema resuelve el sitio y qué queda fuera |
-| `docs/architecture.md` | Componentes, modelo de datos, seguridad y despliegue |
-| `docs/adr/` | El porqué de cada decisión, una ADR (registro de decisión de arquitectura) por archivo |
-| `docs/plan.md` | Hitos y tareas, con su criterio de terminado |
-| `docs/local-deployment-guide.md` | Cómo completar el `.env`, levantar todo en local y comprobar que funciona |
-| `docs/prompts/` y `docs/notes/` | Registro de prompts por tarea y notas de cierre de cada hito |
+| `docs/api.md` | API reference: routes, validations, protections and database users |
+| `docs/development.md` | Development rules: what gets built, when not to add layers, branches, commits and how it is reviewed |
+| `docs/testing.md` | What is tested, what is not and why each kind of test exists |
+| `docs/brief.md` | What problem the site solves and what is left out |
+| `docs/architecture.md` | Components, data model, security and deployment |
+| `docs/adr/` | The why behind each decision, one ADR (architecture decision record) per file |
+| `docs/plan.md` | Milestones and tasks, with their definition of done |
+| `docs/local-deployment-guide.md` | How to fill in the `.env`, run everything locally and check that it works |
+| `docs/prompts/` and `docs/notes/` | Prompt log per task and closing notes for each milestone |
 
-## API: tests y lint
+## API: tests and lint
 
-Los tests van contra el Postgres del compose, sin mocks (objetos simulados) de la base, así que la `db` tiene que estar arriba. Como aplican migraciones, corren en el servicio `migrate`, el único con la clave del dueño de las tablas:
+The tests run against the compose Postgres, with no mocks (simulated objects) of the database, so the `db` has to be up. Since they apply migrations, they run in the `migrate` service, the only one with the table owner's password:
 
 ```bash
 docker compose run --rm migrate pytest -q --cov=app --cov-fail-under=80
 docker compose run --rm migrate sh -c "ruff check . && ruff format --check . && mypy app"
 ```
 
-O desde tu máquina, con Python 3.14 (toma `DATABASE_URL` y `MIGRATION_DATABASE_URL` del `.env` de la raíz):
+Or from your machine, with Python 3.14 (it takes `DATABASE_URL` and `MIGRATION_DATABASE_URL` from the root `.env`):
 
 ```bash
 cd api
@@ -102,137 +102,137 @@ pytest -q --cov=app --cov-fail-under=80
 ruff check . && ruff format --check . && mypy app
 ```
 
-## Web: tests, lint y E2E
+## Web: tests, lint and E2E
 
-Desde `web/`, con Node 24:
+From `web/`, with Node 24:
 
 ```bash
 npm ci
-npm run test -- --run          # Vitest (pruebas unitarias)
-npm run test:coverage          # con el mínimo de 80 % de líneas
+npm run test -- --run          # Vitest (unit tests)
+npm run test:coverage          # with the 80 % line minimum
 npm run lint && npm run typecheck && npm run format:check
-npx playwright install chromium   # solo la primera vez
-npm run e2e                    # Playwright, con el compose arriba
+npx playwright install chromium   # first time only
+npm run e2e                    # Playwright, with the compose up
 ```
 
-El E2E (prueba de punta a punta) revisa además las cabeceras de seguridad y que la consola no muestre errores (ahí aparece cualquier cosa que bloquee la CSP). Para probar el build con la CSP (política de seguridad de contenido), como en producción:
+The E2E (end-to-end) test also checks the security headers and that the console shows no errors (anything the CSP blocks shows up there). To test the build with the CSP (Content Security Policy), as in production:
 
 ```bash
 npm run build && npx vite preview &
 E2E_BASE_URL=http://localhost:4173 npm run e2e
 ```
 
-Los E2E del panel entran con el admin de prueba que leen de `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD` (los de tu `.env`, con la clave sin hashear). Sin esas variables fallan con un aviso. En el CI, cada corrida genera una clave al azar.
+The panel E2E tests log in with the test admin they read from `E2E_ADMIN_EMAIL` and `E2E_ADMIN_PASSWORD` (the ones in your `.env`, with the unhashed password). Without those variables they fail with a warning. In CI, each run generates a random password.
 
-El E2E abre la página en Chromium y espera que `/api/bootstrap` responda bien y se vea el título, así que prueba el camino completo: página, proxy, API y base. Si no hay nada en el puerto 5173, levanta `npm run dev` por su cuenta, pero igual necesita la API y la base del compose.
+The E2E test opens the page in Chromium and waits for `/api/bootstrap` to respond correctly and the title to show, so it tests the whole path: page, proxy, API and database. If nothing is on port 5173, it starts `npm run dev` on its own, but it still needs the API and the database from the compose.
 
-## Referencia de la API
+## API reference
 
-Qué hace cada ruta (`GET /api/bootstrap`, contacto, login del administrador, contenido del panel, mensajes y visitas), qué valida, cómo se protege y los dos usuarios de la base: [`docs/api.md`](docs/api.md). Para configurar el login del administrador en el `.env`, sigue su sección "Login del administrador".
+What each route does (`GET /api/bootstrap`, contact, admin login, panel content, messages and visits), what it validates, how it is protected and the two database users: [`docs/api.md`](docs/api.md). To configure the admin login in the `.env`, follow its admin login section.
 
-## Migraciones de la API
+## API migrations
 
-Migraciones con Alembic (herramienta de migraciones de SQLAlchemy):
+Migrations with Alembic (SQLAlchemy's migration tool):
 
 ```bash
-alembic revision --autogenerate -m "agrega tabla x"   # después de cambiar app/models/
-alembic upgrade head                                   # aplicar
+alembic revision --autogenerate -m "add table x"   # after changing app/models/
+alembic upgrade head                                # apply
 ```
 
-## Cómo se trabaja
+## How we work
 
-El detalle está en `docs/development.md` y `docs/testing.md`. En corto:
+The details are in `docs/development.md` and `docs/testing.md`. In short:
 
-- Se parte desde `dev`, en una rama `feature/<nombre>`, `fix/<nombre>`, `docs/<nombre>` o `chore/<nombre>`.
-- Commits con Conventional Commits en español, por ejemplo `feat: agrega formulario de contacto`.
-- Un PR por tarea hacia `dev`, con la plantilla del repo. Se mergea solo con rebase & merge.
-- Cada PR anota su versión y su cambio en `CHANGELOG.md`: `feat` sube MINOR, los demás tipos suben PATCH y MAJOR cuenta las publicaciones a `main`. La guía está al final de ese archivo.
-- Nunca se suben secretos ni `.env`: solo `.env.example`.
+- Start from `dev`, on a `feature/<name>`, `fix/<name>`, `docs/<name>` or `chore/<name>` branch.
+- Commits with Conventional Commits in English, for example `feat: add contact form`.
+- One PR (pull request) per task targeting `dev`, with the repo template. It is merged only with rebase & merge.
+- Each PR records its version and its change in `CHANGELOG.md`: `feat` bumps MINOR, the other types bump PATCH, and MAJOR counts the releases to `main`. The guide is at the end of that file.
+- Secrets and `.env` are never committed: only `.env.example`.
 
-## Revisión automática con IA
+## Automated AI review
 
-El workflow `.github/workflows/ai-review.yml` revisa con Claude cada PR hacia `dev` al abrirlo o al marcarlo listo para revisión (ADR 0007). Deja como máximo unos 10 comentarios ordenados por severidad, nunca aprueba y no bloquea el merge. Se salta los borradores, los de Dependabot y los PR que solo cambian documentación (`docs/**` o `*.md`). Para pedir otra revisión, comenta `@claude revisa` en el PR.
+The `.github/workflows/ai-review.yml` workflow reviews every PR targeting `dev` with Claude when it is opened or marked ready for review (ADR 0007). It leaves at most about 10 comments ordered by severity, never approves and doesn't block the merge. It skips drafts, Dependabot PRs and PRs that only change documentation (`docs/**` or `*.md`). To ask for another review, comment `@claude revisa` on the PR.
 
-Necesita el secreto `CLAUDE_CODE_OAUTH_TOKEN` en el repositorio (se genera con `claude setup-token`) y la app de Claude para GitHub instalada en él. Tiene permisos mínimos, acciones fijadas por SHA (hash del commit), no muestra el log completo de Claude y no corre en PR desde forks.
+It needs the `CLAUDE_CODE_OAUTH_TOKEN` secret in the repository (generated with `claude setup-token`) and the Claude GitHub app installed on it. It has minimal permissions, actions pinned by SHA (commit hash), doesn't show Claude's full log and doesn't run on PRs from forks.
 
-## Seguridad de la web
+## Web security
 
-- Las cabeceras HTTP de seguridad están en `web/security-headers.ts`: `nosniff`, sin iframes, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`. La CSP solo deja cargar scripts, estilos y datos del mismo dominio, y se aplica al build (en `npm run dev` no, porque Vite necesita un script en línea para recargar). En producción, `deploy/Caddyfile` pone estos mismos valores más HSTS (solo HTTPS), y el job `deploy-check` lo comprueba.
-- El build no publica source maps (el código fuente original).
-- El contenedor de desarrollo de la web corre con el usuario `node`, no como root. En producción ningún contenedor corre como root (ver `deploy/README.md`).
+- The HTTP security headers are in `web/security-headers.ts`: `nosniff`, no iframes, `Referrer-Policy`, `Permissions-Policy` and `Cross-Origin-Opener-Policy`. The CSP only allows loading scripts, styles and data from the same domain, and it applies to the build (not in `npm run dev`, because Vite needs an inline script for reloading). In production, `deploy/Caddyfile` sets these same values plus HSTS (HTTP Strict Transport Security, HTTPS only), and the `deploy-check` job verifies it.
+- The build doesn't publish source maps (the original source code).
+- The web development container runs as the `node` user, not as root. In production no container runs as root (see `deploy/README.md`).
 
-## CI (integración continua) y pre-commit
+## CI (continuous integration) and pre-commit
 
-El workflow `.github/workflows/ci.yml` corre en cada PR y en cada push a `dev` y `main`, con cinco jobs en paralelo:
+The `.github/workflows/ci.yml` workflow runs on every PR and on every push to `dev` and `main`, with five jobs in parallel:
 
-| Job | Qué revisa |
+| Job | What it checks |
 |---|---|
-| pre-commit | `ruff` (lint, formato y reglas de seguridad de Bandit), Prettier y que no se suba una llave privada |
-| API | `mypy` y `pytest` contra el Postgres del compose, con cobertura mínima del 80 % |
-| Web | ESLint, `tsc`, Vitest con cobertura mínima del 80 % y `vite build` |
-| E2E | Playwright contra `npm run dev`, con la base, las migraciones y la API del compose |
-| Despliegue (`deploy-check`) | Levanta `deploy/compose.prod.yml` con las imágenes de producción, respalda la base con `pg_dump`, aplica las migraciones, revisa que ningún contenedor corra como root y pasa el E2E contra Caddy. Es el staging efímero de cada PR (ADR 0008) |
+| pre-commit | `ruff` (lint, formatting and Bandit security rules), Prettier and that no private key is committed |
+| API | `mypy` and `pytest` against the compose Postgres, with 80 % minimum coverage |
+| Web | ESLint, `tsc`, Vitest with 80 % minimum coverage and `vite build` |
+| E2E | Playwright against `npm run dev`, with the database, the migrations and the API from the compose |
+| Deployment (`deploy-check`) | Starts `deploy/compose.prod.yml` with the production images, backs up the database with `pg_dump`, applies the migrations, checks that no container runs as root and runs the E2E against Caddy. It is the ephemeral staging of each PR (ADR 0008) |
 
-Usa caché de pip, npm y pre-commit. No usa secretos y el token solo puede leer el código, así que corre igual de seguro en PR desde forks. Las acciones están fijadas por SHA. Un push nuevo al mismo PR cancela la corrida anterior.
+It uses pip, npm and pre-commit caching. It uses no secrets and the token can only read the code, so it runs just as safely on PRs from forks. Actions are pinned by SHA. A new push to the same PR cancels the previous run.
 
-Los mismos hooks de pre-commit corren en tu máquina antes de cada commit:
+The same pre-commit hooks run on your machine before each commit:
 
 ```bash
 pip install "pre-commit==4.6.*"
-pre-commit install              # una vez por clon
-pre-commit run --all-files      # a mano, sobre todo el repo
+pre-commit install              # once per clone
+pre-commit run --all-files      # manually, over the whole repo
 ```
 
-## Seguridad en CI
+## Security in CI
 
-El workflow `.github/workflows/security.yml` corre en cada PR, en cada push a `dev` y `main`, y los lunes a las 09:00 UTC (ADR 0007):
+The `.github/workflows/security.yml` workflow runs on every PR, on every push to `dev` and `main`, and on Mondays at 09:00 UTC (ADR 0007):
 
-| Job | Qué revisa | Falla si |
+| Job | What it checks | Fails if |
 |---|---|---|
-| CodeQL | Análisis estático de GitHub sobre Python, TypeScript y los propios workflows | Hay un hallazgo de severidad alta o crítica (umbral del repo) |
-| pip-audit | Las dependencias de la API, incluidas las de desarrollo | Hay cualquier vulnerabilidad conocida (pip-audit no filtra por severidad) |
-| npm audit | Las dependencias de web, según `package-lock.json` | Hay una vulnerabilidad alta o crítica |
-| Trivy | Las imágenes de producción (`api/Dockerfile` y `web/Dockerfile`) | Hay una vulnerabilidad alta o crítica que ya tiene corrección y no está aceptada en `.trivyignore` |
+| CodeQL | GitHub static analysis over Python, TypeScript and the workflows themselves | There is a high or critical severity finding (repo threshold) |
+| pip-audit | The API dependencies, including the development ones | There is any known vulnerability (pip-audit doesn't filter by severity) |
+| npm audit | The web dependencies, according to `package-lock.json` | There is a high or critical vulnerability |
+| Trivy | The production images (`api/Dockerfile` and `web/Dockerfile`) | There is a high or critical vulnerability that already has a fix and is not accepted in `.trivyignore` |
 
-Las reglas de seguridad de `ruff` (`S`, las de Bandit) corren en el job pre-commit de `ci.yml`. En los tests se permiten `assert` y claves de mentira; en `app/` no se usa `assert`, porque Python lo omite al correr con `-O`.
+The `ruff` security rules (`S`, the Bandit ones) run in the pre-commit job of `ci.yml`. In tests, `assert` and fake passwords are allowed; in `app/` `assert` is not used, because Python drops it when running with `-O`.
 
-`.github/dependabot.yml` revisa cada semana pip, npm, las imágenes base y las acciones. Las versiones menores y de parche llegan en un PR por ecosistema y las mayores en uno aparte cada una. Espera 7 días desde que sale una versión antes de proponerla (por si era maliciosa y la retiran); las alertas de seguridad no esperan. Esos PR pasan por los mismos checks.
+`.github/dependabot.yml` checks pip, npm, the base images and the actions every week. Minor and patch versions arrive in one PR per ecosystem, and major ones each in a separate PR. It waits 7 days after a version is released before proposing it (in case it was malicious and gets pulled); security alerts don't wait. Those PRs go through the same checks.
 
-`.trivyignore` lista los hallazgos aceptados, cada uno con fecha de vencimiento (`exp:`). Hoy son solo tres de Caddy 2.11.7 (denegación de servicio en HTTP/2 y TLS), que corrige la próxima versión de Caddy. Las imágenes de producción no llevan pip ni npm. Al vencer, el job vuelve a fallar y se revisan de nuevo. Cada ID se ignora en toda la imagen; si una dependencia propia cae en uno de esos mismos CVE, la detectan igual `pip-audit` y `npm audit`, que no leen ese archivo.
+`.trivyignore` lists the accepted findings, each with an expiration date (`exp:`). Today there are only three, from Caddy 2.11.7 (denial of service in HTTP/2 and TLS), fixed by the next Caddy version. The production images don't include pip or npm. When they expire, the job fails again and they are reviewed again. Each ID is ignored across the whole image; if one of our own dependencies falls into one of those same CVEs (Common Vulnerabilities and Exposures), `pip-audit` and `npm audit` still detect it, since they don't read that file.
 
-Secret scanning y push protection (que bloquea un push con un secreto) son ajustes del repo en Settings > Code security, no de un workflow. Ahí mismo, el "default setup" de CodeQL tiene que quedar desactivado, porque este workflow es la configuración avanzada y GitHub no acepta las dos a la vez.
+Secret scanning and push protection (which blocks a push containing a secret) are repo settings in Settings > Code security, not a workflow. In that same place, CodeQL's "default setup" has to stay disabled, because this workflow is the advanced configuration and GitHub doesn't accept both at once.
 
-Para correr las auditorías en tu máquina:
+To run the audits on your machine:
 
 ```bash
 cd api && pip install "pip-audit==2.10.*" && pip-audit --skip-editable
 cd web && npm audit --audit-level=high
 ```
 
-## Reglas de ramas
+## Branch rules
 
-`dev` y `main` están protegidas con tres rulesets de GitHub (ADR 0007). Su configuración exacta está en `.github/rulesets/`, para versionarla y poder volver a importarla en Settings > Rules > Rulesets > New ruleset > Import a ruleset.
+`dev` and `main` are protected with three GitHub rulesets (ADR 0007). Their exact configuration is in `.github/rulesets/`, so it is versioned and can be imported again in Settings > Rules > Rulesets > New ruleset > Import a ruleset.
 
-| Ruleset | Rama | Reglas | Quién se lo salta |
+| Ruleset | Branch | Rules | Who bypasses it |
 |---|---|---|---|
-| `main` | `main` | Sin borrado ni force push, historial lineal, PR obligatorio, solo rebase & merge y los 11 checks de `ci.yml` y `security.yml` en verde con la rama al día | Nadie |
-| `dev` | `dev` | Las mismas | La deploy key de `sync-dev.yml` |
-| `aprobacion` | `dev` y `main` | 1 aprobación; un push nuevo la descarta | El rol admin (solo Nicolas) al mergear un PR, con bypass registrado, y la deploy key |
+| `main` | `main` | No deletion or force push, linear history, PR required, rebase & merge only and the 11 checks from `ci.yml` and `security.yml` green with the branch up to date | Nobody |
+| `dev` | `dev` | The same | The `sync-dev.yml` deploy key |
+| `aprobacion` (approval) | `dev` and `main` | 1 approval; a new push dismisses it | The admin role (only Nicolas) when merging a PR, with a recorded bypass, and the deploy key |
 
-La aprobación va en un ruleset aparte para que el bypass salte solo la aprobación y no los checks. En Settings > General, el único método de merge habilitado es rebase & merge, y está activo "Always suggest updating pull request branches" para poner la rama al día con rebase desde el PR.
+Approval lives in a separate ruleset so that the bypass skips only the approval and not the checks. In Settings > General, the only enabled merge method is rebase & merge, and "Always suggest updating pull request branches" is on, so the branch can be rebased up to date from the PR.
 
-Si un job cambia de nombre o se agrega uno nuevo, se actualiza su JSON y el ruleset en GitHub en el mismo PR; si no, el check queda esperando y bloquea el merge.
+If a job is renamed or a new one is added, its JSON and the ruleset in GitHub are updated in the same PR; otherwise the check stays pending and blocks the merge.
 
 ### `sync-dev.yml`
 
-Después de cada push a `main` (un PR de versión o un hotfix), rebasa `dev` sobre `main` y la publica con force push. Así `dev` descarta las copias de commits que el rebase & merge dejó en `main` con otro SHA, y recibe los hotfix. Si el rebase choca, el job falla sin publicar nada y el conflicto se resuelve a mano.
+After each push to `main` (a release PR or a hotfix), it rebases `dev` onto `main` and publishes it with a force push. That way `dev` drops the copies of commits that rebase & merge left on `main` with a different SHA, and it receives the hotfixes. If the rebase conflicts, the job fails without publishing anything and the conflict is resolved by hand.
 
-Necesita una deploy key con permiso de escritura, que se crea una vez:
+It needs a deploy key with write access, created once:
 
 ```bash
 ssh-keygen -t ed25519 -N "" -C sync-dev -f sync-dev
 ```
 
-1. Settings > Deploy keys > Add deploy key: título `sync-dev`, el contenido de `sync-dev.pub` y "Allow write access".
-2. Settings > Secrets and variables > Actions > New repository secret: `SYNC_DEV_SSH_KEY`, con el contenido de `sync-dev` (la llave privada).
-3. Borra los dos archivos de tu equipo.
+1. Settings > Deploy keys > Add deploy key: title `sync-dev`, the contents of `sync-dev.pub` and "Allow write access".
+2. Settings > Secrets and variables > Actions > New repository secret: `SYNC_DEV_SSH_KEY`, with the contents of `sync-dev` (the private key).
+3. Delete both files from your machine.
