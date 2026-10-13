@@ -2,7 +2,7 @@ import { vi } from "vitest";
 
 import type { Bootstrap } from "../src/api/bootstrap";
 
-/** Respuesta de `bootstrap` con un poco de todo, en los dos idiomas. */
+/** A `bootstrap` response with a bit of everything, in both languages. */
 export function bootstrapFixture(overrides: Partial<Bootstrap> = {}): Bootstrap {
   return {
     lang: "es",
