@@ -1,35 +1,35 @@
-# NNNN · <tarea del plan>
+# NNNN · <plan task>
 
-Tarea del plan: <número, por ejemplo 1.2> · Fecha: AAAA-MM-DD · Modelo: <Sonnet / Opus> · Rama: `feature/<nombre>`
+Plan task: <number, for example 1.2> · Date: YYYY-MM-DD · Model: <Sonnet / Opus> · Branch: `feature/<name>`
 
 ## Prompt
 
 ```
-Tarea <número> del plan (docs/plan.md): <título de la tarea>.
+Task <number> of the plan (docs/plan.md): <task title>.
 
-Contexto: lee solo docs/plan.md (tarea <número>) y <ADR o sección de arquitectura que aplique>. No leas otros documentos salvo que los necesites.
+Context: read only docs/plan.md (task <number>) and <applicable ADR or architecture section>. Don't read other documents unless you need them.
 
-Qué hacer:
-- <paso concreto 1>
-- <paso concreto 2>
+What to do:
+- <concrete step 1>
+- <concrete step 2>
 
-Terminado cuando: <criterio de terminado copiado del plan>.
+Done when: <definition of done copied from the plan>.
 
-Restricciones:
-- Sigue CLAUDE.md (ramas, commits, tests, seguridad).
-- Corre los tests y el lint antes de terminar y muéstrame solo el resumen.
-- Si algo del plan no calza con el código, pregúntame antes de cambiar el diseño.
+Constraints:
+- Follow CLAUDE.md (branches, commits, tests, security).
+- Run the tests and the lint before finishing and show me only the summary.
+- If something in the plan doesn't match the code, ask me before changing the design.
 
-Al terminar: abre el PR a dev y dame el enlace.
+When done: open the PR to dev and give me the link.
 ```
 
-## Resultado
+## Result
 
-- PR: <enlace>
-- Tokens (de `/cost`): <entrada> / <salida> · Duración: <min>
-- ¿Se terminó en una sesión?: sí / no (por qué)
-- Intentos: <1, 2…>
+- PR (pull request): <link>
+- Tokens (from `/cost`): <input> / <output> · Duration: <min>
+- Finished in one session?: yes / no (why)
+- Attempts: <1, 2…>
 
-## Lecciones
+## Lessons
 
-- <Qué funcionó, qué hubo que aclarar y qué cambiaría en el prompt la próxima vez.>
+- <What worked, what had to be clarified and what to change in the prompt next time.>

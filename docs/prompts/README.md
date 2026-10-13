@@ -1,16 +1,16 @@
-# Prompts de desarrollo · Sitio web de portafolio
+# Development prompts · Portfolio website
 
-Aquí queda cada prompt que se usa con Claude Code para una tarea del plan: qué se pidió, cuánto costó y qué se aprendió. Sirve para tres cosas:
+Every prompt used with Claude Code for a plan task is kept here: what was asked, how much it cost and what was learned. It serves three purposes:
 
-- Reutilizar los prompts que funcionaron en la siguiente idea.
-- Medir el uso de tokens por tarea (ADR 0009).
-- Ver el avance del desarrollo prompt a prompt.
+- Reuse the prompts that worked in the next idea.
+- Measure token usage per task (ADR (architecture decision record) 0009).
+- See the development progress prompt by prompt.
 
-## Cómo se usa
+## How to use it
 
-1. Antes de empezar una tarea del plan, copia `template.md` a `NNNN-<tarea>.md`, por ejemplo `0001-estructura-monorepo.md`, y complétala. El número es correlativo.
-2. Pega el bloque "Prompt" en una sesión nueva de Claude Code.
-3. Al terminar, completa la sección "Resultado" del archivo y agrega una fila a `log.md`.
-4. Si hubo que corregir el prompt, se guarda la versión que funcionó y se anota en "Lecciones" qué cambió.
+1. Before starting a plan task, copy `template.md` to `NNNN-<task>.md`, for example `0001-monorepo-structure.md`, and fill it in. The number is sequential.
+2. Paste the "Prompt" block into a new Claude Code session.
+3. When done, fill in the "Result" section of the file and add a row to `log.md`.
+4. If the prompt had to be corrected, keep the version that worked and note under "Lessons" what changed.
 
-Claude Code puede llenar el registro al final de cada sesión si se le pide: "agrega la fila de esta tarea a `prompts/log.md` con el uso de `/cost`". Esa instrucción queda en el CLAUDE.md del producto.
+Claude Code can fill in the log at the end of each session if asked: "add this task's row to `prompts/log.md` with the usage from `/cost`". That instruction lives in the product's CLAUDE.md.
