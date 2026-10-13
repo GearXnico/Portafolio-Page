@@ -1,22 +1,22 @@
-# Referencia de la API
+# API reference
 
-Qué hace cada ruta de la API, qué valida y cómo se protege. Para levantarla y correr sus tests, el README; para el porqué de cada decisión, `docs/adr/`.
+What each API route does, what it validates and how it is protected. To run it and its tests, see the README; for the reasoning behind each decision, see `docs/adr/`.
 
-La documentación interactiva, generada desde el código, está en http://localhost:8000/docs con el compose arriba.
+The interactive documentation, generated from the code, is at http://localhost:8000/docs with the compose stack up.
 
-## Primera carga y visitas: `GET /api/bootstrap`
+## First load and visits: `GET /api/bootstrap`
 
-La página llama a `GET /api/bootstrap` al abrirse. La API registra la visita, decide el idioma y devuelve todo el contenido visible en una sola respuesta, con `Cache-Control: no-store`.
+The page calls `GET /api/bootstrap` when it opens. The API records the visit, decides the language and returns all the visible content in a single response, with `Cache-Control: no-store`.
 
-Parámetros (todos opcionales). La página pasa las UTM que trae su URL, `document.referrer` y el idioma guardado; al formulario de contacto le pasa `utm_source` y `utm_campaign` (`web/src/utm.ts`):
+Parameters (all optional). The page passes the UTM parameters in its URL, `document.referrer` and the saved language; it passes `utm_source` and `utm_campaign` to the contact form (`web/src/utm.ts`):
 
-| Parámetro | Qué es | Cómo se guarda |
+| Parameter | What it is | How it is stored |
 |---|---|---|
-| `utm_source`, `utm_medium`, `utm_campaign`, `utm_content` | UTM (parámetros de origen del enlace) | Sin caracteres de control ni invisibles y recortados a 200 caracteres. Nunca hacen fallar la página. |
-| `referrer` | `document.referrer` de la página | Solo el dominio (`https://www.linkedin.com`); la URL completa puede traer datos personales. |
-| `lang` | Idioma elegido en el selector | Manda sobre el navegador. Si no es `es` ni `en`, se ignora. |
+| `utm_source`, `utm_medium`, `utm_campaign`, `utm_content` | UTM (Urchin Tracking Module: link source parameters) | Without control or invisible characters, and trimmed to 200 characters. They never make the page fail. |
+| `referrer` | The page's `document.referrer` | Only the domain (`https://www.linkedin.com`); the full URL can carry personal data. |
+| `lang` | Language chosen in the selector | Takes precedence over the browser. If it is neither `es` nor `en`, it is ignored. |
 
-Respuesta:
+Response:
 
 ```json
 {
@@ -28,83 +28,83 @@ Respuesta:
 }
 ```
 
-- **Idioma** (`app/services/locale.py`, ADR 0002): el primero de `Accept-Language`, que el navegador pone como preferido. Español si es `es`; si no, o si no viene el header, inglés.
-- **Contenido**: textos en los dos idiomas, para que el selector cambie sin otra llamada. `profile` es `null` mientras no se cargue el perfil. Solo salen los proyectos con `visible = true`. No salen ids, orden, visibilidad, fechas de edición ni el correo de contacto.
-- **Visitante único por día**: no se guarda la IP. Se guarda un HMAC-SHA256 (hash con clave) de IP y user agent, cuya clave es una sal al azar que se crea cada día (UTC) en la tabla `visitor_salt` y se borra al día siguiente. Sin la sal, ni con un respaldo de la base se puede volver a la IP.
-- Si falla el registro de la visita, la página igual carga.
+- **Language** (`app/services/locale.py`, ADR (architecture decision record) 0002): the first one in `Accept-Language`, which the browser sets as preferred. Spanish if it is `es`; otherwise, or if the header is missing, English.
+- **Content**: texts in both languages, so the selector switches without another call. `profile` is `null` until the profile is loaded. Only projects with `visible = true` are returned. Ids, order, visibility, edit dates and the contact email are not returned.
+- **Unique visitor per day**: the IP is not stored. What is stored is an HMAC-SHA256 (keyed hash) of the IP and user agent, whose key is a random salt created each day (UTC) in the `visitor_salt` table and deleted the next day. Without the salt, not even a database backup can lead back to the IP.
+- If recording the visit fails, the page still loads.
 
-En producción la API está detrás de Caddy: `deploy/compose.prod.yml` fija `TRUSTED_PROXIES` en la red interna de Docker donde está Caddy, para que la API lea la IP real de `X-Forwarded-For`. Sin eso, todos los visitantes compartirían la IP de Caddy y el conteo de únicos bajaría.
+In production the API sits behind Caddy: `deploy/compose.prod.yml` sets `TRUSTED_PROXIES` to the internal Docker network where Caddy runs, so the API reads the real IP from `X-Forwarded-For`. Without it, every visitor would share Caddy's IP and the unique count would drop.
 
-## Formulario de contacto
+## Contact form
 
-`POST /api/contact` recibe `name`, `email`, `message`, `lang` (`es` o `en`) y, si vienen, `utm_source` y `utm_campaign`. Guarda el mensaje y responde 201; después, en segundo plano, avisa por correo con SMTP (`app/services/mail.py`, ADR 0005) y marca `emailed`. Si el correo falla o no está configurado, el mensaje igual queda guardado y el log lo anota, solo con el id del mensaje.
+`POST /api/contact` receives `name`, `email`, `message`, `lang` (`es` or `en`) and, if present, `utm_source` and `utm_campaign`. It saves the message and responds 201; then, in the background, it sends an email notice over SMTP (Simple Mail Transfer Protocol) (`app/services/mail.py`, ADR 0005) and marks `emailed`. If the email fails or is not configured, the message is still saved and the log records it, with only the message id.
 
-Contra el spam y los abusos:
+Against spam and abuse:
 
-- **Validación:** largos máximos iguales a los de la tabla (200, 320 y 5.000 caracteres), correo con formato válido, sin caracteres de control ni saltos de línea fuera del mensaje (así nadie puede inyectar cabeceras en el correo) y sin campos extra. Responde 422 si algo no calza.
-- **Honeypot (campo trampa):** el formulario debe incluir un campo `website` oculto. Si llega con algo, es un bot: la API responde 201 igual, pero no guarda nada.
-- **Límite por IP:** 5 mensajes por hora; después responde 429 con `Retry-After`. Vive en memoria del proceso, así que la API corre con un solo proceso de Uvicorn. En producción, `TRUSTED_PROXIES` tiene que incluir a Caddy para que el límite vea la IP real y no la del proxy.
-- **Tamaño:** la API rechaza cuerpos de más de 64 KB (413) y los que no declaran su largo (411).
-- **Al mostrarlo:** la API guarda el texto tal cual y nunca lo interpreta. El correo va en texto plano y la web lo muestra como texto (React lo escapa); nunca con `dangerouslySetInnerHTML`.
+- **Validation:** maximum lengths equal to those of the table (200, 320 and 5,000 characters), an email with a valid format, no control characters or line breaks outside the message (so nobody can inject headers into the email) and no extra fields. Responds 422 if something does not match.
+- **Honeypot (trap field):** the form must include a hidden `website` field. If it arrives filled in, it is a bot: the API still responds 201 but saves nothing.
+- **Per-IP limit:** 5 messages per hour; after that it responds 429 with `Retry-After`. It lives in the process memory, so the API runs with a single Uvicorn process. In production, `TRUSTED_PROXIES` must include Caddy so the limit sees the real IP and not the proxy's.
+- **Size:** the API rejects bodies larger than 64 KB (413) and those that do not declare their length (411).
+- **When displayed:** the API stores the text as is and never interprets it. The email is plain text and the web shows it as text (React escapes it); never with `dangerouslySetInnerHTML`.
 
-## Login del administrador
+## Administrator login
 
-El panel tiene un solo usuario (ADR 0004), sin tabla: sus credenciales van en el `.env`.
+The panel has a single user (ADR 0004), with no table: its credentials go in the `.env`.
 
-1. Genera el hash de la contraseña (mínimo 12 caracteres): `docker compose run --rm api python -m app.hash_password`. Copia la línea `ADMIN_PASSWORD_HASH='...'` al `.env` tal cual, con las comillas simples.
-2. Completa `ADMIN_EMAIL` y `JWT_SECRET` (al menos 32 caracteres al azar: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`).
-3. Reinicia la API: `docker compose up -d api`.
+1. Generate the password hash (at least 12 characters): `docker compose run --rm api python -m app.hash_password`. Copy the `ADMIN_PASSWORD_HASH='...'` line into the `.env` as is, with the single quotes.
+2. Fill in `ADMIN_EMAIL` and `JWT_SECRET` (at least 32 random characters: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`).
+3. Restart the API: `docker compose up -d api`.
 
-| Ruta | Qué hace |
+| Route | What it does |
 |---|---|
-| `POST /api/admin/login` | Recibe `email` y `password`. Si calzan, deja la cookie `admin_session` y responde 200; si no, 401. Sin configuración, 503. |
-| `POST /api/admin/logout` | Borra la cookie (204). |
-| `GET /api/admin/session` | 200 con sesión, 401 sin ella. |
+| `POST /api/admin/login` | Receives `email` and `password`. If they match, it sets the `admin_session` cookie and responds 200; otherwise, 401. Without configuration, 503. |
+| `POST /api/admin/logout` | Deletes the cookie (204). |
+| `GET /api/admin/session` | 200 with a session, 401 without one. |
 
-Toda ruta nueva de `/api/admin/*` va en `router` de `app/routers/admin.py`, que exige sesión por defecto; solo el login y el logout van en `public_router`. Un test recorre todas las rutas de `/api/admin/*` y falla si alguna responde sin sesión.
+Every new `/api/admin/*` route goes in the `router` of `app/routers/admin.py`, which requires a session by default; only login and logout go in `public_router`. A test walks every `/api/admin/*` route and fails if any of them responds without a session.
 
-- **Contraseña:** hash Argon2 (`argon2-cffi`). La contraseña se verifica aunque el correo esté mal, para que el tiempo de respuesta no diga cuál falló.
-- **Sesión:** JWT (JSON Web Token) firmado con HS256 y `JWT_SECRET`, de 7 días, en una cookie `httpOnly`, `Secure`, `SameSite=Strict` y con `path=/api/admin`. Cambiar `JWT_SECRET` cierra todas las sesiones; cambiar `ADMIN_EMAIL` también.
-- **Límite:** 5 intentos fallidos cada 15 minutos por IP; después responde 429 con `Retry-After`. Un login correcto borra los intentos de esa IP. Usa el mismo límite en memoria y `TRUSTED_PROXIES` que el formulario de contacto.
+- **Password:** Argon2 hash (`argon2-cffi`). The password is verified even if the email is wrong, so the response time does not reveal which one failed.
+- **Session:** JWT (JSON Web Token) signed with HS256 and `JWT_SECRET`, valid for 7 days, in an `httpOnly`, `Secure`, `SameSite=Strict` cookie with `path=/api/admin`. Changing `JWT_SECRET` closes every session; so does changing `ADMIN_EMAIL`.
+- **Limit:** 5 failed attempts every 15 minutes per IP; after that it responds 429 with `Retry-After`. A successful login clears that IP's attempts. It uses the same in-memory limit and `TRUSTED_PROXIES` as the contact form.
 
-## Contenido desde el panel
+## Content from the panel
 
-Rutas para editar lo que muestra la página. Todas exigen la sesión del administrador (sin ella, 401 antes de mirar el cuerpo) y usan JSON, salvo la subida de capturas, que es un formulario (multipart). Los cambios se ven en la siguiente carga de `GET /api/bootstrap`.
+Routes to edit what the page shows. All of them require the administrator session (without it, 401 before reading the body) and use JSON, except the screenshot upload, which is a form (multipart). Changes show up on the next `GET /api/bootstrap` load.
 
-| Recurso | Rutas |
+| Resource | Routes |
 |---|---|
-| Proyectos | `GET` y `POST /api/admin/projects`; `GET`, `PUT` y `DELETE /api/admin/projects/{id}` |
-| Capturas | `POST /api/admin/projects/{id}/images` (campos `file`, `alt_es` y `alt_en`); `DELETE /api/admin/projects/{id}/images/{image_id}` |
-| Perfil | `GET` y `PUT /api/admin/profile` (el primer `PUT` lo crea; antes, `GET` responde 404) |
-| Habilidades | `GET` y `POST /api/admin/skills`; `PUT` y `DELETE /api/admin/skills/{id}` |
-| Experiencia | `GET` y `POST /api/admin/experience`; `PUT` y `DELETE /api/admin/experience/{id}` |
+| Projects | `GET` and `POST /api/admin/projects`; `GET`, `PUT` and `DELETE /api/admin/projects/{id}` |
+| Screenshots | `POST /api/admin/projects/{id}/images` (fields `file`, `alt_es` and `alt_en`); `DELETE /api/admin/projects/{id}/images/{image_id}` |
+| Profile | `GET` and `PUT /api/admin/profile` (the first `PUT` creates it; before that, `GET` responds 404) |
+| Skills | `GET` and `POST /api/admin/skills`; `PUT` and `DELETE /api/admin/skills/{id}` |
+| Experience | `GET` and `POST /api/admin/experience`; `PUT` and `DELETE /api/admin/experience/{id}` |
 
-- **Orden y visibilidad:** cada elemento tiene `position` (el menor va primero). Un proyecto nuevo queda oculto (`visible: false`) hasta que se publica con un `PUT`. El panel ve también los ocultos.
-- **`PUT` reemplaza todo:** manda el objeto completo; lo que no llega toma su valor por defecto.
-- **Validación:** campos de más (como `id`), caracteres de control, largos sobre el máximo y enlaces que no sean `https://` responden 422. Un slug repetido responde 409 y un id que no existe, 404.
-- **Capturas:** JPEG, PNG o WebP de hasta 5 MB, reconocidos por su contenido y no por la extensión. La API las vuelve a codificar como WebP (máximo 2560 px por lado, sin metadatos como el GPS de una foto ni el perfil de color: una captura en Display P3 se verá un poco menos saturada), con un nombre al azar, en `MEDIA_DIR/projects/` (por defecto `media/`, un volumen en Docker). Cada proyecto las trae en `images`, con su `url` en `/media/...`. Responde 413 si pesa más de 5 MB, 415 si no es una imagen aceptada y 422 si está dañada o pasa los 25 megapíxeles. Sin sesión, la subida responde 401 antes de leer el archivo.
-- **Al borrar un proyecto o una captura** se borran las filas y los archivos.
+- **Order and visibility:** each item has a `position` (the lowest goes first). A new project stays hidden (`visible: false`) until it is published with a `PUT`. The panel also sees the hidden ones.
+- **`PUT` replaces everything:** send the full object; whatever is missing takes its default value.
+- **Validation:** extra fields (such as `id`), control characters, lengths over the maximum and links that are not `https://` respond 422. A repeated slug responds 409 and an id that does not exist, 404.
+- **Screenshots:** JPEG, PNG or WebP up to 5 MB, recognized by their content and not by the extension. The API re-encodes them as WebP (at most 2560 px per side, without metadata such as a photo's GPS or the color profile: a Display P3 screenshot will look slightly less saturated), with a random name, in `MEDIA_DIR/projects/` (`media/` by default, a Docker volume). Each project returns them in `images`, with their `url` under `/media/...`. Responds 413 if it is larger than 5 MB, 415 if it is not an accepted image and 422 if it is corrupted or exceeds 25 megapixels. Without a session, the upload responds 401 before reading the file.
+- **Deleting a project or a screenshot** deletes both the rows and the files.
 
-## Mensajes y visitas en el panel
+## Messages and visits in the panel
 
-Rutas para ver lo que llega al sitio. Exigen la sesión del administrador como el resto de `/api/admin/*` (sin ella, 401 antes de mirar el cuerpo).
+Routes to see what reaches the site. Like the rest of `/api/admin/*`, they require the administrator session (without it, 401 before reading the body).
 
-| Ruta | Qué hace |
+| Route | What it does |
 |---|---|
-| `GET /api/admin/messages` | Todos los mensajes de contacto, el más nuevo primero: `id`, `created_at`, `name`, `email`, `message`, `lang`, `utm_source`, `utm_campaign` y `read`. |
-| `PATCH /api/admin/messages/{id}` | Recibe `{"read": true}` o `{"read": false}` y devuelve el mensaje. 404 si no existe; 422 si `read` no es un booleano o llegan campos extra. |
-| `GET /api/admin/visits` | Visitas agrupadas por `utm_source` y `utm_campaign`, las más visitadas primero: `visits` (total) y `unique_visitors` (visitantes únicos por día, sumados, porque el hash cambia cada día). Las visitas sin UTM salen en el grupo con los dos en `null`. |
+| `GET /api/admin/messages` | All contact messages, newest first: `id`, `created_at`, `name`, `email`, `message`, `lang`, `utm_source`, `utm_campaign` and `read`. |
+| `PATCH /api/admin/messages/{id}` | Receives `{"read": true}` or `{"read": false}` and returns the message. 404 if it does not exist; 422 if `read` is not a boolean or extra fields arrive. |
+| `GET /api/admin/visits` | Visits grouped by `utm_source` and `utm_campaign`, most visited first: `visits` (total) and `unique_visitors` (unique visitors per day, summed, because the hash changes every day). Visits without UTM appear in the group with both set to `null`. |
 
-- **Datos personales:** los mensajes traen el nombre y el correo del remitente; solo salen por estas rutas y nunca van a los logs. Las visitas salen solo como conteos: ni filas sueltas ni el hash del visitante.
-- La columna `read` ya existía en `contact_message`: no hubo migración.
+- **Personal data:** messages carry the sender's name and email; they leave only through these routes and never go to the logs. Visits are returned only as counts: no individual rows and no visitor hash.
+- The `read` column already existed in `contact_message`: no migration was needed.
 
-## Base de datos: dos usuarios
+## Database: two users
 
-La API no se conecta como dueña de las tablas. Hay dos usuarios de Postgres:
+The API does not connect as the owner of the tables. There are two Postgres users:
 
-| Usuario | Variable | Puede | Lo usa |
+| User | Variable | Can | Used by |
 |---|---|---|---|
-| Dueño (`POSTGRES_USER`) | `MIGRATION_DATABASE_URL` | Crear, cambiar y borrar tablas | Solo el servicio `migrate` (Alembic y los tests) |
-| API (`APP_DB_USER`) | `DATABASE_URL` | Leer, insertar, actualizar y borrar filas | La API |
+| Owner (`POSTGRES_USER`) | `MIGRATION_DATABASE_URL` | Create, change and drop tables | Only the `migrate` service (Alembic and the tests) |
+| API (`APP_DB_USER`) | `DATABASE_URL` | Read, insert, update and delete rows | The API |
 
-Así, un error o una inyección de SQL en la API no puede borrar ni cambiar tablas. El usuario de la API lo crea `db/init/01-api-user.sh` la primera vez que arranca la base. Si tu base local es anterior a ese script, recréala con `docker compose down -v && docker compose up -d` (borra los datos locales). Los tests de `tests/test_db_permissions.py` comprueban estos límites.
+This way, a bug or a SQL injection in the API cannot drop or change tables. The API user is created by `db/init/01-api-user.sh` the first time the database starts. If your local database predates that script, recreate it with `docker compose down -v && docker compose up -d` (this deletes local data). The tests in `tests/test_db_permissions.py` check these limits.
