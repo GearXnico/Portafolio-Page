@@ -79,5 +79,18 @@
   "admin.experience.role": "Role",
   "admin.experience.description": "Description",
   "admin.experience.start": "Start",
-  "admin.experience.end": "End (empty if it is the current job)"
+  "admin.experience.end": "End (empty if it is the current job)",
+  "admin.messages.title": "Messages",
+  "admin.messages.empty": "No messages yet.",
+  "admin.messages.read": "Read",
+  "admin.messages.unread": "New",
+  "admin.messages.markRead": "Mark as read",
+  "admin.messages.markUnread": "Mark as unread",
+  "admin.visits.title": "Visits by link",
+  "admin.visits.empty": "No visits yet.",
+  "admin.visits.source": "Source (utm_source)",
+  "admin.visits.campaign": "Campaign (utm_campaign)",
+  "admin.visits.visits": "Visits",
+  "admin.visits.unique": "Daily unique visitors",
+  "admin.visits.direct": "Direct"
 }

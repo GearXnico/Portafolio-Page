@@ -9,6 +9,8 @@ const SECTIONS: readonly [string, MessageKey][] = [
   ["profile", "admin.profile.title"],
   ["skills", "admin.skills.title"],
   ["experience", "admin.experience.title"],
+  ["messages", "admin.messages.title"],
+  ["visits", "admin.visits.title"],
 ];
 
 /** Inicio del panel: el menú de secciones y el cierre de sesión. */
