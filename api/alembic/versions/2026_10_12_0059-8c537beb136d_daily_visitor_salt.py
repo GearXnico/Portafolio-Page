@@ -1,4 +1,4 @@
-"""sal diaria de visitantes: se genera al azar cada día y se borra al siguiente
+"""daily visitor salt: generated at random each day and deleted the next
 
 Revision ID: 8c537beb136d
 Revises: a9c47c1ef041

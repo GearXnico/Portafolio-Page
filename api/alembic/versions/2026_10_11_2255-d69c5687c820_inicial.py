@@ -1,4 +1,4 @@
-"""inicial
+"""initial
 
 Revision ID: d69c5687c820
 Revises:
