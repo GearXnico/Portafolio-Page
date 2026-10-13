@@ -1,28 +1,28 @@
-# 0001 · Despliegue en VPS con Docker Compose y Caddy
+# 0001 · Deployment on a VPS with Docker Compose and Caddy
 
-Estado: aceptada · Fecha: 2026-10-11 · Decidió: Nicolas
+Status: accepted · Date: 2026-10-11 · Decided by: Nicolas
 
-## Contexto
+## Context
 
-El sitio necesita un frontend, una API (interfaz de programación) y Postgres siempre disponibles, porque la primera visita de un reclutador no puede tardar en cargar. El despliegue es un área que Nicolas quiere reforzar y también algo que piden las ofertas de trabajo revisadas. Además, el servidor debería servir para los próximos productos sin multiplicar el costo.
+The site needs a frontend, an API (application programming interface) and Postgres that are always available, because a recruiter's first visit can't be slow to load. Deployment is an area Nicolas wants to strengthen, and it is also something the job postings he reviewed ask for. Besides, the server should be able to host upcoming products without multiplying the cost.
 
-## Opciones consideradas
+## Options considered
 
-| Opción | Costo mensual | Trabajo extra | Contras |
+| Option | Monthly cost | Extra work | Cons |
 |---|---|---|---|
-| A. VPS (servidor virtual privado) en DigitalOcean, 1 vCPU (procesador virtual) y 1 GiB de memoria, con respaldo semanal | US$7,20 | ~6 h | Hay que mantener el servidor |
-| B. Render (API más Postgres administrados) | US$13 | ~1-2 h | Cada producto nuevo suma lo mismo |
-| C. Fly.io más Neon más hosting estático | ~US$2-4 | ~4 h | La API y la base se duermen; tres proveedores |
+| A. VPS (virtual private server) on DigitalOcean, 1 vCPU (virtual CPU) and 1 GiB of memory, with weekly backup | US$7.20 | ~6 h | The server has to be maintained |
+| B. Render (managed API plus Postgres) | US$13 | ~1-2 h | Each new product adds the same again |
+| C. Fly.io plus Neon plus static hosting | ~US$2-4 | ~4 h | The API and the database go to sleep; three providers |
 
-Precios revisados el 2026-10-11 en las páginas oficiales.
+Prices checked on 2026-10-11 on the official pages.
 
-## Decisión
+## Decision
 
-A: un VPS en DigitalOcean (región Nueva York) con Docker Compose. Caddy 2.11 sirve el frontend, pasa `/api` a FastAPI y renueva solo el certificado HTTPS (conexión cifrada). Las imágenes se construyen en GitHub Actions, no en el servidor.
+A: a VPS on DigitalOcean (New York region) with Docker Compose. Caddy 2.11 serves the frontend, passes `/api` to FastAPI and renews the HTTPS (encrypted connection) certificate on its own. Images are built in GitHub Actions, not on the server.
 
-## Consecuencias
+## Consequences
 
-- Es la opción más barata sin arranques lentos, y la misma máquina aloja los próximos productos.
-- Nicolas mantiene el servidor: acceso SSH (acceso remoto cifrado) solo con llave, firewall, parches automáticos y alertas de disco.
-- La configuración (Compose, Caddyfile y scripts) queda en la plantilla y se reutiliza.
-- Con 1 GiB de memoria no se puede construir en el servidor. Si un producto futuro necesita más, se sube de plan (US$12 por 2 GiB).
+- It is the cheapest option without slow cold starts, and the same machine hosts the upcoming products.
+- Nicolas maintains the server: SSH (encrypted remote access) with keys only, firewall, automatic patches and disk alerts.
+- The configuration (Compose, Caddyfile and scripts) lives in the template and is reused.
+- With 1 GiB of memory, building on the server isn't possible. If a future product needs more, the plan is upgraded (US$12 for 2 GiB).

@@ -1,25 +1,25 @@
-# 0002 · Idioma según el navegador, con detección por país para después
+# 0002 · Language from the browser, with country detection for later
 
-Estado: aceptada · Fecha: 2026-10-11 · Decidió: Nicolas
+Status: accepted · Date: 2026-10-11 · Decided by: Nicolas
 
-## Contexto
+## Context
 
-El brief pide el sitio en español o en inglés según la ubicación del visitante, con un selector manual. Detectar la ubicación exige un servicio o una base de datos de IP (dirección de red). Para la versión 1 importa más publicar a tiempo.
+The brief asks for the site in Spanish or in English depending on the visitor's location, with a manual switcher. Detecting the location requires a service or an IP (network address) database. For version 1, shipping on time matters more.
 
-## Opciones consideradas
+## Options considered
 
-| Opción | Costo | Contras |
+| Option | Cost | Cons |
 |---|---|---|
-| A. País desde Cloudflare (header `CF-IPCountry`, plan gratis) | ~1 h | El DNS (sistema de nombres de dominio) pasa a Cloudflare; un proveedor más |
-| B. País por IP con la base GeoLite2 de MaxMind | ~3 h más actualizaciones mensuales | Más piezas para lo mismo |
-| C. Idioma del navegador (`Accept-Language`) | 0 h | Es el idioma del visitante, no su ubicación |
+| A. Country from Cloudflare (`CF-IPCountry` header, free plan) | ~1 h | DNS (domain name system) moves to Cloudflare; one more provider |
+| B. Country by IP with MaxMind's GeoLite2 database | ~3 h plus monthly updates | More moving parts for the same result |
+| C. Browser language (`Accept-Language`) | 0 h | It is the visitor's language, not their location |
 
-## Decisión
+## Decision
 
-C en la versión 1 y A cuando el sitio crezca. Si el primer idioma del navegador es español, la página sale en español; si no, en inglés. La elección del selector se guarda en `localStorage` y manda sobre todo lo demás.
+C in version 1 and A when the site grows. If the browser's first language is Spanish, the page is shown in Spanish; otherwise, in English. The switcher's choice is saved in `localStorage` and overrides everything else.
 
-## Consecuencias
+## Consequences
 
-- No hay proveedores extra ni trabajo adicional en la versión 1.
-- Un reclutador en Chile con el navegador en inglés verá la página en inglés. Es aceptable, porque es el idioma que usa.
-- Para que pasar a A sea un cambio chico, la API decide el idioma en una sola función, que recibe el país (vacío por ahora) y el `Accept-Language`. La tabla de visitas ya tiene la columna `country`.
+- There are no extra providers or additional work in version 1.
+- A recruiter in Chile with the browser in English will see the page in English. That is acceptable, because it is the language they use.
+- So that moving to A is a small change, the API decides the language in a single function, which receives the country (empty for now) and the `Accept-Language`. The visits table already has the `country` column.
