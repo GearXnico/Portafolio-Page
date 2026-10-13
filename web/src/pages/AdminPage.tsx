@@ -1,9 +1,9 @@
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { useLogout } from "../api/admin";
 import { useLang } from "../i18n";
 
-/** Inicio del panel. Las pantallas de edición llegan en las tareas 4.2 a 4.5. */
+/** Inicio del panel: enlaces a cada sección y el botón para cerrar sesión. */
 export function AdminPage() {
   const { t } = useLang();
   const navigate = useNavigate();
@@ -12,6 +12,14 @@ export function AdminPage() {
   return (
     <>
       <h1>{t("admin.title")}</h1>
+      {/* Una sección por línea. */}
+      <nav aria-label={t("admin.sections")}>
+        <ul>
+          <li>
+            <Link to="projects">{t("admin.projects.title")}</Link>
+          </li>
+        </ul>
+      </nav>
       {logout.isError && <p role="alert">{t("admin.error")}</p>}
       <button
         type="button"
