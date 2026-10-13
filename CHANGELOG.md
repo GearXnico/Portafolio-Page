@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [0.20.10] - 2026-10-13
+
+### Changed
+
+- Test names, comments and helper docs in the web unit tests (`web/tests`) and E2E tests (`web/e2e`) are now in English; assertions on Spanish UI text and Spanish fixture data are unchanged (#37).
+
 ## [0.20.9] - 2026-10-13
 
 ### Changed
