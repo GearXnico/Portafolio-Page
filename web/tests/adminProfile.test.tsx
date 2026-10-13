@@ -6,7 +6,10 @@ import { renderWithQuery } from "./render";
 
 type Reply = { status: number; body?: unknown };
 
-/** Simula la API con sesión: `routes` responde por "MÉTODO /ruta"; lo demás, 200 con {}. */
+/**
+ * Fakes the API (application programming interface) with a session: `routes` answers by
+ * "METHOD /path"; anything else gets 200 with {}.
+ */
 function stubApi(routes: Record<string, Reply>) {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     const reply = routes[`${init?.method ?? "GET"} ${url}`] ?? { status: 200, body: {} };
@@ -17,7 +20,7 @@ function stubApi(routes: Record<string, Reply>) {
   return fetchMock;
 }
 
-/** El cuerpo JSON enviado a "MÉTODO /ruta". */
+/** The JSON body sent to "METHOD /path". */
 function sentBody(fetchMock: ReturnType<typeof stubApi>, method: string, url: string): unknown {
   const call = fetchMock.mock.calls.find(([u, init]) => u === url && init?.method === method);
   return call ? JSON.parse(call[1]?.body as string) : undefined;
@@ -51,8 +54,8 @@ function type(label: string, value: string, scope: Pick<typeof screen, "getByLab
   fireEvent.change(scope.getByLabelText(label), { target: { value } });
 }
 
-describe("panel: perfil, habilidades y experiencia", () => {
-  it("el inicio del panel enlaza a perfil, habilidades y experiencia", async () => {
+describe("admin panel: profile, skills and experience", () => {
+  it("the admin panel home links to profile, skills and experience", async () => {
     stubApi({});
     renderWithQuery(<App />, "/admin");
 
@@ -67,7 +70,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
     expect(await screen.findByRole("heading", { name: "Habilidades" })).toBeInTheDocument();
   });
 
-  it("guarda el perfil con los dos idiomas y solo los campos que acepta la API", async () => {
+  it("saves the profile with both languages and only the fields the API accepts", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/profile": { status: 200, body: PROFILE },
       "PUT /api/admin/profile": { status: 200, body: PROFILE },
@@ -95,7 +98,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
     });
   });
 
-  it("no envía enlaces con un nombre repetido o una línea incompleta", async () => {
+  it("doesn't send links with a repeated name or an incomplete line", async () => {
     const fetchMock = stubApi({ "GET /api/admin/profile": { status: 200, body: PROFILE } });
     renderWithQuery(<App />, "/admin/profile");
     const label = "Enlaces, uno por línea: nombre y URL (github https://github.com/…)";
@@ -109,14 +112,14 @@ describe("panel: perfil, habilidades y experiencia", () => {
     expect(sentBody(fetchMock, "PUT", "/api/admin/profile")).toBeUndefined();
   });
 
-  it("sin perfil todavía (404) muestra el formulario vacío", async () => {
+  it("with no profile yet (404) shows the empty form", async () => {
     stubApi({ "GET /api/admin/profile": { status: 404 } });
     renderWithQuery(<App />, "/admin/profile");
 
     expect(await screen.findByLabelText("Titular · Español")).toHaveValue("");
   });
 
-  it("si la API rechaza el perfil (422), pide revisar los campos", async () => {
+  it("if the API rejects the profile (422), asks to check the fields", async () => {
     stubApi({
       "GET /api/admin/profile": { status: 200, body: PROFILE },
       "PUT /api/admin/profile": { status: 422 },
@@ -128,14 +131,14 @@ describe("panel: perfil, habilidades y experiencia", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Revisa los campos");
   });
 
-  it("si el perfil no carga, avisa", async () => {
+  it("if the profile doesn't load, shows a notice", async () => {
     stubApi({ "GET /api/admin/profile": { status: 500 } });
     renderWithQuery(<App />, "/admin/profile");
 
     expect(await screen.findByRole("alert")).toHaveTextContent("No se pudo conectar");
   });
 
-  it("agrega una habilidad nueva y deja el formulario en blanco", async () => {
+  it("adds a new skill and leaves the form blank", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/skills": { status: 200, body: [] },
       "POST /api/admin/skills": { status: 201, body: SKILL },
@@ -158,7 +161,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
     });
   });
 
-  it("edita y borra una habilidad existente", async () => {
+  it("edits and deletes an existing skill", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/skills": { status: 200, body: [SKILL] },
       "PUT /api/admin/skills/7": { status: 200, body: SKILL },
@@ -186,7 +189,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
     });
   });
 
-  it("no borra si se cancela la confirmación", async () => {
+  it("doesn't delete if the confirmation is cancelled", async () => {
     const fetchMock = stubApi({ "GET /api/admin/skills": { status: 200, body: [SKILL] } });
     vi.stubGlobal("confirm", () => false);
     renderWithQuery(<App />, "/admin/skills");
@@ -199,7 +202,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
     );
   });
 
-  it("agrega un trabajo actual (sin fecha de fin) con el cargo en los dos idiomas", async () => {
+  it("adds a current job (no end date) with the role in both languages", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/experience": { status: 200, body: [] },
       "POST /api/admin/experience": { status: 201, body: JOB },
@@ -229,7 +232,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
     });
   });
 
-  it("edita la fecha de fin de un trabajo y avisa si la API lo rechaza", async () => {
+  it("edits a job's end date and shows a notice if the API rejects it", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/experience": { status: 200, body: [JOB] },
       "PUT /api/admin/experience/3": { status: 422 },
@@ -246,7 +249,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
     });
   });
 
-  it("borra un trabajo tras confirmar", async () => {
+  it("deletes a job after confirming", async () => {
     const fetchMock = stubApi({
       "GET /api/admin/experience": { status: 200, body: [JOB] },
       "DELETE /api/admin/experience/3": { status: 204 },
@@ -265,7 +268,7 @@ describe("panel: perfil, habilidades y experiencia", () => {
   });
 
   it.each(["/admin/skills", "/admin/experience"])(
-    "si la lista de %s no carga, avisa",
+    "if the %s list doesn't load, shows a notice",
     async (path) => {
       stubApi({ [`GET /api${path}`]: { status: 500 } });
       renderWithQuery(<App />, path);
