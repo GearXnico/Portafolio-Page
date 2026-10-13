@@ -14,6 +14,7 @@ Una fila por tarea del plan, en orden. En las sesiones de Claude Code en la nube
 | 4.2 | 2026-10-13 | Lista y edición de proyectos en el panel | Opus | n/d | n/d | 1 | #32 | En revisión | — |
 | 4.4 | 2026-10-13 | Edición de perfil, habilidades y experiencia | Opus | n/d | n/d | 1 | #33 | En revisión | — |
 | 4.5 | 2026-10-13 | Mensajes y visitas por UTM en el panel | Opus | n/d | n/d | 1 | #34 | En revisión | — |
+| 4.3 | 2026-10-13 | Subida de capturas desde el formulario de proyecto | Opus | n/d | n/d | 1 | #36 | En revisión | — |
 
 ## Totales por hito
 
