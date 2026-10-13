@@ -1,149 +1,149 @@
-# 0007 · Flujo de trabajo, testing y seguridad
+# 0007 · Workflow, testing and security
 
-Estado: aceptada · Fecha: 2026-10-11 · Pidió: Nicolas
+Status: accepted · Date: 2026-10-11 · Requested by: Nicolas
 
-## Contexto
+## Context
 
-Nicolas pidió estas reglas para el repo del sitio, que después hereda la plantilla:
+Nicolas asked for these rules for the site's repo, which the template later inherits:
 
-- Testing obligatorio para aprobar en `dev`, automatizado con CI/CD (integración y despliegue continuos).
-- Validación de seguridad.
-- Ramas `feature/nombre-descriptivo`.
-- PR (pull request) con aprobación, y más adelante un check de despliegue.
-- Buenas prácticas de desarrollo y de control de versiones.
-- En la revisión agregó dos pedidos: un ambiente de staging, que se resuelve en la ADR 0008, y que todo merge a `dev` o `main` sea con rebase & merge, para tener un historial de commits más claro.
+- Mandatory testing to approve into `dev`, automated with CI/CD (continuous integration and continuous deployment).
+- Security validation.
+- `feature/descriptive-name` branches.
+- PRs (pull requests) with approval, and later a deployment check.
+- Good development and version control practices.
+- During the review he added two requests: a staging environment, which ADR 0008 addresses, and that every merge to `dev` or `main` be done with rebase & merge, for a clearer commit history.
 
-Esta ADR (registro de decisión de arquitectura) reemplaza la regla "solo `main`" de la 0006.
+This ADR (architecture decision record) replaces the "`main` only" rule from 0006.
 
-Hay una limitación de GitHub: el autor de un PR no puede aprobarlo. Los PR que abre Claude quedan a nombre de Nicolas, así que una aprobación obligatoria los bloquearía. Nicolas eligió cómo resolverlo el 2026-10-11.
+There is a GitHub limitation: a PR's author can't approve it. The PRs Claude opens are under Nicolas's name, so a mandatory approval would block them. Nicolas chose how to solve it on 2026-10-11.
 
-## Opciones consideradas
+## Options considered
 
-Sobre el modelo de ramas:
+On the branching model:
 
-| Opción | Costo | Contras |
+| Option | Cost | Cons |
 |---|---|---|
-| A. Solo `main` con ramas cortas (lo que proponía la 0006) | El más bajo | Sin una rama donde integrar y probar antes de publicar |
-| B. `dev` para integración y `main` para producción, con ramas `feature/*` desde `dev` | Un PR extra por versión publicada | Hay que mantener `dev` y `main` sincronizadas |
-| C. Git Flow completo (ramas `release/*` y `hotfix/*` permanentes) | Varios PR por versión | Excesivo para una persona |
+| A. `main` only, with short-lived branches (what 0006 proposed) | The lowest | No branch to integrate and test in before publishing |
+| B. `dev` for integration and `main` for production, with `feature/*` branches from `dev` | One extra PR per published release | `dev` and `main` have to be kept in sync |
+| C. Full Git Flow (permanent `release/*` and `hotfix/*` branches) | Several PRs per release | Overkill for one person |
 
-Sobre la aprobación obligatoria:
+On mandatory approval:
 
-| Opción | Costo | Contras |
+| Option | Cost | Cons |
 |---|---|---|
-| A. Tu merge es la aprobación: PR y checks obligatorios, sin aprobaciones | Ninguno | No queda una aprobación formal en GitHub |
-| B. 1 aprobación obligatoria con bypass solo para ti: mergeas marcando "bypass" y GitHub lo registra | Un clic extra por PR | La aprobación es tu acción explícita, no la de otra persona |
-| C. Una segunda cuenta (bot o colaborador) que aprueba | ~1 h y una cuenta más | Aprobar con otra cuenta tuya es solo un trámite |
+| A. Your merge is the approval: mandatory PR and checks, no approvals | None | No formal approval is recorded in GitHub |
+| B. 1 mandatory approval with a bypass only for you: you merge by ticking "bypass" and GitHub records it | One extra click per PR | The approval is your explicit action, not someone else's |
+| C. A second account (bot or collaborator) that approves | ~1 h and one more account | Approving with another account of yours is just a formality |
 
-## Decisión
+## Decision
 
-- **Modelo de ramas: B**, porque es lo que pidió Nicolas.
-- **Aprobación: B, 1 aprobación con bypass registrado** (Nicolas, 2026-10-11). `main` y `dev` exigen 1 aprobación, y solo Nicolas puede saltársela, marcando el bypass al mergear; GitHub registra cada bypass. Cuando los agentes de la fábrica abran PR con su propia cuenta, Nicolas los aprobará de forma normal.
+- **Branching model: B**, because it is what Nicolas asked for.
+- **Approval: B, 1 approval with a recorded bypass** (Nicolas, 2026-10-11). `main` and `dev` require 1 approval, and only Nicolas can skip it, by ticking the bypass when merging; GitHub records every bypass. When the factory's agents open PRs with their own account, Nicolas will approve them normally.
 
-### Ramas y control de versiones
+### Branches and version control
 
-| Rama | Sale de | Entra a | Para qué |
+| Branch | Branches off | Merges into | Purpose |
 |---|---|---|---|
-| `main` | — | — | Lo publicado. Cada merge despliega a producción. |
-| `dev` | `main` | `main` por PR de versión | Integración. Es la rama por defecto del repo, y cada merge despliega a staging (ADR 0008). |
-| `feature/<nombre-descriptivo>` | `dev` | `dev` | Funcionalidad nueva, por ejemplo `feature/formulario-contacto` |
-| `fix/<nombre>` | `dev` | `dev` | Corrección |
-| `docs/<nombre>`, `chore/<nombre>` | `dev` | `dev` | Documentación, configuración y dependencias |
-| `hotfix/<nombre>` | `main` | `main` y después `dev` | Corrección urgente en producción |
+| `main` | — | — | What is published. Every merge deploys to production. |
+| `dev` | `main` | `main` through a release PR | Integration. It is the repo's default branch, and every merge deploys to staging (ADR 0008). |
+| `feature/<descriptive-name>` | `dev` | `dev` | New functionality, for example `feature/contact-form` |
+| `fix/<name>` | `dev` | `dev` | Fix |
+| `docs/<name>`, `chore/<name>` | `dev` | `dev` | Documentation, configuration and dependencies |
+| `hotfix/<name>` | `main` | `main` and then `dev` | Urgent fix in production |
 
-Los nombres van en minúsculas, separados con guiones, en español y de 2 a 4 palabras.
+Names are lowercase, hyphenated, in English and 2 to 4 words long. Documentation, commit messages and PR text are also in English (Nicolas, 2026-10-13: documentation, commits, branches and PRs in English).
 
-1. **Commits:** se usa Conventional Commits (formato estándar de mensajes), por ejemplo `feat: agrega formulario de contacto` o `fix: corrige idioma por defecto`. Los tipos son `feat`, `fix`, `test`, `docs`, `refactor` y `chore`.
-2. **PR a `dev`:**
-   - Uno por funcionalidad, idealmente con menos de ~400 líneas cambiadas.
-   - Usa la plantilla del repo: Antes, Después, Cómo probar y la checklist de terminado.
-   - Merge con **rebase & merge**: los commits de la rama se copian uno a uno sobre `dev`, sin merge commits, y el historial queda lineal.
-   - Como cada commit llega tal cual, antes de abrir el PR se ordenan con `git rebase -i`: cada commit hace una sola cosa, sigue Conventional Commits y deja los tests en verde.
-   - La rama se borra después del merge.
-3. **PR de versión `dev` → `main`:** también con **rebase & merge**. Exige que staging esté sano con el mismo SHA (ADR 0008). Después del despliegue se crea una etiqueta SemVer (versionado semántico, `v1.2.0`) con las notas de la versión en `CHANGELOG.md`.
-   - **Ojo:** GitHub vuelve a escribir cada commit al hacer rebase & merge, así que en `main` quedan con SHA (identificador) distinto que en `dev`. Si no se corrige, el siguiente PR de versión muestra commits repetidos o conflictos.
-   - Para evitarlo, el workflow `sync-dev.yml` corre después de cada push a `main` y hace `git rebase main` sobre `dev`. Git descarta solo los commits que ya están en `main` y conserva los nuevos. Después hace `git push --force-with-lease` a `dev`. Es el único actor con bypass de la regla "sin force push" en `dev`.
-   - Un `hotfix/*` entra a `main` y llega a `dev` por ese mismo workflow.
-4. **Versiones** (Nicolas, 2026-10-13): cada PR mergeado a `dev` tiene una versión con formato SemVer (`MAJOR.MINOR.PATCH`) y la anota en `CHANGELOG.md`. Un PR `feat` sube MINOR y uno de otro tipo sube PATCH. MAJOR cuenta las publicaciones a `main` y sigue en `0` hasta la primera, `1.0.0`. La guía, con un ejemplo, está al final de `CHANGELOG.md`.
-4. **Protección de `main` y `dev`:**
-   - Sin force push ni borrado (salvo `sync-dev.yml` en `dev`).
-   - Historial lineal obligatorio, y rebase & merge como único método de merge habilitado.
-   - PR obligatorio con 1 aprobación; el bypass queda permitido solo para Nicolas.
-   - Los checks de abajo tienen que estar en verde.
-   - La rama tiene que estar al día con su base antes de mergear.
-   - En tu propia rama `feature/*` se permite `git push --force-with-lease`.
-5. **Nunca en el repo:** `.env`, llaves ni datos reales. Se versiona solo `.env.example`.
+1. **Commits:** Conventional Commits (a standard message format) is used, for example `feat: add contact form` or `fix: correct default language`. The types are `feat`, `fix`, `test`, `docs`, `refactor` and `chore`.
+2. **PRs to `dev`:**
+   - One per feature, ideally with fewer than ~400 changed lines.
+   - Uses the repo's template: Before, After, How to test and the definition-of-done checklist.
+   - Merged with **rebase & merge**: the branch's commits are copied one by one onto `dev`, without merge commits, and the history stays linear.
+   - Since each commit lands as is, before opening the PR they are tidied up with `git rebase -i`: each commit does a single thing, follows Conventional Commits and leaves the tests green.
+   - The branch is deleted after the merge.
+3. **Release PR `dev` → `main`:** also with **rebase & merge**. It requires staging to be healthy with the same SHA (ADR 0008). After the deployment, a SemVer (semantic versioning) tag (`v1.2.0`) is created, with the release notes in `CHANGELOG.md`.
+   - **Watch out:** GitHub rewrites every commit on rebase & merge, so in `main` they end up with a different SHA (identifier) than in `dev`. If this isn't corrected, the next release PR shows repeated commits or conflicts.
+   - To avoid it, the `sync-dev.yml` workflow runs after every push to `main` and runs `git rebase main` on `dev`. Git drops only the commits that are already in `main` and keeps the new ones. Then it runs `git push --force-with-lease` to `dev`. It is the only actor with a bypass of the "no force push" rule on `dev`.
+   - A `hotfix/*` goes into `main` and reaches `dev` through that same workflow.
+4. **Versions** (Nicolas, 2026-10-13): every PR merged into `dev` has a version in SemVer format (`MAJOR.MINOR.PATCH`) and records it in `CHANGELOG.md`. A `feat` PR bumps MINOR and a PR of any other type bumps PATCH. MAJOR counts the releases to `main` and stays at `0` until the first one, `1.0.0`. The guide, with an example, is at the end of `CHANGELOG.md`.
+4. **Protection of `main` and `dev`:**
+   - No force push or deletion (except `sync-dev.yml` on `dev`).
+   - Linear history required, and rebase & merge as the only enabled merge method.
+   - Mandatory PR with 1 approval; the bypass is allowed only for Nicolas.
+   - The checks below have to be green.
+   - The branch has to be up to date with its base before merging.
+   - On your own `feature/*` branch, `git push --force-with-lease` is allowed.
+5. **Never in the repo:** `.env`, keys or real data. Only `.env.example` is versioned.
 
-### Testing (requisito para mergear en `dev`)
+### Testing (requirement to merge into `dev`)
 
-| Nivel | Herramienta | Qué cubre | Regla |
+| Level | Tool | What it covers | Rule |
 |---|---|---|---|
-| API | pytest 9 con Postgres real en CI y `pytest-cov` | Endpoints, reglas de negocio, permisos de `/api/admin/*` | Cobertura mínima del 80 % de las líneas; si baja, el check falla |
-| Frontend | Vitest 5 con Testing Library | Componentes con lógica: selector de idioma, formularios, panel | Cobertura mínima del 80 % (era 60 %; Nicolas la subió el 2026-10-12) |
-| E2E (de punta a punta) | Playwright 1.64 | La página carga en los dos idiomas, el formulario de contacto, y el login más crear un proyecto en el panel | Corre en cada PR, contra el `compose` levantado en el runner |
-| Tipos y estilo | `ruff`, `mypy`, `tsc --strict`, ESLint y Prettier | Formato, errores comunes y tipos | Sin errores |
+| API (application programming interface) | pytest 9 with real Postgres in CI and `pytest-cov` | Endpoints, business rules, `/api/admin/*` permissions | Minimum coverage of 80 % of lines; if it drops, the check fails |
+| Frontend | Vitest 5 with Testing Library | Components with logic: language switcher, forms, panel | Minimum coverage of 80 % (it was 60 %; Nicolas raised it on 2026-10-12) |
+| E2E (end-to-end) | Playwright 1.64 | The page loads in both languages, the contact form, and logging in plus creating a project in the panel | Runs on every PR, against the `compose` stack started on the runner |
+| Types and style | `ruff`, `mypy`, `tsc --strict`, ESLint and Prettier | Formatting, common errors and types | No errors |
 
-Las reglas de testing son:
+The testing rules are:
 
-- Cada `feature/*` trae sus tests.
-- Cada `fix/*` trae un test que reproduce el error antes de corregirlo.
-- Nunca se salta ni se desactiva un test para dejar el CI en verde. Un test inestable se arregla en su propio PR.
-- La base no se reemplaza por mocks (objetos simulados) en los tests de la API: se prueba contra Postgres de verdad.
-- `pre-commit` 4.6 corre `ruff`, Prettier y la detección de llaves privadas antes de cada commit, para encontrar los errores antes del CI.
+- Each `feature/*` comes with its tests.
+- Each `fix/*` comes with a test that reproduces the bug before fixing it.
+- A test is never skipped or disabled to get CI green. A flaky test is fixed in its own PR.
+- The database is not replaced by mocks in the API tests: they run against real Postgres.
+- `pre-commit` 4.6 runs `ruff`, Prettier and private key detection before each commit, to catch errors before CI.
 
-### Validación de seguridad
+### Security validation
 
-| Control | Cuándo | Falla el check si |
+| Control | When | The check fails if |
 |---|---|---|
-| Secret scanning con push protection de GitHub (gratis en repos públicos) | En cada push | Se intenta subir un secreto (bloquea el push) |
-| CodeQL (análisis estático de GitHub) para Python y TypeScript | En cada PR y cada semana | Hay un hallazgo de severidad alta o crítica |
-| Reglas de seguridad de `ruff` (las de Bandit) | En cada PR | Hay cualquier hallazgo |
-| `pip-audit` 2.10 y `npm audit --audit-level=high` | En cada PR y cada semana | Hay una dependencia con vulnerabilidad alta |
-| Trivy (escáner de imágenes Docker) | En cada PR, sobre las imágenes construidas | Hay una vulnerabilidad alta o crítica con corrección disponible |
-| Dependabot (alertas y PR de actualización) | Cada semana | No bloquea; los PR pasan por los mismos checks |
+| GitHub secret scanning with push protection (free on public repos) | On every push | Someone tries to push a secret (it blocks the push) |
+| CodeQL (GitHub's static analysis) for Python and TypeScript | On every PR and every week | There is a high or critical severity finding |
+| `ruff` security rules (Bandit's) | On every PR | There is any finding |
+| `pip-audit` 2.10 and `npm audit --audit-level=high` | On every PR and every week | There is a dependency with a high vulnerability |
+| Trivy (Docker image scanner) | On every PR, on the built images | There is a high or critical vulnerability with a fix available |
+| Dependabot (alerts and update PRs) | Every week | It doesn't block; its PRs go through the same checks |
 
-En cada PR también se revisan a mano estos puntos de la checklist:
+On every PR, these checklist items are also reviewed by hand:
 
-- Las entradas se validan con Pydantic.
-- Las rutas de administración tienen un test que prueba el acceso sin sesión.
-- No se registran datos personales en los logs.
+- Inputs are validated with Pydantic.
+- Admin routes have a test that checks access without a session.
+- No personal data is written to the logs.
 
-### Revisión automática con IA
+### Automated AI review
 
-Nicolas pidió, el 2026-10-11, que un agente revise los PR para que no se le pase nada importante en su propia revisión.
+On 2026-10-11, Nicolas asked for an agent to review PRs so that nothing important slips past his own review.
 
-- **Herramienta:** `anthropics/claude-code-action@v1` en el workflow `ai-review.yml`.
-- **Autenticación:** `CLAUDE_CODE_OAUTH_TOKEN`, generado con `claude setup-token`. Con eso, el uso se descuenta de la suscripción de Claude en vez de cobrarse por token. Si más adelante se usa una API key, se cobra aparte.
-- **Cuándo corre:** al abrir un PR hacia `dev` y al marcarlo listo para revisión, no en cada push. También se puede pedir de nuevo comentando `@claude revisa`.
-- **Cuándo no corre:** en los PR que solo cambian documentación (`docs/**`, `*.md`), en los de Dependabot y en los borradores.
-- **Qué revisa:** el diff, contra las reglas de `docs/` (ADR, arquitectura) y de `CLAUDE.md`: errores, seguridad, tests faltantes y reglas no cumplidas.
-- **Criterio (Nicolas, 2026-10-12):** "no overengineer" y "keep it simple and secure". Marca como importante solo lo que sea un riesgo real, y no propone capas ni abstracciones extra si lo simple ya es seguro.
-- **Cómo responde:** solo con comentarios, como máximo unos 10, ordenados por severidad. **Nunca aprueba**, para que la aprobación de la ADR 0007 (tu bypass registrado) siga siendo una decisión tuya y no la active un bot.
-- **No bloquea el merge:** es una ayuda para tu revisión, no un check obligatorio.
+- **Tool:** `anthropics/claude-code-action@v1` in the `ai-review.yml` workflow.
+- **Authentication:** `CLAUDE_CODE_OAUTH_TOKEN`, generated with `claude setup-token`. With it, usage is deducted from the Claude subscription instead of being charged per token. If an API key is used later, it is billed separately.
+- **When it runs:** when a PR to `dev` is opened and when it is marked ready for review, not on every push. It can also be requested again by commenting `@claude revisa`.
+- **When it doesn't run:** on PRs that only change documentation (`docs/**`, `*.md`), on Dependabot's, and on drafts.
+- **What it reviews:** the diff, against the rules in `docs/` (ADRs, architecture) and in `CLAUDE.md`: bugs, security, missing tests and rules not followed.
+- **Criteria (Nicolas, 2026-10-12):** "no overengineer" and "keep it simple and secure". It flags as important only what is a real risk, and it doesn't propose extra layers or abstractions if the simple option is already secure.
+- **How it responds:** only with comments, at most about 10, ordered by severity. **It never approves**, so that the approval from ADR 0007 (your recorded bypass) stays your decision and isn't triggered by a bot.
+- **It doesn't block the merge:** it is an aid for your review, not a required check.
 
-Costo estimado, sin medir: por PR de 300 a 800 líneas, entre 40.000 y 120.000 tokens de entrada y entre 3.000 y 8.000 de salida. Con caché y un modelo de gama media, cerca de un tercio menos. Con unos 25 PR en la versión 1, serían del orden de 1 a 3 millones de tokens de entrada en total. Se mide en los primeros 5 PR y, si consume demasiado de tu plan, se baja el tope de comentarios o se limita a los PR de `feature/*`.
+Estimated cost, not measured: per PR of 300 to 800 lines, between 40,000 and 120,000 input tokens and between 3,000 and 8,000 output tokens. With caching and a mid-range model, about a third less. With about 25 PRs in version 1, that would be on the order of 1 to 3 million input tokens in total. It is measured on the first 5 PRs and, if it uses too much of your plan, the comment cap is lowered or it is limited to `feature/*` PRs.
 
-### Check de despliegue
+### Deployment check
 
-Son dos niveles, y el detalle está en la ADR 0008:
+There are two levels, and the details are in ADR 0008:
 
-1. **En cada PR a `dev`:** el job `deploy-check` levanta `compose.prod.yml` en el runner de CI, con las imágenes del PR, y corre los E2E y `GET /api/health`.
-2. **En el PR de versión a `main`:** se exige que staging esté desplegado con el mismo SHA y que sus E2E estén en verde.
+1. **On every PR to `dev`:** the `deploy-check` job starts `compose.prod.yml` on the CI runner, with the PR's images, and runs the E2E tests and `GET /api/health`.
+2. **On the release PR to `main`:** staging is required to be deployed with the same SHA and its E2E tests must be green.
 
-### Definición de terminado de un PR
+### Definition of done for a PR
 
-- [ ] Tests nuevos o actualizados, con la cobertura sobre el mínimo
-- [ ] CI, seguridad y E2E en verde
-- [ ] Sin secretos ni datos personales
-- [ ] Documentación actualizada si cambia algo visible (README o docs/)
-- [ ] Rama al día con su base
-- [ ] Comentarios de la revisión automática atendidos o respondidos
-- [ ] Aprobado, o mergeado por Nicolas con bypass registrado
+- [ ] New or updated tests, with coverage above the minimum
+- [ ] CI, security and E2E green
+- [ ] No secrets or personal data
+- [ ] Documentation updated if something visible changes (README or docs/)
+- [ ] Branch up to date with its base
+- [ ] Automated review comments addressed or answered
+- [ ] Approved, or merged by Nicolas with a recorded bypass
 
-## Consecuencias
+## Consequences
 
-- Nada llega a `dev` sin tests ni checks de seguridad, y nada llega a `main` sin pasar por staging.
-- El historial de `dev` y `main` es lineal. A cambio, cada commit tiene que estar limpio antes del PR, y `dev` se resincroniza sola después de cada versión.
-- El CI pasa de ~5 a unos ~8-10 minutos por los E2E y los escaneos. Se mantiene gratis en un repo público.
-- Configurar todo esto agrega unas 6 h al hito 1 del plan, y `sync-dev.yml` suma ~1 h. Con staging (ADR 0008), la estimación sube de 80 a ~92 h.
-- Las reglas quedan en la plantilla y en CLAUDE.md, así que Claude Code las sigue en cada producto nuevo.
+- Nothing reaches `dev` without tests and security checks, and nothing reaches `main` without going through staging.
+- The history of `dev` and `main` is linear. In exchange, each commit has to be clean before the PR, and `dev` resyncs itself after every release.
+- CI goes from ~5 to about ~8-10 minutes because of the E2E tests and the scans. It stays free on a public repo.
+- Setting all this up adds about 6 h to milestone 1 of the plan, and `sync-dev.yml` adds ~1 h. With staging (ADR 0008), the estimate goes up from 80 to ~92 h.
+- The rules live in the template and in CLAUDE.md, so Claude Code follows them in every new product.
