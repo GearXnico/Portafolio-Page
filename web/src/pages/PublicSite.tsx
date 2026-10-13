@@ -1,7 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useBootstrap } from "../api/bootstrap";
-import { DEFAULT_LANG, isLang, LangContext, storedLang, storeLang, type Lang } from "../i18n";
+import {
+  DEFAULT_LANG,
+  isLang,
+  LangContext,
+  localized,
+  storedLang,
+  storeLang,
+  translate,
+  useDocumentMeta,
+  type Lang,
+} from "../i18n";
 import { HomePage } from "./HomePage";
 
 /** La página pública: carga `bootstrap` una vez y decide el idioma. */
@@ -13,9 +23,13 @@ export function PublicSite() {
   const apiLang = isLang(data?.lang) ? data.lang : null;
   const lang = chosen ?? apiLang ?? DEFAULT_LANG;
 
-  useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
+  // Título de la pestaña y de los buscadores: el titular del perfil, si ya llegó.
+  const metaTitle = translate(lang, "meta.title");
+  const profile = data?.profile;
+  useDocumentMeta(
+    lang,
+    profile ? `${localized(profile, "headline", lang)} · ${metaTitle}` : metaTitle,
+  );
 
   const value = useMemo(
     () => ({

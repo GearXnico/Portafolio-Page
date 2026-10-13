@@ -34,5 +34,7 @@
   "admin.login.invalid": "Correo o contraseña incorrectos.",
   "admin.login.tooMany": "Demasiados intentos. Intenta de nuevo en 15 minutos.",
   "admin.error": "No se pudo conectar con el servidor. Intenta de nuevo en unos minutos.",
-  "admin.logout": "Cerrar sesión"
+  "admin.logout": "Cerrar sesión",
+  "meta.title": "Portafolio",
+  "meta.description": "Portafolio: perfil, experiencia, proyectos y formulario de contacto."
 }
