@@ -92,5 +92,17 @@
   "admin.visits.campaign": "Campaign (utm_campaign)",
   "admin.visits.visits": "Visits",
   "admin.visits.unique": "Daily unique visitors",
-  "admin.visits.direct": "Direct"
+  "admin.visits.direct": "Direct",
+  "admin.images.title": "Screenshots",
+  "admin.images.empty": "This project has no screenshots yet.",
+  "admin.images.file": "Image (JPEG, PNG or WebP, up to 5 MB)",
+  "admin.images.altEs": "Alt text in Spanish",
+  "admin.images.altEn": "Alt text in English",
+  "admin.images.upload": "Upload screenshot",
+  "admin.images.delete": "Delete",
+  "admin.images.confirmDelete": "Delete this screenshot? This can't be undone.",
+  "admin.images.tooLarge": "The image is larger than 5 MB.",
+  "admin.images.badType": "The file is not a JPEG, PNG or WebP image.",
+  "admin.images.invalid": "The image is damaged or too large (over 25 megapixels).",
+  "admin.images.saveFirst": "Save the project to upload screenshots."
 }

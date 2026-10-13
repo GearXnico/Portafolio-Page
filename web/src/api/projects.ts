@@ -1,5 +1,6 @@
 // Proyectos del panel (tarea 4.2): CRUD de /api/admin/projects (tarea 2.4). El panel ve también
 // los ocultos; la página pública solo los visibles, en la siguiente carga de `bootstrap`.
+// Las capturas (tarea 4.3) usan las rutas de la tarea 2.5.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";
@@ -20,16 +21,36 @@ export interface ProjectInput {
   position: number;
 }
 
+/** Una captura ya guardada (ImageOut): la API la dejó en WebP bajo /media. */
+export interface ProjectImage {
+  id: number;
+  url: string;
+  alt_es: string;
+  alt_en: string;
+  position: number;
+}
+
 export interface AdminProject extends ProjectInput {
   id: number;
+  images: ProjectImage[];
+}
+
+export interface ImageUpload {
+  file: File;
+  alt_es: string;
+  alt_en: string;
 }
 
 export const PROJECTS_KEY = ["admin", "projects"] as const;
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+async function send(url: string, init?: RequestInit): Promise<Response> {
   const response = await fetch(url, init);
   if (!response.ok) throw new ApiError(response.status);
-  return (await response.json()) as T;
+  return response;
+}
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  return (await (await send(url, init)).json()) as T;
 }
 
 function json(method: string, body: ProjectInput): RequestInit {
@@ -61,5 +82,52 @@ export function useSaveProject(id?: number) {
         ? request<AdminProject>("/api/admin/projects", json("POST", input))
         : request<AdminProject>(`/api/admin/projects/${String(id)}`, json("PUT", input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PROJECTS_KEY }),
+  });
+}
+
+/**
+ * Las capturas actualizan el proyecto en la cache en vez de pedirlo de nuevo: así el formulario
+ * de al lado no se rearma y no se pierden cambios que aún no se guardaron.
+ */
+function useUpdateCachedImages(projectId: number) {
+  const queryClient = useQueryClient();
+  return (change: (images: ProjectImage[]) => ProjectImage[]) => {
+    queryClient.setQueryData<AdminProject>(
+      [...PROJECTS_KEY, projectId],
+      (project) => project && { ...project, images: change(project.images) },
+    );
+  };
+}
+
+/** Sube una captura (multipart); la API la deja al final del proyecto. */
+export function useUploadImage(projectId: number) {
+  const updateImages = useUpdateCachedImages(projectId);
+  return useMutation({
+    mutationFn: ({ file, alt_es, alt_en }: ImageUpload) => {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("alt_es", alt_es);
+      body.append("alt_en", alt_en);
+      return request<ProjectImage>(`/api/admin/projects/${String(projectId)}/images`, {
+        method: "POST",
+        body,
+      });
+    },
+    onSuccess: (image) => {
+      updateImages((images) => [...images, image]);
+    },
+  });
+}
+
+export function useDeleteImage(projectId: number) {
+  const updateImages = useUpdateCachedImages(projectId);
+  return useMutation({
+    mutationFn: (imageId: number) =>
+      send(`/api/admin/projects/${String(projectId)}/images/${String(imageId)}`, {
+        method: "DELETE",
+      }),
+    onSuccess: (_response, imageId) => {
+      updateImages((images) => images.filter((image) => image.id !== imageId));
+    },
   });
 }
