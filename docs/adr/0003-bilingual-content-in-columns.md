@@ -1,25 +1,25 @@
-# 0003 · Contenido bilingüe en columnas `_es` y `_en`
+# 0003 · Bilingual content in `_es` and `_en` columns
 
-Estado: aceptada · Fecha: 2026-10-11 · Propuso: Claude, aprobada con la arquitectura
+Status: accepted · Date: 2026-10-11 · Proposed by: Claude, approved with the architecture
 
-## Contexto
+## Context
 
-Todo el contenido editable (perfil, experiencia, proyectos y textos alternativos de las imágenes) existe en español y en inglés. Son dos idiomas fijos y no se planea agregar más.
+All editable content (profile, experience, projects and the images' alt text) exists in Spanish and in English. These are two fixed languages, and there are no plans to add more.
 
-## Opciones consideradas
+## Options considered
 
-| Opción | Costo | Contras |
+| Option | Cost | Cons |
 |---|---|---|
-| A. Columnas por idioma (`title_es`, `title_en`) | El más bajo | Agregar un tercer idioma obliga a una migración por tabla |
-| B. Tabla de traducciones (entidad, campo, idioma, texto) | ~4 h extra entre API y panel | Consultas y formularios más complejos |
-| C. Archivos JSON de traducción en el frontend | Bajo para textos fijos | El contenido no se podría editar desde el panel |
+| A. Columns per language (`title_es`, `title_en`) | The lowest | Adding a third language requires a migration per table |
+| B. Translations table (entity, field, language, text) | ~4 h extra across the API and the panel | More complex queries and forms |
+| C. Translation JSON files in the frontend | Low for fixed text | The content couldn't be edited from the panel |
 
-## Decisión
+## Decision
 
-A para el contenido de la base. Los textos fijos de la interfaz (botones y títulos) van en archivos JSON del frontend, que no se editan desde el panel.
+A for the database content. The UI's fixed text (buttons and headings) goes in JSON files in the frontend, which aren't edited from the panel.
 
-## Consecuencias
+## Consequences
 
-- El formulario del panel muestra los dos idiomas lado a lado, lo que ayuda a no olvidar una traducción.
-- La API devuelve los dos idiomas y el frontend elige cuál mostrar, así que cambiar de idioma no requiere otra llamada.
-- Un tercer idioma costaría una migración por tabla. Se acepta porque no está en los planes.
+- The panel form shows both languages side by side, which helps not to forget a translation.
+- The API (application programming interface) returns both languages and the frontend chooses which one to show, so switching languages doesn't require another call.
+- A third language would cost a migration per table. This is accepted because it isn't planned.
