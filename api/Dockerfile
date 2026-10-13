@@ -1,6 +1,6 @@
-# Imagen de producción de la API (deploy/compose.prod.yml). La de desarrollo es Dockerfile.dev.
+# Production image of the API (deploy/compose.prod.yml). The development one is Dockerfile.dev.
 
-# 1. Instala solo las dependencias de producción en un entorno virtual.
+# 1. Install only the production dependencies in a virtual environment.
 FROM python:3.14-slim AS build
 
 ENV PIP_NO_CACHE_DIR=1 \
@@ -9,19 +9,19 @@ ENV PIP_NO_CACHE_DIR=1 \
 WORKDIR /code
 COPY pyproject.toml ./
 COPY app ./app
-# Al final saca pip: no hace falta para correr la app y trae CVE en las librerías que copia.
+# Remove pip at the end: the app doesn't need it to run, and it brings CVEs (Common Vulnerabilities and Exposures) in the libraries it vendors.
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install . \
     && /opt/venv/bin/pip uninstall -y pip
 
-# 2. Imagen final: el entorno virtual, las migraciones y un usuario sin privilegios.
+# 2. Final image: the virtual environment, the migrations and an unprivileged user.
 FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH=/opt/venv/bin:$PATH
 
-# Sin pip en la imagen final. /media guarda las capturas (volumen compartido con Caddy).
+# No pip in the final image. /media stores the screenshots (volume shared with Caddy).
 RUN python -m pip uninstall -y pip \
     && useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin app \
     && mkdir -p /media \
@@ -29,11 +29,11 @@ RUN python -m pip uninstall -y pip \
 
 WORKDIR /code
 COPY --from=build /opt/venv /opt/venv
-# Alembic corre desde esta misma imagen, en el servicio `migrate` de compose.prod.yml.
+# Alembic runs from this same image, in the `migrate` service of compose.prod.yml.
 COPY alembic.ini ./
 COPY alembic ./alembic
 
 USER app
 EXPOSE 8000
-# Sin log de acceso, porque anota la IP de cada visitante (dato personal), y sin cabecera Server.
+# No access log, because it records each visitor's IP (personal data), and no Server header.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log", "--no-server-header"]

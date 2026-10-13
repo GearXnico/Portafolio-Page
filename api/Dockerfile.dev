@@ -1,4 +1,4 @@
-# Imagen solo para desarrollo local (compose.yml). La de producción es Dockerfile.
+# Image for local development only (compose.yml). The production one is Dockerfile.
 FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -7,12 +7,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /code
 COPY pyproject.toml ./
 COPY app ./app
-# Incluye las dependencias de desarrollo para poder correr pytest, ruff y mypy dentro del contenedor.
+# Includes the development dependencies so pytest, ruff and mypy can run inside the container.
 RUN pip install --no-cache-dir -e ".[dev]"
 COPY alembic.ini ./
 COPY alembic ./alembic
 COPY tests ./tests
 
 EXPOSE 8000
-# Las migraciones las aplica el servicio `migrate` de compose.yml antes de que arranque la API.
+# Migrations are applied by the `migrate` service of compose.yml before the API starts.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
