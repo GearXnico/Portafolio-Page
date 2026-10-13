@@ -1,7 +1,7 @@
-"""Edición del contenido del sitio desde el panel: proyectos, perfil, habilidades y experiencia.
+"""Editing the site content from the panel: projects, profile, skills and experience.
 
-Todas las rutas exigen la sesión del administrador (`require_admin`, en el router completo).
-Los cambios se ven en la página pública en la siguiente carga de `GET /api/bootstrap`.
+Every route requires the administrator's session (`require_admin`, on the whole router).
+Changes show on the public page on the next load of `GET /api/bootstrap`.
 """
 
 from collections.abc import Sequence
@@ -30,11 +30,11 @@ from app.services import content, images
 router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
 DbSession = Annotated[Session, Depends(get_session)]
-# Los ids son `integer` de Postgres: uno fuera de rango sería un error 500 en la base.
+# Ids are Postgres `integer`: one out of range would be a 500 error in the database.
 ItemId = Annotated[int, Path(ge=1, le=2**31 - 1)]
 
 
-# Proyectos: el panel ve también los ocultos.
+# Projects: the panel also sees the hidden ones.
 
 
 @router.get("/projects", response_model=list[ProjectOut])
@@ -44,7 +44,7 @@ def list_projects(session: DbSession) -> Sequence[Project]:
 
 @router.post("/projects", status_code=status.HTTP_201_CREATED, response_model=ProjectOut)
 def create_project(payload: ProjectIn, session: DbSession) -> Project:
-    """409 si el slug ya existe."""
+    """409 if the slug already exists."""
     return content.create(session, Project, payload)
 
 
@@ -55,21 +55,21 @@ def get_project(project_id: ItemId, session: DbSession) -> Project:
 
 @router.put("/projects/{project_id}", response_model=ProjectOut)
 def update_project(project_id: ItemId, payload: ProjectIn, session: DbSession) -> Project:
-    """Reemplaza el proyecto completo, con su orden y visibilidad. 409 si el slug ya existe."""
+    """Replace the whole project, with its order and visibility. 409 if the slug already exists."""
     project = content.get_or_404(session, Project, project_id)
     return content.update(session, project, payload)
 
 
 @router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(project_id: ItemId, session: DbSession) -> None:
-    """Borra el proyecto, sus capturas en la base y sus archivos."""
+    """Delete the project, its screenshots in the database and their files."""
     project = content.get_or_404(session, Project, project_id)
     paths = [image.path for image in project.images]
     content.delete(session, project)
     images.remove_files(paths)
 
 
-# Capturas de un proyecto: se suben como formulario (multipart) y se guardan en WebP.
+# A project's screenshots: uploaded as a form (multipart) and saved as WebP.
 
 
 @router.post(
@@ -82,9 +82,9 @@ def upload_image(
     alt_es: Annotated[AltText, Form()] = "",
     alt_en: Annotated[AltText, Form()] = "",
 ) -> ProjectImage:
-    """JPEG, PNG o WebP de hasta 5 MB, detectado por su contenido. Queda al final del proyecto.
+    """JPEG, PNG or WebP up to 5 MB, detected by its content. It goes at the end of the project.
 
-    413 si pesa más de 5 MB, 415 si no es una imagen aceptada y 422 si está dañada.
+    413 if it weighs more than 5 MB, 415 if it isn't an accepted image and 422 if it's damaged.
     """
     project = content.get_or_404(session, Project, project_id)
     return images.add_image(session, project, file.file, file.size, alt_es, alt_en)
@@ -92,22 +92,24 @@ def upload_image(
 
 @router.delete("/projects/{project_id}/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_image(project_id: ItemId, image_id: ItemId, session: DbSession) -> None:
-    """Borra la captura de la base y su archivo."""
+    """Delete the screenshot from the database and its file."""
     image = session.get(ProjectImage, image_id)
     if image is None or image.project_id != project_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found.")
     images.delete_image(session, image)
 
 
-# Perfil: una sola fila, que se crea con el primer PUT.
+# Profile: a single row, created with the first PUT.
 
 
 @router.get("/profile", response_model=ProfileOut)
 def get_profile(session: DbSession) -> Profile:
-    """404 mientras no se haya guardado el perfil por primera vez."""
+    """404 until the profile has been saved for the first time."""
     profile = session.get(Profile, 1)
     if profile is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todavía no hay perfil.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="There is no profile yet."
+        )
     return profile
 
 
@@ -116,7 +118,7 @@ def save_profile(payload: ProfileIn, session: DbSession) -> Profile:
     return content.save_profile(session, payload)
 
 
-# Habilidades
+# Skills
 
 
 @router.get("/skills", response_model=list[SkillOut])
@@ -139,7 +141,7 @@ def delete_skill(skill_id: ItemId, session: DbSession) -> None:
     content.delete(session, content.get_or_404(session, Skill, skill_id))
 
 
-# Experiencia: mismo orden que la página pública.
+# Experience: same order as the public page.
 
 
 @router.get("/experience", response_model=list[ExperienceOut])

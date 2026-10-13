@@ -1,4 +1,4 @@
-"""Primera carga de la página: registra la visita y entrega todo el contenido visible."""
+"""First load of the page: records the visit and returns all the visible content."""
 
 import logging
 from datetime import UTC, datetime
@@ -33,9 +33,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["bootstrap"])
 
 
-# Los parámetros llegan sin límite de largo a propósito: un enlace con UTM (parámetros de
-# origen del enlace) demasiado largos o raros se limpia y se recorta, en vez de responder 422
-# y dejar al visitante sin página.
+# The parameters have no length limit on purpose: a link with UTM (Urchin Tracking Module,
+# the link's source parameters) values that are too long or odd is cleaned and trimmed,
+# instead of responding 422 and leaving the visitor without a page.
 @router.get("/bootstrap", response_model=Bootstrap)
 def bootstrap(
     request: Request,
@@ -50,13 +50,14 @@ def bootstrap(
     lang: str | None = None,
     referrer: str | None = None,
 ) -> Bootstrap:
-    """Registra la visita y devuelve el idioma, el perfil y el contenido visible.
+    """Record the visit and return the language, the profile and the visible content.
 
-    - `lang`: el idioma que el visitante eligió en el selector (lo guarda el frontend); manda
-      sobre el del navegador. Si no es `es` ni `en`, se ignora.
-    - `referrer`: el `document.referrer` de la página. Solo se guarda su dominio.
+    - `lang`: the language the visitor chose in the selector (the frontend stores it); it wins
+      over the browser's. If it is neither `es` nor `en`, it is ignored.
+    - `referrer`: the page's `document.referrer`. Only its domain is saved.
     """
-    # El país llegará desde Cloudflare (ADR 0002); por ahora no se conoce.
+    # The country will come from Cloudflare (ADR (Architecture Decision Record) 0002); for now
+    # it isn't known.
     country = None
     page_lang = parse_lang(lang) or decide_locale(country, accept_language)
     content = _visible_content(session, page_lang)
@@ -67,7 +68,7 @@ def bootstrap(
             session.add(
                 Visit(
                     lang=page_lang,
-                    # Detrás de Caddy, la IP real llega con TRUSTED_PROXIES (ADR 0004).
+                    # Behind Caddy, the real IP arrives with TRUSTED_PROXIES (ADR 0004).
                     visitor_hash=visitor_hash(
                         salt, request.client.host if request.client else "", user_agent or ""
                     ),
@@ -81,11 +82,11 @@ def bootstrap(
             )
         session.commit()
     except SQLAlchemyError:
-        # Si falla el registro, la página igual se muestra. `begin_nested` ya deshizo la visita
-        # y la sesión se cierra al terminar el request. El log no lleva datos del visitante.
-        logger.exception("No se pudo registrar la visita")
+        # If recording fails, the page is still shown. `begin_nested` already rolled back the
+        # visit and the session closes when the request ends. The log carries no visitor data.
+        logger.exception("Could not record the visit")
 
-    # Cada carga es una visita: ningún caché intermedio debe guardar esta respuesta.
+    # Each load is a visit: no intermediate cache must store this response.
     response.headers["Cache-Control"] = "no-store"
     return content
 

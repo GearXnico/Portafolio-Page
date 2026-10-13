@@ -1,4 +1,4 @@
-"""Formulario de contacto público."""
+"""Public contact form."""
 
 from typing import Annotated
 
@@ -12,7 +12,7 @@ from app.services.rate_limit import SlidingWindowLimiter, client_key
 
 router = APIRouter(prefix="/api", tags=["contact"])
 
-# 5 mensajes por hora por IP (arquitectura, sección 6).
+# 5 messages per hour per IP (architecture, section 6).
 contact_limiter = SlidingWindowLimiter(limit=5, window_seconds=60 * 60)
 
 
@@ -28,18 +28,18 @@ def create_contact_message(
     session: Annotated[Session, Depends(get_session)],
     limiter: Annotated[SlidingWindowLimiter, Depends(get_contact_limiter)],
 ) -> ContactOut:
-    """Guarda el mensaje y avisa por correo después de responder.
+    """Save the message and send the email notice after responding.
 
-    Responde 429 con `Retry-After` al pasar el límite, y 422 si un campo no es válido.
+    Responds 429 with `Retry-After` over the limit, and 422 if a field is invalid.
     """
     retry_after = limiter.hit(client_key(request))
     if retry_after is not None:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Demasiados mensajes. Intenta más tarde.",
+            detail="Too many messages. Try again later.",
             headers={"Retry-After": str(retry_after)},
         )
-    # Honeypot lleno: un bot. Se responde como si todo saliera bien para no darle pistas.
+    # Honeypot filled in: a bot. Respond as if all went well so it gets no clues.
     if payload.website:
         return ContactOut()
 

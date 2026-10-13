@@ -43,7 +43,7 @@ class BodySizeLimitMiddleware:
                 return await response(scope, receive, send)
             is_upload = self.upload_paths is not None and self.upload_paths.fullmatch(scope["path"])
             if is_upload and not self.upload_allowed(Request(scope)):
-                response = JSONResponse({"detail": "Inicia sesión."}, status_code=401)
+                response = JSONResponse({"detail": "Log in."}, status_code=401)
                 return await response(scope, receive, send)
             max_bytes = self.upload_max_bytes if is_upload else self.max_bytes
             if int(length) > max_bytes:

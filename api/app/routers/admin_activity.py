@@ -1,7 +1,8 @@
-"""Lo que llega al sitio, visto desde el panel: mensajes de contacto y visitas por UTM.
+"""What reaches the site, seen from the panel: contact messages and visits by UTM (Urchin
+Tracking Module).
 
-Todas las rutas exigen la sesión del administrador (`require_admin`, en el router completo).
-Los mensajes traen datos personales del remitente; las visitas salen solo como conteos.
+Every route requires the administrator's session (`require_admin`, on the whole router).
+Messages carry the sender's personal data; visits come out only as counts.
 """
 
 from collections.abc import Sequence
@@ -20,7 +21,7 @@ from app.services import contact, visits
 router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
 DbSession = Annotated[Session, Depends(get_session)]
-# Los ids son `integer` de Postgres: uno fuera de rango sería un error 500 en la base.
+# Ids are Postgres `integer`: one out of range would be a 500 error in the database.
 MessageId = Annotated[int, Path(ge=1, le=2**31 - 1)]
 
 
@@ -33,7 +34,7 @@ def list_messages(session: DbSession) -> Sequence[ContactMessage]:
 def mark_message(
     message_id: MessageId, payload: MessageReadIn, session: DbSession
 ) -> ContactMessage:
-    """Marca el mensaje como leído (`{"read": true}`) o no leído. 404 si no existe."""
+    """Mark the message as read (`{"read": true}`) or unread. 404 if it doesn't exist."""
     return contact.set_read(session, message_id, payload.read)
 
 
