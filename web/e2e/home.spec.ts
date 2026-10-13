@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("la página carga su contenido desde bootstrap", async ({ page }) => {
-  // La respuesta de bootstrap prueba el camino completo: página → proxy → API → base.
+test("the page loads its content from bootstrap", async ({ page }) => {
+  // The bootstrap response proves the full path: page → proxy → API (application programming
+  // interface) → database.
   const bootstrap = page.waitForResponse("**/api/bootstrap");
   await page.goto("/");
 
@@ -10,7 +11,7 @@ test("la página carga su contenido desde bootstrap", async ({ page }) => {
   await expect(page.getByRole("alert")).toHaveCount(0);
 });
 
-test("en un celular la página no se sale de la pantalla", async ({ page }) => {
+test("on a phone the page doesn't overflow the screen", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-// Recorre el camino completo: formulario → proxy → API → base. La API responde 201 solo
-// después de guardar el mensaje (test_contact.py lo comprueba contra la base), así que un 201
-// aquí significa que el mensaje quedó en la base.
-test("un mensaje enviado desde el formulario llega a la API y se guarda", async ({ page }) => {
+// Walks the full path: form → proxy → API (application programming interface) → database. The
+// API responds 201 only after saving the message (test_contact.py checks it against the
+// database), so a 201 here means the message was stored in the database.
+test("a message sent from the form reaches the API and is saved", async ({ page }) => {
   await page.goto("/");
 
   const form = page.locator("#contact form");
