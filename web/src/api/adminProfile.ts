@@ -1,5 +1,6 @@
-// Perfil, habilidades y experiencia desde el panel (tarea 4.4), sobre las rutas de la tarea 2.4.
-// La cookie de sesión viaja sola (mismo origen); sin ella la API responde 401.
+// Profile, skills and experience from the admin panel (task 4.4), on top of the task 2.4 routes.
+// The session cookie is sent automatically (same origin); without it the API (application
+// programming interface) responds 401.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";
@@ -53,7 +54,7 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   return (response.status === 204 ? undefined : await response.json()) as T;
 }
 
-/** El perfil, o null si todavía no se crea (la API responde 404 hasta el primer PUT). */
+/** The profile, or null if it hasn't been created yet (the API responds 404 until the first PUT). */
 async function fetchProfile(): Promise<ProfileInput | null> {
   try {
     return await request<ProfileInput>("GET", "/api/admin/profile");
@@ -85,7 +86,7 @@ export function useAdminSkills() {
   });
 }
 
-/** Crea la habilidad si no trae id; si trae, la reemplaza. */
+/** Creates the skill if it has no id; if it has one, replaces it. */
 export function useSaveSkill() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -112,7 +113,7 @@ export function useAdminExperience() {
   });
 }
 
-/** Crea el trabajo si no trae id; si trae, lo reemplaza. */
+/** Creates the job if it has no id; if it has one, replaces it. */
 export function useSaveExperience() {
   const queryClient = useQueryClient();
   return useMutation({

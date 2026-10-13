@@ -1,4 +1,4 @@
-// Primera carga de la página: GET /api/bootstrap (tarea 2.2).
+// First page load: GET /api/bootstrap (task 2.2).
 import { useQuery } from "@tanstack/react-query";
 
 import { storedLang, type Lang } from "../i18n";
@@ -12,7 +12,7 @@ export interface PublicProfile {
   links: Record<string, string>;
 }
 
-// Las categorías posibles las fija la base (ck_skill_category).
+// The allowed categories are set by the database (ck_skill_category).
 export type SkillCategory = "language" | "framework" | "tool";
 
 export interface PublicSkill {
@@ -58,15 +58,17 @@ export interface Bootstrap {
   projects: PublicProject[];
 }
 
-// Si la API no responde a tiempo, la página sale con el idioma por defecto en vez de quedar en blanco.
+// If the API (application programming interface) doesn't respond in time, the page renders in the
+// default language instead of staying blank.
 export const BOOTSTRAP_TIMEOUT_MS = 5000;
 
 export async function fetchBootstrap(
   signal?: AbortSignal,
   timeoutMs = BOOTSTRAP_TIMEOUT_MS,
 ): Promise<Bootstrap> {
-  // Las UTM de la URL y el dominio de origen quedan registrados en la visita (tarea 3.5). El
-  // idioma guardado viaja como `lang` para que la API lo use y lo registre en la visita.
+  // The UTM (Urchin Tracking Module) parameters from the URL and the referrer domain are recorded
+  // with the visit (task 3.5). The saved language is sent as `lang` so the API uses it and records
+  // it with the visit.
   const params = new URLSearchParams(readUtm());
   if (document.referrer) params.set("referrer", document.referrer);
   const lang = storedLang();
@@ -76,11 +78,11 @@ export async function fetchBootstrap(
   const response = await fetch(query ? `/api/bootstrap?${query}` : "/api/bootstrap", {
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
-  if (!response.ok) throw new Error(`bootstrap respondió ${String(response.status)}`);
+  if (!response.ok) throw new Error(`bootstrap responded ${String(response.status)}`);
   return (await response.json()) as Bootstrap;
 }
 
-/** Se pide una sola vez por visita: cada llamada registra una visita en la API. */
+/** Fetched only once per visit: each call records a visit in the API. */
 export function useBootstrap() {
   return useQuery({
     queryKey: ["bootstrap"],

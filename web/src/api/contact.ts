@@ -1,4 +1,4 @@
-// Envío del formulario de contacto: POST /api/contact (tarea 2.6).
+// Contact form submission: POST /api/contact (task 2.6).
 import { useMutation } from "@tanstack/react-query";
 
 import type { Lang } from "../i18n";
@@ -8,19 +8,19 @@ export interface ContactInput {
   email: string;
   message: string;
   lang: Lang;
-  // Origen del enlace con que llegó el visitante; solo van si vienen en la URL (tarea 3.5).
+  // Source of the link the visitor came from; only sent if present in the URL (task 3.5).
   utm_source?: string;
   utm_campaign?: string;
-  // Campo trampa (honeypot): una persona lo deja vacío; si llega con algo, la API no guarda nada.
+  // Honeypot field: a person leaves it empty; if it arrives with a value, the API saves nothing.
   website: string;
 }
 
-/** Lo que el formulario necesita saber de un envío fallido para elegir el mensaje. */
+/** What the form needs to know about a failed submission to pick the message. */
 export type ContactErrorKind = "invalid" | "rateLimit" | "generic";
 
 export class ContactError extends Error {
   constructor(readonly kind: ContactErrorKind) {
-    super(`contacto falló: ${kind}`);
+    super(`contact failed: ${kind}`);
   }
 }
 

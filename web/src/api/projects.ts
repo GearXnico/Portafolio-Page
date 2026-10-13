@@ -1,11 +1,14 @@
-// Proyectos del panel (tarea 4.2): CRUD de /api/admin/projects (tarea 2.4). El panel ve también
-// los ocultos; la página pública solo los visibles, en la siguiente carga de `bootstrap`.
-// Las capturas (tarea 4.3) usan las rutas de la tarea 2.5.
+// Admin panel projects (task 4.2): CRUD (create, read, update, delete) on /api/admin/projects
+// (task 2.4). The panel also sees hidden projects; the public page only sees the visible ones, on
+// the next `bootstrap` load. Screenshots (task 4.3) use the task 2.5 routes.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";
 
-/** Lo que acepta la API al crear o editar (ProjectIn); no admite campos de más. */
+/**
+ * What the API (application programming interface) accepts on create or edit (ProjectIn); it
+ * rejects extra fields.
+ */
 export interface ProjectInput {
   slug: string;
   title_es: string;
@@ -21,7 +24,7 @@ export interface ProjectInput {
   position: number;
 }
 
-/** Una captura ya guardada (ImageOut): la API la dejó en WebP bajo /media. */
+/** A saved screenshot (ImageOut): the API stored it as WebP under /media. */
 export interface ProjectImage {
   id: number;
   url: string;
@@ -64,7 +67,7 @@ export function useProjects() {
   });
 }
 
-/** Sin `id` (proyecto nuevo) no pide nada. */
+/** Without an `id` (new project) it fetches nothing. */
 export function useProject(id: number | undefined) {
   return useQuery({
     queryKey: [...PROJECTS_KEY, id],
@@ -73,7 +76,7 @@ export function useProject(id: number | undefined) {
   });
 }
 
-/** Crea (sin `id`) o reemplaza el proyecto completo (con `id`). */
+/** Creates (without `id`) or replaces the whole project (with `id`). */
 export function useSaveProject(id?: number) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -86,8 +89,8 @@ export function useSaveProject(id?: number) {
 }
 
 /**
- * Las capturas actualizan el proyecto en la cache en vez de pedirlo de nuevo: así el formulario
- * de al lado no se rearma y no se pierden cambios que aún no se guardaron.
+ * Screenshots update the project in the cache instead of fetching it again: that way the form
+ * next to them isn't rebuilt and unsaved changes aren't lost.
  */
 function useUpdateCachedImages(projectId: number) {
   const queryClient = useQueryClient();
@@ -99,7 +102,7 @@ function useUpdateCachedImages(projectId: number) {
   };
 }
 
-/** Sube una captura (multipart); la API la deja al final del proyecto. */
+/** Uploads a screenshot (multipart); the API adds it at the end of the project. */
 export function useUploadImage(projectId: number) {
   const updateImages = useUpdateCachedImages(projectId);
   return useMutation({

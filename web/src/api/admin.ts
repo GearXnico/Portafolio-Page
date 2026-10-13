@@ -1,17 +1,18 @@
-// Sesión del panel (tarea 2.3): la API deja una cookie httpOnly en el login, así que la web no
-// ve el token; solo pregunta a GET /api/admin/session si la sesión sigue válida.
+// Admin panel session (task 2.3): the API (application programming interface) sets an httpOnly
+// cookie on login, so the web app never sees the token; it only asks GET /api/admin/session
+// whether the session is still valid.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const SESSION_KEY = ["admin", "session"] as const;
 
-/** Error con el código HTTP, para que el formulario muestre el mensaje que corresponde. */
+/** Error with the HTTP status code, so the form shows the matching message. */
 export class ApiError extends Error {
   constructor(readonly status: number) {
-    super(`la API respondió ${String(status)}`);
+    super(`the API responded ${String(status)}`);
   }
 }
 
-/** true con sesión, false sin ella (401). Cualquier otra respuesta es un error. */
+/** true with a session, false without one (401). Any other response is an error. */
 export async function fetchSession(signal?: AbortSignal): Promise<boolean> {
   const response = await fetch("/api/admin/session", { signal });
   if (response.status === 401) return false;

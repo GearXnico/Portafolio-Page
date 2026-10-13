@@ -1,5 +1,5 @@
-// Mensajes de contacto y visitas por UTM para el panel (tarea 4.5). Las rutas exigen la cookie
-// de sesión, que el navegador manda solo.
+// Contact messages and visits by UTM (Urchin Tracking Module) for the admin panel (task 4.5).
+// The routes require the session cookie, which the browser sends on its own.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";
@@ -45,7 +45,7 @@ export function useVisits() {
   });
 }
 
-/** Marca un mensaje como leído o no leído y vuelve a pedir la lista. */
+/** Marks a message as read or unread and fetches the list again. */
 export function useMarkMessage() {
   const queryClient = useQueryClient();
   return useMutation({
