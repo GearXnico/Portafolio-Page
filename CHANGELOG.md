@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [0.20.2] - 2026-10-13
+
+### Changed
+
+- File names in Spanish are now in English: the ADRs, the docs in `docs/`, the prompt template and log, the DB permissions test, the API user init script and a migration (#37).
+
 ## [0.20.1] - 2026-10-13
 
 ### Added
