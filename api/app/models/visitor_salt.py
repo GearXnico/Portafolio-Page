@@ -1,8 +1,8 @@
-"""Sal diaria para el hash de visitantes.
+"""Daily salt for the visitor hash.
 
-Se genera al azar la primera vez que alguien visita el sitio cada día (UTC) y se borra
-al día siguiente. Sin la sal, los hashes de días anteriores no se pueden recalcular,
-ni siquiera con un respaldo de la base: no hay forma de volver a la IP.
+It is generated at random the first time someone visits the site each day (UTC) and deleted
+the next day. Without the salt, hashes from earlier days can't be recomputed, not even
+with a database backup: there is no way back to the IP.
 """
 
 from datetime import date

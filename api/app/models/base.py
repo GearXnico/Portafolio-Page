@@ -1,12 +1,12 @@
-"""Base declarativa y convención de nombres para las restricciones."""
+"""Declarative base and naming convention for constraints."""
 
 from datetime import datetime
 
 from sqlalchemy import DateTime, MetaData, Text
 from sqlalchemy.orm import DeclarativeBase
 
-# Nombres fijos para índices y restricciones: así Alembic genera migraciones estables
-# y los tests pueden reconocer qué restricción falló.
+# Fixed names for indexes and constraints: this way Alembic generates stable migrations
+# and tests can tell which constraint failed.
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -15,13 +15,14 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s",
 }
 
-# Enlaces que la página muestra en un <a href>: solo https, con host y sin espacios, para que
-# un `javascript:` no llegue a la página (XSS). Usa clases POSIX en vez de escapes con "\\".
+# Links the page shows in an <a href>: https only, with a host and no spaces, so that a
+# `javascript:` link never reaches the page (XSS, cross-site scripting). Uses POSIX classes
+# instead of "\\" escapes.
 URL_HTTPS_REGEX = "^https://[^[:space:]/]+[^[:space:]]*$"
 URL_MAX_LENGTH = 2048
 
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
-    # Textos como `text` de Postgres (sin largo fijo) y fechas con zona horaria (timestamptz).
+    # Strings as Postgres `text` (no fixed length) and datetimes with time zone (timestamptz).
     type_annotation_map = {str: Text(), datetime: DateTime(timezone=True)}

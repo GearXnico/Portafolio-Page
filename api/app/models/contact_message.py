@@ -1,4 +1,4 @@
-"""Mensajes del formulario de contacto. Se guardan aunque falle el aviso por correo."""
+"""Contact form messages. They are saved even if the email notice fails."""
 
 from datetime import datetime
 
@@ -10,8 +10,8 @@ from app.models.base import Base
 
 class ContactMessage(Base):
     __tablename__ = "contact_message"
-    # Los mensajes llegan de un formulario público: los límites de largo frenan abusos
-    # aunque la validación de la API falle. Los mismos valores valen para la API (tarea 2.6).
+    # Messages come from a public form: the length limits stop abuse even if the API's
+    # validation fails. The same values apply to the API (task 2.6).
     __table_args__ = (
         CheckConstraint("lang IN ('es', 'en')", name="lang"),
         CheckConstraint("char_length(name) BETWEEN 1 AND 200", name="name_length"),
