@@ -1,7 +1,7 @@
-"""La API se conecta con un usuario de permisos mínimos: puede tocar filas, no el esquema.
+"""The API connects with a minimal-permission user: it can touch rows, not the schema.
 
-Si estos tests fallan, DATABASE_URL probablemente apunta al dueño de las tablas
-en vez de al usuario de la API (ver docs/api.md, "Base de datos: dos usuarios").
+If these tests fail, DATABASE_URL probably points to the owner of the tables
+instead of the API user (see docs/api.md, "Database: two users").
 """
 
 import pytest
@@ -17,7 +17,7 @@ def ejecutar(sql: str) -> None:
         connection.rollback()
 
 
-def test_el_usuario_de_la_api_no_es_superusuario_ni_dueno() -> None:
+def test_api_user_is_neither_superuser_nor_owner() -> None:
     with engine.connect() as connection:
         rol = connection.execute(
             text(
@@ -44,12 +44,12 @@ def test_el_usuario_de_la_api_no_es_superusuario_ni_dueno() -> None:
         "CREATE INDEX intruso ON project (title_es)",
     ],
 )
-def test_el_usuario_de_la_api_no_puede_cambiar_el_esquema(sql: str) -> None:
+def test_api_user_cannot_change_the_schema(sql: str) -> None:
     with pytest.raises(ProgrammingError, match="InsufficientPrivilege|permission denied|must be"):
         ejecutar(sql)
 
 
-def test_el_usuario_de_la_api_lee_y_escribe_filas() -> None:
+def test_api_user_reads_and_writes_rows() -> None:
     with engine.connect() as connection:
         connection.execute(text("INSERT INTO skill (name, category) VALUES ('Python', 'language')"))
         connection.execute(text("UPDATE skill SET position = 1"))
