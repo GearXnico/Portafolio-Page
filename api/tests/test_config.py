@@ -3,7 +3,7 @@ import pytest
 from app.config import Settings
 
 
-def test_la_api_arranca_sin_la_clave_del_dueno(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_api_starts_without_the_owner_password(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://api:clave@db/app")
     monkeypatch.delenv("MIGRATION_DATABASE_URL", raising=False)
 
