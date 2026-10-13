@@ -1,41 +1,41 @@
-# 0008 · Ambientes: staging antes de producción
+# 0008 · Environments: staging before production
 
-Estado: aceptada · Fecha: 2026-10-11 · Pidió: Nicolas
+Status: accepted · Date: 2026-10-11 · Requested by: Nicolas
 
-## Contexto
+## Context
 
-Nicolas pidió un ambiente de staging para probar antes de pasar a producción. Debe simular `main` y servir para correr pruebas de producción. También pidió evaluar dos ambientes, `staging-dev` y `staging-main`, para reducir errores tanto en producción como en `dev`.
+Nicolas asked for a staging environment to test in before moving to production. It must mirror `main` and be usable to run production tests. He also asked to evaluate two environments, `staging-dev` and `staging-main`, to reduce errors both in production and in `dev`.
 
-Hoy el VPS (servidor virtual privado) de producción tiene 1 GiB de memoria. Ahí corren Postgres, la API y Caddy, y no queda espacio para una segunda copia del sitio.
+Today the production VPS (virtual private server) has 1 GiB of memory. Postgres, the API (application programming interface) and Caddy run there, and there is no room for a second copy of the site.
 
-Con rebase & merge (ADR 0007), lo que está en `dev` al abrir el PR de versión es exactamente lo que va a quedar en `main`. Por eso un `staging-dev` y un `staging-main` permanentes mostrarían casi siempre el mismo código.
+With rebase & merge (ADR 0007, architecture decision record), what is in `dev` when the release PR (pull request) is opened is exactly what will end up in `main`. That is why a permanent `staging-dev` and `staging-main` would almost always show the same code.
 
-## Opciones consideradas
+## Options considered
 
-| Opción | Qué es | Costo mensual extra | Trabajo extra | Contras |
+| Option | What it is | Extra monthly cost | Extra work | Cons |
 |---|---|---|---|---|
-| **A. Staging efímero por PR y staging permanente** | `staging-dev`: el sitio completo levantado en el runner de CI en cada PR a `dev`, que se destruye al terminar. `staging-main`: un VPS aparte que replica producción y se despliega con cada merge a `dev`. | US$6 (DigitalOcean 1 GiB, sin respaldo) | ~5 h | `staging-dev` no tiene URL (dirección web) para mirarlo a mano; solo corre pruebas automáticas |
-| B. Dos staging permanentes | Un VPS de 2 GiB con `staging-dev` (cada merge a `dev`) y `staging-main` (cada PR de versión), en subdominios distintos | US$12 | ~7 h | Casi siempre muestran el mismo código, por el rebase & merge |
-| C. Staging en el mismo VPS de producción | Se sube producción a 2 GiB y staging corre al lado | US$7,20 (de US$7,20 a US$14,40) | ~4 h | Una prueba pesada en staging puede botar producción |
+| **A. Ephemeral staging per PR and permanent staging** | `staging-dev`: the whole site started on the CI (continuous integration) runner on every PR to `dev`, and torn down when done. `staging-main`: a separate VPS that mirrors production and is deployed on every merge to `dev`. | US$6 (DigitalOcean 1 GiB, no backup) | ~5 h | `staging-dev` has no URL (web address) to look at by hand; it only runs automated tests |
+| B. Two permanent staging environments | A 2 GiB VPS with `staging-dev` (every merge to `dev`) and `staging-main` (every release PR), on separate subdomains | US$12 | ~7 h | They almost always show the same code, because of rebase & merge |
+| C. Staging on the same production VPS | Production is upgraded to 2 GiB and staging runs alongside it | US$7.20 (from US$7.20 to US$14.40) | ~4 h | A heavy test on staging can take production down |
 
-Precios de DigitalOcean revisados el 2026-10-11: US$6 por 1 GiB y US$12 por 2 GiB al mes.
+DigitalOcean prices checked on 2026-10-11: US$6 for 1 GiB and US$12 for 2 GiB per month.
 
-## Decisión
+## Decision
 
-**A: staging efímero por PR y staging permanente en un VPS aparte** (Nicolas, 2026-10-11). Cubre los dos niveles que pidió por US$6 al mes, aísla producción, y el mismo VPS de staging sirve para los próximos productos.
+**A: ephemeral staging per PR and permanent staging on a separate VPS** (Nicolas, 2026-10-11). It covers the two levels he asked for at US$6 a month, isolates production, and the same staging VPS serves the upcoming products.
 
-Esto rige con cualquier opción:
+This applies with any option:
 
-- **Simular `main`:** staging usa el mismo `compose.prod.yml`, las mismas imágenes por SHA, el mismo script de despliegue (respaldo, migraciones y health check) y la misma versión de Postgres que producción.
-- **Datos:** semilla de prueba más una copia del contenido público de producción (perfil, experiencia y proyectos). Nunca se copian mensajes de contacto ni visitas, porque tienen datos personales.
-- **Secretos propios:** el correo de staging no se envía a nadie; se escribe en el log.
-- **Acceso:** se publica en `staging.<dominio>` con usuario y contraseña en Caddy, y con `noindex` para que Google no lo indexe.
-- **Gate a producción:** el PR de versión `dev` → `main` solo se puede mergear si staging está desplegado con el mismo SHA y sus E2E (pruebas de punta a punta) pasaron. Los E2E de staging prueban las mismas rutas que se probarán en producción.
-- **Workflows:** `deploy.yml` recibe el ambiente (`staging` o `production`) como parámetro. Cada ambiente de GitHub tiene sus propios secretos de SSH (acceso remoto cifrado).
+- **Mirroring `main`:** staging uses the same `compose.prod.yml`, the same images by SHA, the same deployment script (backup, migrations and health check) and the same Postgres version as production.
+- **Data:** test seed data plus a copy of production's public content (profile, experience and projects). Contact messages and visits are never copied, because they contain personal data.
+- **Its own secrets:** staging's email isn't sent to anyone; it is written to the log.
+- **Access:** it is published at `staging.<domain>` with a username and password in Caddy, and with `noindex` so Google doesn't index it.
+- **Gate to production:** the `dev` → `main` release PR can only be merged if staging is deployed with the same SHA and its E2E (end-to-end) tests passed. Staging's E2E tests cover the same routes that will be tested in production.
+- **Workflows:** `deploy.yml` takes the environment (`staging` or `production`) as a parameter. Each GitHub environment has its own SSH (encrypted remote access) secrets.
 
-## Consecuencias
+## Consequences
 
-- Antes de llegar a producción, cada cambio se prueba dos veces: en el runner, con cada PR, y en staging, con cada merge a `dev`.
-- El costo fijo sube de ~US$7,20 a ~US$13,20 al mes con la opción A.
-- La estimación del brief sube a ~92 h, sumando esta ADR y la 0007. La fecha objetivo se corre del 2026-10-25 al ~2026-10-27; el escenario pesimista sigue siendo el 2026-10-30.
-- Las migraciones se prueban contra una base con la forma de producción antes de aplicarse en producción.
+- Before reaching production, every change is tested twice: on the runner, with every PR, and on staging, with every merge to `dev`.
+- The fixed cost goes up from ~US$7.20 to ~US$13.20 a month with option A.
+- The brief's estimate goes up to ~92 h, adding this ADR and 0007. The target date moves from 2026-10-25 to ~2026-10-27; the pessimistic scenario is still 2026-10-30.
+- Migrations are tested against a database shaped like production before they are applied in production.
