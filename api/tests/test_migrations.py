@@ -20,7 +20,7 @@ def tablas_de_la_app() -> set[str]:
     return set(inspect(engine).get_table_names()) - {"alembic_version"}
 
 
-def test_las_migraciones_se_aplican_y_revierten() -> None:
+def test_migrations_apply_and_revert() -> None:
     config = Config("alembic.ini")
 
     command.upgrade(config, "head")
@@ -33,6 +33,6 @@ def test_las_migraciones_se_aplican_y_revierten() -> None:
     assert tablas_de_la_app() == TABLAS
 
 
-def test_los_modelos_coinciden_con_las_migraciones() -> None:
-    """Falla si alguien cambia app/models/ y olvida generar la migración."""
+def test_models_match_the_migrations() -> None:
+    """Fails if someone changes app/models/ and forgets to generate the migration."""
     command.check(Config("alembic.ini"))
