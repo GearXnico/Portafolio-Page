@@ -1,24 +1,24 @@
-# Registro de prompts · Sitio web de portafolio
+# Prompt log · Portfolio website
 
-Una fila por tarea del plan, en orden. En las sesiones de Claude Code en la nube no hay `/cost`, así que los tokens y el modelo quedan como n/d. Los totales se revisan al cerrar cada hito (ADR 0009).
+One row per plan task, in order. Cloud Claude Code sessions have no `/cost`, so tokens and model are recorded as n/a. Totals are reviewed when each milestone closes (ADR (architecture decision record) 0009).
 
-| # | Fecha | Tarea | Modelo | Tokens entrada | Tokens salida | Sesiones | PR | Estado | Archivo |
+| # | Date | Task | Model | Input tokens | Output tokens | Sessions | PR | Status | File |
 |---|---|---|---|---|---|---|---|---|---|
-| 2.5 | 2026-10-12 | Subida de capturas | n/d | n/d | n/d | 1 | #20 | En revisión | — |
-| 3.1 | 2026-10-12 | Layout de la página pública | n/d | n/d | n/d | 1 | #22 | En revisión | — |
-| 1.9 | 2026-10-12 | Renombre a Portafolio-Page y plan borrador 3 | n/d | n/d | n/d | 1 | (este PR) | En revisión | — |
-| 3.3 | 2026-10-12 | Proyectos con capturas, stack y enlaces | n/d | n/d | n/d | 1 | #26 | En revisión | — |
-| 3.4 | 2026-10-12 | Formulario de contacto web | n/d | n/d | n/d | 1 | #27 | En revisión | — |
-| 3.5 | 2026-10-13 | UTM de la URL a bootstrap y al contacto | Opus | n/d | n/d | 1 | #30 | En revisión | — |
-| 3.6 | 2026-10-13 | SEO y accesibilidad | Opus | n/d | n/d | 1 | #31 | En revisión | — |
-| 4.2 | 2026-10-13 | Lista y edición de proyectos en el panel | Opus | n/d | n/d | 1 | #32 | En revisión | — |
-| 4.4 | 2026-10-13 | Edición de perfil, habilidades y experiencia | Opus | n/d | n/d | 1 | #33 | En revisión | — |
-| 4.5 | 2026-10-13 | Mensajes y visitas por UTM en el panel | Opus | n/d | n/d | 1 | #34 | En revisión | — |
-| 4.3 | 2026-10-13 | Subida de capturas desde el formulario de proyecto | Opus | n/d | n/d | 1 | #36 | En revisión | — |
+| 2.5 | 2026-10-12 | Screenshot upload | n/a | n/a | n/a | 1 | #20 | In review | — |
+| 3.1 | 2026-10-12 | Public page layout | n/a | n/a | n/a | 1 | #22 | In review | — |
+| 1.9 | 2026-10-12 | Rename to Portafolio-Page and draft plan 3 | n/a | n/a | n/a | 1 | (this PR) | In review | — |
+| 3.3 | 2026-10-12 | Projects with screenshots, stack and links | n/a | n/a | n/a | 1 | #26 | In review | — |
+| 3.4 | 2026-10-12 | Web contact form | n/a | n/a | n/a | 1 | #27 | In review | — |
+| 3.5 | 2026-10-13 | UTM (Urchin Tracking Module) parameters from the URL to bootstrap and to contact | Opus | n/a | n/a | 1 | #30 | In review | — |
+| 3.6 | 2026-10-13 | SEO (search engine optimization) and accessibility | Opus | n/a | n/a | 1 | #31 | In review | — |
+| 4.2 | 2026-10-13 | Project list and editing in the panel | Opus | n/a | n/a | 1 | #32 | In review | — |
+| 4.4 | 2026-10-13 | Editing profile, skills and experience | Opus | n/a | n/a | 1 | #33 | In review | — |
+| 4.5 | 2026-10-13 | Messages and visits by UTM in the panel | Opus | n/a | n/a | 1 | #34 | In review | — |
+| 4.3 | 2026-10-13 | Screenshot upload from the project form | Opus | n/a | n/a | 1 | #36 | In review | — |
 
-## Totales por hito
+## Totals per milestone
 
-| Hito | Tareas | Tokens entrada | Tokens salida | Horas reales | Horas plan |
+| Milestone | Tasks | Input tokens | Output tokens | Real hours | Plan hours |
 |---|---|---|---|---|---|
 | 1 | | | | | 31 |
 | 2 | | | | | 14 |
