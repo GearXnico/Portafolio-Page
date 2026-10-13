@@ -19,7 +19,7 @@
 - [ ] Tests nuevos o actualizados, con la cobertura sobre el mínimo
 - [ ] CI, seguridad y E2E (prueba de punta a punta) en verde
 - [ ] Sin secretos ni datos personales
-- [ ] Documentación actualizada si cambia algo visible (README o docs/)
+- [ ] Documentación actualizada si cambia algo visible (README o docs/), y la versión de este PR anotada en `CHANGELOG.md`
 - [ ] Rama al día con su base
 - [ ] Comentarios de la revisión automática atendidos o respondidos
 - [ ] Aprobado, o mergeado por Nicolas con bypass registrado

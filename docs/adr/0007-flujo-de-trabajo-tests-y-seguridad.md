@@ -60,10 +60,11 @@ Los nombres van en minúsculas, separados con guiones, en español y de 2 a 4 pa
    - Merge con **rebase & merge**: los commits de la rama se copian uno a uno sobre `dev`, sin merge commits, y el historial queda lineal.
    - Como cada commit llega tal cual, antes de abrir el PR se ordenan con `git rebase -i`: cada commit hace una sola cosa, sigue Conventional Commits y deja los tests en verde.
    - La rama se borra después del merge.
-3. **PR de versión `dev` → `main`:** también con **rebase & merge**. Exige que staging esté sano con el mismo SHA (ADR 0008). Después del despliegue se crea una etiqueta SemVer (versionado semántico, `v1.2.0`) con notas generadas por GitHub.
+3. **PR de versión `dev` → `main`:** también con **rebase & merge**. Exige que staging esté sano con el mismo SHA (ADR 0008). Después del despliegue se crea una etiqueta SemVer (versionado semántico, `v1.2.0`) con las notas de la versión en `CHANGELOG.md`.
    - **Ojo:** GitHub vuelve a escribir cada commit al hacer rebase & merge, así que en `main` quedan con SHA (identificador) distinto que en `dev`. Si no se corrige, el siguiente PR de versión muestra commits repetidos o conflictos.
    - Para evitarlo, el workflow `sync-dev.yml` corre después de cada push a `main` y hace `git rebase main` sobre `dev`. Git descarta solo los commits que ya están en `main` y conserva los nuevos. Después hace `git push --force-with-lease` a `dev`. Es el único actor con bypass de la regla "sin force push" en `dev`.
    - Un `hotfix/*` entra a `main` y llega a `dev` por ese mismo workflow.
+4. **Versiones** (Nicolas, 2026-10-13): cada PR mergeado a `dev` tiene una versión con formato SemVer (`MAJOR.MINOR.PATCH`) y la anota en `CHANGELOG.md`. Un PR `feat` sube MINOR y uno de otro tipo sube PATCH. MAJOR cuenta las publicaciones a `main` y sigue en `0` hasta la primera, `1.0.0`. La guía, con un ejemplo, está al final de `CHANGELOG.md`.
 4. **Protección de `main` y `dev`:**
    - Sin force push ni borrado (salvo `sync-dev.yml` en `dev`).
    - Historial lineal obligatorio, y rebase & merge como único método de merge habilitado.

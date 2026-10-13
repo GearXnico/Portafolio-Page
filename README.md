@@ -146,6 +146,7 @@ El detalle está en `docs/desarrollo.md` y `docs/testing.md`. En corto:
 - Se parte desde `dev`, en una rama `feature/<nombre>`, `fix/<nombre>`, `docs/<nombre>` o `chore/<nombre>`.
 - Commits con Conventional Commits en español, por ejemplo `feat: agrega formulario de contacto`.
 - Un PR por tarea hacia `dev`, con la plantilla del repo. Se mergea solo con rebase & merge.
+- Cada PR anota su versión y su cambio en `CHANGELOG.md`: `feat` sube MINOR, los demás tipos suben PATCH y MAJOR cuenta las publicaciones a `main`. La guía está al final de ese archivo.
 - Nunca se suben secretos ni `.env`: solo `.env.example`.
 
 ## Revisión automática con IA
