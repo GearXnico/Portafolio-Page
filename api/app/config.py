@@ -1,4 +1,4 @@
-"""Configuración de la API, leída de variables de entorno."""
+"""API configuration, read from environment variables."""
 
 from pathlib import Path
 
@@ -7,42 +7,42 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Busca un .env en la carpeta actual o en la raíz del repo (si corres desde api/).
-    # Las variables de entorno tienen prioridad sobre el archivo.
-    # Una variable vacía (ADMIN_EMAIL=) cuenta como no definida y toma el valor por defecto.
+    # Looks for a .env in the current folder or at the repo root (if you run from api/).
+    # Environment variables take priority over the file.
+    # An empty variable (ADMIN_EMAIL=) counts as undefined and takes the default value.
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"), extra="ignore", env_ignore_empty=True
     )
 
-    # Usuario de la API, con permisos mínimos: solo lee y escribe filas.
+    # API user, with minimal permissions: it only reads and writes rows.
     database_url: str
-    # Dueño de las tablas: solo lo usa Alembic. Es opcional para que en producción
-    # el proceso de la API pueda arrancar sin conocer la clave del dueño.
+    # Owner of the tables: only Alembic uses it. It is optional so that in production
+    # the API process can start without knowing the owner's password.
     migration_database_url: str | None = None
 
-    # IP (dirección de red) de los proxies de confianza, separadas por coma; acepta redes
-    # (172.18.0.0/16). Solo de ellos se lee X-Forwarded-For para saber la IP real del
-    # visitante. Vacío: se usa la IP de la conexión, y nadie puede falsearla con ese header.
+    # IPs (Internet Protocol addresses) of the trusted proxies, comma-separated; accepts
+    # networks (172.18.0.0/16). X-Forwarded-For is read only from them to learn the visitor's
+    # real IP. Empty: the connection's IP is used, and nobody can spoof it with that header.
     trusted_proxies: str = ""
 
-    # Aviso por correo de cada mensaje de contacto (ADR 0005). Si falta alguno, el mensaje
-    # igual se guarda y solo se anota en el log que el correo está desactivado.
+    # Email notice for each contact message (ADR (Architecture Decision Record) 0005). If any
+    # is missing, the message is still saved and the log only notes that email is disabled.
     smtp_host: str | None = None
     smtp_port: int = 587
     smtp_user: str | None = None
     smtp_password: SecretStr | None = None
     contact_notify_to: str | None = None
 
-    # Administrador único (ADR 0004). Si falta alguno, el login responde 503 y el panel no
-    # se puede usar. El hash se genera con `python -m app.hash_password`.
+    # Single administrator (ADR 0004). If any is missing, login responds 503 and the panel
+    # can't be used. The hash is generated with `python -m app.hash_password`.
     admin_email: str | None = None
     admin_password_hash: SecretStr | None = None
-    # Firma la cookie de sesión (JWT). Al menos 32 caracteres al azar; cambiarla cierra todas
-    # las sesiones abiertas.
+    # Signs the session cookie (JWT, JSON Web Token). At least 32 random characters; changing
+    # it closes all open sessions.
     jwt_secret: SecretStr | None = Field(default=None, min_length=32)
 
-    # Carpeta de las capturas de los proyectos. Caddy la sirve en /media; en Docker es un
-    # volumen montado en /code/media. Relativa a la carpeta desde donde corre la API.
+    # Folder for the project screenshots. Caddy serves it at /media; in Docker it is a
+    # volume mounted at /code/media. Relative to the folder the API runs from.
     media_dir: Path = Path("media")
 
 

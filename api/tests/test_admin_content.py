@@ -619,7 +619,7 @@ def test_un_cuerpo_mas_grande_que_el_limite_de_subida_responde_413(
     response = subir(admin, proyecto["id"], b"\0" * MAX_UPLOAD_BYTES)
 
     assert response.status_code == 413
-    assert response.json() == {"detail": "El cuerpo es demasiado grande"}
+    assert response.json() == {"detail": "The body is too large"}
 
 
 def test_el_limite_de_subida_solo_acepta_ids_numericos(admin: TestClient) -> None:
