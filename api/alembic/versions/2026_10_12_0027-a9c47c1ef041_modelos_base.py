@@ -1,4 +1,4 @@
-"""modelos base: perfil, habilidades, experiencia, proyectos, capturas, visitas y mensajes
+"""base models: profile, skills, experience, projects, screenshots, visits and messages
 
 Revision ID: a9c47c1ef041
 Revises: d69c5687c820

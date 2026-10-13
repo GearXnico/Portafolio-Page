@@ -1,4 +1,4 @@
-"""Entorno de Alembic: se conecta como dueño de las tablas y usa los modelos de app/models."""
+"""Alembic environment: connects as the owner of the tables and uses the models in app/models."""
 
 from logging.config import fileConfig
 
@@ -10,7 +10,7 @@ from app.models import Base
 
 config = context.config
 if settings.migration_database_url is None:
-    raise RuntimeError("Falta MIGRATION_DATABASE_URL: Alembic se conecta como dueño de las tablas.")
+    raise RuntimeError("MIGRATION_DATABASE_URL is missing: Alembic connects as the table owner.")
 config.set_main_option("sqlalchemy.url", settings.migration_database_url)
 
 if config.config_file_name is not None:
@@ -20,7 +20,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    """Genera el SQL sin conectarse a la base (`alembic upgrade head --sql`)."""
+    """Generate the SQL without connecting to the database (`alembic upgrade head --sql`)."""
     context.configure(
         url=config.get_main_option("sqlalchemy.url"),
         target_metadata=target_metadata,
@@ -32,7 +32,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Aplica las migraciones conectándose a la base."""
+    """Apply the migrations by connecting to the database."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
