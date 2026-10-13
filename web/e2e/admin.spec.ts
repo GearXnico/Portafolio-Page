@@ -2,9 +2,10 @@ import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./login";
 
-// Criterio de la tarea 4.1: sin sesión, /admin lleva al login. La API igual rechaza con 401
-// cualquier ruta de /api/admin/* sin cookie (lo prueban los tests de la API).
-test("sin sesión, /admin redirige al login", async ({ page }) => {
+// Task 4.1 criterion: without a session, /admin leads to the login. The API (application
+// programming interface) still rejects any /api/admin/* route without a cookie with 401 (the API
+// tests cover that).
+test("without a session, /admin redirects to the login", async ({ page }) => {
   await page.goto("/admin");
 
   await expect(page).toHaveURL(/\/admin\/login$/);
@@ -12,7 +13,9 @@ test("sin sesión, /admin redirige al login", async ({ page }) => {
   await expect(page.getByLabel("Contraseña")).toHaveAttribute("type", "password");
 });
 
-test("con sesión se entra al panel, y al cerrarla vuelve al login", async ({ page }) => {
+test("with a session it enters the admin panel, and logging out goes back to the login", async ({
+  page,
+}) => {
   await loginAsAdmin(page);
   await expect(page).toHaveURL(/\/admin$/);
 

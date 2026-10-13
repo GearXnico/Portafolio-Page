@@ -2,10 +2,11 @@ import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./login";
 
-// Criterio de la tarea 4.5: un mensaje y los conteos de una visita de prueba con UTM se ven en
-// el panel. La visita y el mensaje van directo a la API (por el mismo proxy que usa la página),
-// con UTM únicos por corrida para no confundirse con datos de otros tests.
-test("el panel muestra un mensaje y la visita de un enlace con UTM", async ({ page }) => {
+// Task 4.5 criterion: a message and the counts of a test visit with UTM (Urchin Tracking Module)
+// parameters show up in the admin panel. The visit and the message go straight to the API
+// (application programming interface) (through the same proxy the page uses), with UTM values
+// unique per run so they aren't confused with data from other tests.
+test("the admin panel shows a message and the visit from a UTM link", async ({ page }) => {
   const run = String(Date.now());
   const source = `e2e-${run}`;
   const campaign = `prueba-${run}`;
