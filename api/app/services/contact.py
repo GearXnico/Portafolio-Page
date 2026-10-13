@@ -1,8 +1,10 @@
-"""Guardado de los mensajes de contacto y aviso por correo en segundo plano."""
+"""Mensajes de contacto: guardado, aviso por correo en segundo plano y lectura desde el panel."""
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
+from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
@@ -64,3 +66,21 @@ def _body(message: ContactMessage) -> str:
         f"Origen: {origen}\n"
         f"\n{message.message}\n"
     )
+
+
+def list_messages(session: Session) -> Sequence[ContactMessage]:
+    """Todos los mensajes, el más nuevo primero."""
+    query = select(ContactMessage).order_by(
+        ContactMessage.created_at.desc(), ContactMessage.id.desc()
+    )
+    return session.scalars(query).all()
+
+
+def set_read(session: Session, message_id: int, read: bool) -> ContactMessage:
+    """Marca el mensaje como leído o no leído. 404 si no existe."""
+    message = session.get(ContactMessage, message_id)
+    if message is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe.")
+    message.read = read
+    session.commit()
+    return message

@@ -1,4 +1,5 @@
-"""Registro de visitas: limpia lo que manda el visitante y calcula el hash diario.
+"""Registro de visitas (limpia lo que manda el visitante y calcula el hash diario) y sus conteos
+para el panel.
 
 Lo que llega en la URL o en los headers lo controla cualquiera, así que se limpia y se
 recorta antes de guardarlo. Nunca se rechaza la visita por eso: la página tiene que cargar
@@ -13,11 +14,13 @@ import unicodedata
 from datetime import date
 from urllib.parse import urlsplit
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, distinct, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.models.visit import Visit
 from app.models.visitor_salt import SALT_BYTES, VisitorSalt
+from app.schemas.visits import VisitCountOut
 
 # Los mismos límites que las restricciones de la tabla `visit`.
 UTM_MAX_LENGTH = 200
@@ -92,3 +95,25 @@ def visitor_hash(salt: bytes, ip: str, user_agent: str) -> str:
     """HMAC-SHA256 (hash con clave) de IP y user agent, en hexadecimal de 64 caracteres."""
     message = f"{ip}\n{user_agent[:USER_AGENT_MAX_LENGTH]}".encode()
     return hmac.new(salt, message, hashlib.sha256).hexdigest()
+
+
+def count_by_utm(session: Session) -> list[VisitCountOut]:
+    """Visitas y visitantes únicos por `utm_source` y `utm_campaign`, las más visitadas primero.
+
+    Las visitas sin UTM salen en el grupo con los dos en `null` (tráfico directo), que en un
+    empate va al final.
+    """
+    visits = func.count().label("visits")
+    query = (
+        select(
+            Visit.utm_source,
+            Visit.utm_campaign,
+            visits,
+            func.count(distinct(Visit.visitor_hash)).label("unique_visitors"),
+        )
+        .group_by(Visit.utm_source, Visit.utm_campaign)
+        .order_by(visits.desc(), Visit.utm_source, Visit.utm_campaign)
+    )
+    return [
+        VisitCountOut.model_validate(row, from_attributes=True) for row in session.execute(query)
+    ]
