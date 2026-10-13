@@ -1,12 +1,12 @@
-# Hooks que corren antes de cada commit (`pre-commit install`) y en el CI (ci.yml).
-# Versiones fijadas por SHA (hash del commit); el comentario dice a qué versión corresponde.
+# Hooks that run before every commit (`pre-commit install`) and in CI (continuous integration, ci.yml).
+# Versions pinned by SHA (commit hash); the comment says which version it matches.
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
       - id: detect-private-key
 
-  # Toma la configuración de api/pyproject.toml. Misma versión menor que en api/.
+  # Takes its configuration from api/pyproject.toml. Same minor version as in api/.
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 44b5042edab9382aba712eed4f9c7bab7a3d6a3e # frozen: v0.17.0
     hooks:
@@ -14,7 +14,7 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  # Misma versión que en web/package.json.
+  # Same version as in web/package.json.
   - repo: local
     hooks:
       - id: prettier

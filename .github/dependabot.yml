@@ -1,9 +1,9 @@
-# Actualizaciones semanales de dependencias (ADR 0007). Los PR pasan por los mismos checks
-# que cualquier otro y no los revisa la IA (ai-review.yml se salta a Dependabot).
-# Las actualizaciones menores y de parche llegan en un PR por ecosistema; las mayores, en un PR
-# aparte cada una, porque pueden romper cosas y conviene revisarlas una a una.
-# cooldown: espera 7 días desde que sale una versión antes de proponerla, por si era maliciosa y
-# la retiran. Las alertas de seguridad de Dependabot no esperan.
+# Weekly dependency updates (ADR, architecture decision record, 0007). The PRs (pull requests) go through
+# the same checks as any other and are not reviewed by the AI (artificial intelligence; ai-review.yml skips Dependabot).
+# Minor and patch updates arrive in one PR per ecosystem; major ones, in a separate PR
+# each, because they can break things and are best reviewed one by one.
+# cooldown: waits 7 days after a version is released before proposing it, in case it was malicious
+# and gets pulled. Dependabot security alerts don't wait.
 version: 2
 
 updates:
@@ -31,7 +31,7 @@ updates:
       npm:
         update-types: [minor, patch]
 
-  # Imágenes base de los Dockerfile.
+  # Base images of the Dockerfiles.
   - package-ecosystem: docker
     directories: [/api, /web]
     schedule:
@@ -43,16 +43,16 @@ updates:
     groups:
       docker:
         update-types: [minor, patch]
-    # Node solo en versiones LTS (soporte de largo plazo, las pares). Las impares duran unos 6
-    # meses y las dependencias no siempre las aceptan (el PR #15 a Node 25 no construía).
-    # Los parches de la LTS en uso llegan igual: la etiqueta `24-alpine` es flotante y Trivy revisa
-    # la imagen cada semana. Las LTS nuevas (26, 28) se siguen proponiendo.
-    # Agregar la siguiente impar (29.x) cuando corresponda.
+    # Node only in LTS (long-term support) versions, the even ones. Odd versions last about 6
+    # months and dependencies don't always accept them (PR #15 to Node 25 didn't build).
+    # Patches of the LTS in use still arrive: the `24-alpine` tag is floating and Trivy checks
+    # the image every week. New LTS versions (26, 28) are still proposed.
+    # Add the next odd version (29.x) when it's due.
     ignore:
       - dependency-name: node
         versions: ["25.x", "27.x"]
 
-  # Mantiene al día los SHA fijados en .github/workflows/.
+  # Keeps the SHAs pinned in .github/workflows/ up to date.
   - package-ecosystem: github-actions
     directory: /
     schedule:

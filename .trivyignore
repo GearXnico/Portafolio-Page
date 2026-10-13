@@ -1,12 +1,12 @@
-# Hallazgos de Trivy aceptados a conciencia (security.yml). Cada línea vence en su fecha `exp:`;
-# después vuelve a fallar el job y hay que revisarla de nuevo.
+# Trivy findings accepted deliberately (security.yml). Each line expires on its `exp:` date;
+# after that the job fails again and it has to be reviewed again.
 #
-# Trivy revisa las imágenes de producción (api/Dockerfile y web/Dockerfile), que no llevan pip
-# ni npm. Revisado: 2026-10-12.
+# Trivy checks the production images (api/Dockerfile and web/Dockerfile), which don't include pip
+# or npm. Reviewed: 2026-10-12.
 
-# Caddy 2.11.7 (web/Dockerfile), compilado con Go 1.26.8 y golang.org/x/net 0.59.0. Son
-# denegaciones de servicio en HTTP/2 y TLS; las corrige la próxima versión de Caddy, que la
-# imagen toma sola al reconstruirse porque usa la etiqueta 2.11-alpine.
+# Caddy 2.11.7 (web/Dockerfile), built with Go 1.26.8 and golang.org/x/net 0.59.0. They are
+# denial-of-service issues in HTTP/2 and TLS (Transport Layer Security); the next Caddy release fixes them, and the
+# image picks it up on its own when rebuilt because it uses the 2.11-alpine tag.
 CVE-2026-78667 exp:2026-11-12
 CVE-2026-78669 exp:2026-11-12
 CVE-2026-97031 exp:2026-11-12
