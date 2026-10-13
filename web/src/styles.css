@@ -337,3 +337,27 @@ a {
     align-items: end;
   }
 }
+
+/* Panel: mensajes y visitas (tarea 4.5) */
+.message {
+  border-top: 1px solid currentColor;
+  padding: 1rem 0;
+}
+
+.message-unread h2 {
+  font-weight: 700;
+}
+
+.message-text {
+  white-space: pre-wrap;
+}
+
+.visits {
+  border-collapse: collapse;
+}
+
+.visits th,
+.visits td {
+  padding: 0.25rem 0.75rem;
+  text-align: left;
+}

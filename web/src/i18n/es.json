@@ -79,5 +79,18 @@
   "admin.experience.role": "Cargo",
   "admin.experience.description": "Descripción",
   "admin.experience.start": "Inicio",
-  "admin.experience.end": "Fin (vacío si es el trabajo actual)"
+  "admin.experience.end": "Fin (vacío si es el trabajo actual)",
+  "admin.messages.title": "Mensajes",
+  "admin.messages.empty": "Todavía no hay mensajes.",
+  "admin.messages.read": "Leído",
+  "admin.messages.unread": "Nuevo",
+  "admin.messages.markRead": "Marcar como leído",
+  "admin.messages.markUnread": "Marcar como no leído",
+  "admin.visits.title": "Visitas por enlace",
+  "admin.visits.empty": "Todavía no hay visitas.",
+  "admin.visits.source": "Fuente (utm_source)",
+  "admin.visits.campaign": "Campaña (utm_campaign)",
+  "admin.visits.visits": "Visitas",
+  "admin.visits.unique": "Visitantes únicos por día",
+  "admin.visits.direct": "Directo"
 }
