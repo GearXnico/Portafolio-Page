@@ -1,17 +1,20 @@
 import { expect, type Page } from "@playwright/test";
 
-// Credenciales del admin de prueba. En el CI las genera cada corrida (ci.yml); en local, usa
-// las de tu .env. Sin ellas el test falla con este mensaje en vez de saltarse.
+// Test admin credentials. In CI (continuous integration) each run generates them (ci.yml);
+// locally, it uses the ones in your .env. Without them the test fails with this message instead of
+// being skipped.
 function adminCredentials(): { email: string; password: string } {
   const email = process.env.E2E_ADMIN_EMAIL;
   const password = process.env.E2E_ADMIN_PASSWORD;
   if (!email || !password) {
-    throw new Error("Faltan E2E_ADMIN_EMAIL y E2E_ADMIN_PASSWORD para entrar al panel.");
+    throw new Error(
+      "E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD are required to log in to the admin panel.",
+    );
   }
   return { email, password };
 }
 
-/** Entra al panel con el admin de prueba y espera a que cargue el inicio. */
+/** Logs in to the admin panel as the test admin and waits for the home screen to load. */
 export async function loginAsAdmin(page: Page): Promise<void> {
   const { email, password } = adminCredentials();
   await page.goto("/admin/login");
