@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [0.20.11] - 2026-10-18
+
+### Changed
+
+- Docs: the plan and the prompt log show milestones 3 and 4 as done (only 4.6 is left), and ADR 0007 no longer has two items numbered 4.
+
 ## [0.20.10] - 2026-10-13
 
 ### Changed
