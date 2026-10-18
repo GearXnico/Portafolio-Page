@@ -146,7 +146,7 @@ The details are in `docs/development.md` and `docs/testing.md`. In short:
 - Start from `dev`, on a `feature/<name>`, `fix/<name>`, `docs/<name>` or `chore/<name>` branch.
 - Commits with Conventional Commits in English, for example `feat: add contact form`.
 - One PR (pull request) per task targeting `dev`, with the repo template. It is merged only with rebase & merge.
-- Each PR records its version and its change in `CHANGELOG.md`: `feat` bumps MINOR, the other types bump PATCH, and MAJOR counts the releases to `main`. The guide is at the end of that file.
+- Each PR records its change under `## [Unreleased]` in `CHANGELOG.md`; the version number is chosen only when a release is cut. The guide is at the end of that file.
 - Secrets and `.env` are never committed: only `.env.example`.
 
 ## Automated AI review
