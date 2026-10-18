@@ -1,6 +1,6 @@
 # 0010 · Free deployment while job hunting
 
-Status: proposed · Date: 2026-10-18 · Requested by: Nicolas
+Status: accepted · Date: 2026-10-18 · Decided by: Nicolas
 
 ## Context
 
@@ -37,9 +37,9 @@ Free tiers change often; every limit below is what the provider's page said on t
 
 The .cl domain (CLP 9,990 a year, plan task 5.1) is optional with A and C: Caddy can get a certificate for a free subdomain (for example DuckDNS) until the domain is bought. With B the site lives on `*.onrender.com`.
 
-## Recommendation (pending Nicolas's choice)
+## Decision
 
-**A: Oracle Always Free VM.** It is the only $0 option that runs the site as it is built, with no code changes: one origin, Postgres with `pg_dump`, a real disk for `/media`, SMTP on 587 and no cold start. The work is the one milestone 5 already plans, so moving to DigitalOcean later means changing the host in `deploy.yml`'s secrets and restoring a backup.
+**A: Oracle Always Free VM** (Nicolas, 2026-10-18). It is the only $0 option that runs the site as it is built, with no code changes: one origin, Postgres with `pg_dump`, a real disk for `/media`, SMTP on 587 and no cold start. The work is the one milestone 5 already plans, so moving to DigitalOcean later means changing the host in `deploy.yml`'s secrets and restoring a backup.
 
 The two risks and how to handle them, without adding layers:
 
@@ -48,8 +48,8 @@ The two risks and how to handle them, without adding layers:
 
 B is worth it only if a credit card at Oracle is a no-go. C is the fallback when $0 stops being the priority.
 
-## Consequences (if A is chosen)
+## Consequences
 
 - ADR 0001 and ADR 0008 stay as the target; this phase ends when Nicolas decides to pay for the VPS, and then this ADR is marked superseded.
 - The plan gets a free production phase in milestone 5 (tasks 5.2 to 5.4 against the Oracle VM, without the staging server and its release gate); the plan is updated only after this ADR is accepted.
-- No deployment, account or secret is created until Nicolas chooses an option.
+- Nicolas creates the Oracle account and the VM himself (it needs his card); no deployment or secret is created before that.
