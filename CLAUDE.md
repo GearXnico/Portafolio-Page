@@ -20,7 +20,7 @@ Documentation, code comments, commit messages, branch names and PR (pull request
 | `docs/testing.md` | What is tested, what is not and at which level |
 | `docs/brief.md` | MVP (minimum viable product) scope and what is left out |
 | `docs/architecture.md` | Components, data model, security and CI/CD (continuous integration and continuous deployment) |
-| `docs/adr/` | The why behind each decision (0001 to 0009) |
+| `docs/adr/` | The why behind each decision (0001 to 0010) |
 | `docs/plan.md` | Milestones and tasks, with their definition of done |
 | `docs/prompts/` | Prompt template and log per task |
 
