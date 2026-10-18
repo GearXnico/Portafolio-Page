@@ -65,14 +65,14 @@ Names are lowercase, hyphenated, in English and 2 to 4 words long. Documentation
    - To avoid it, the `sync-dev.yml` workflow runs after every push to `main` and runs `git rebase main` on `dev`. Git drops only the commits that are already in `main` and keeps the new ones. Then it runs `git push --force-with-lease` to `dev`. It is the only actor with a bypass of the "no force push" rule on `dev`.
    - A `hotfix/*` goes into `main` and reaches `dev` through that same workflow.
 4. **Versions** (Nicolas, 2026-10-13): every PR merged into `dev` has a version in SemVer format (`MAJOR.MINOR.PATCH`) and records it in `CHANGELOG.md`. A `feat` PR bumps MINOR and a PR of any other type bumps PATCH. MAJOR counts the releases to `main` and stays at `0` until the first one, `1.0.0`. The guide, with an example, is at the end of `CHANGELOG.md`.
-4. **Protection of `main` and `dev`:**
+5. **Protection of `main` and `dev`:**
    - No force push or deletion (except `sync-dev.yml` on `dev`).
    - Linear history required, and rebase & merge as the only enabled merge method.
    - Mandatory PR with 1 approval; the bypass is allowed only for Nicolas.
    - The checks below have to be green.
    - The branch has to be up to date with its base before merging.
    - On your own `feature/*` branch, `git push --force-with-lease` is allowed.
-5. **Never in the repo:** `.env`, keys or real data. Only `.env.example` is versioned.
+6. **Never in the repo:** `.env`, keys or real data. Only `.env.example` is versioned.
 
 ### Testing (requirement to merge into `dev`)
 
