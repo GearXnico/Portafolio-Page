@@ -172,7 +172,7 @@ pre-commit run --all-files
 
 1. Run tests, lint, typecheck and `pre-commit`, and confirm everything is green.
 2. Open the PR to `dev` and share the link.
-3. Add at the top of `CHANGELOG.md`, in English, the section with your PR's version: `feat` bumps MINOR and the other types bump PATCH. The guide is at the end of that file.
+3. Add your change in English under `## [Unreleased]` at the top of `CHANGELOG.md`, without a version number; the number is chosen only when a release is cut. The guide is at the end of that file.
 4. Add a row to `docs/prompts/log.md` with the task, the model, the tokens from `/cost`, the sessions and the PR. Fill in "Result" and "Lessons" in the prompt file.
 5. If a command or a convention changed, update this file in the same PR.
 

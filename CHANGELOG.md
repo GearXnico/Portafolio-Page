@@ -1,6 +1,12 @@
 # Changelog
 
-Every pull request merged into `dev` is listed here, newest first, with the version it produced. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
+Every pull request merged into `dev` is listed here, newest first. New changes go under `[Unreleased]`, and they get a version number only when a release is cut. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
+
+## [Unreleased]
+
+### Changed
+
+- Versioning: PRs add their entry under `[Unreleased]` and the version number is chosen only when a release is cut, so open PRs no longer renumber after every merge. Versions up to 0.20.11 were set per PR under the previous rule.
 
 ## [0.20.11] - 2026-10-18
 
@@ -286,33 +292,31 @@ Every pull request merged into `dev` is listed here, newest first, with the vers
 
 ### Versioning
 
-Versions use the SemVer (Semantic Versioning) format, `MAJOR.MINOR.PATCH`:
+Versions use the SemVer (Semantic Versioning) format, `MAJOR.MINOR.PATCH`. PRs don't pick a number: they add their entry under `## [Unreleased]`, and the number is chosen once, when a release is cut, from what that section holds:
 
-| Part    | What it counts                       | When it goes up                                                                                                     |
-| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| `MAJOR` | Releases to `main`                   | When `dev` is released to `main`. It stays at `0` until the first release, `1.0.0`. MINOR and PATCH go back to `0`. |
-| `MINOR` | Features merged into `dev`           | With every merged PR of type `feat`. PATCH goes back to `0`.                                                        |
-| `PATCH` | Other changes since the last feature | With every other merged PR: `fix`, `docs`, `test`, `refactor` or `chore`.                                           |
+| Part    | When it goes up                                                                                            |
+| ------- | ---------------------------------------------------------------------------------------------------------- |
+| `MAJOR` | It stays at `0` until version 1 of the site is published (`1.0.0`). MINOR and PATCH go back to `0`.        |
+| `MINOR` | When `[Unreleased]` has at least one feature (an **Added** line from a `feat` PR). PATCH goes back to `0`. |
+| `PATCH` | When `[Unreleased]` only has fixes, docs, tests, refactors or chores.                                      |
 
-Every PR merged into `dev` gets exactly one version. Its type is the Conventional Commits type in the PR title, so the next number can be read straight from the title.
+Versions up to `0.20.11` were set per PR under the previous rule (until 2026-10-18) and stay as they are.
 
-**Example.** `dev` is at `0.20.1`, and three PRs are merged in this order:
-
-1. `feat: dark mode` gives `0.21.0` (a feature: MINOR goes up and PATCH goes back to `0`).
-2. `fix: dark mode contrast` gives `0.21.1`.
-3. `docs: explain dark mode` gives `0.21.2`.
-
-Releasing that state to `main` then gives `1.0.0`, and the next feature merged into `dev` gives `1.1.0`.
+**Example.** The last release is `0.21.0`, and three PRs are merged: `feat: dark mode`, `fix: dark mode contrast` and `docs: explain dark mode`. All three add their lines under `[Unreleased]`. Since there is a feature, the next release is `0.22.0`. If only the `fix` and the `docs` PRs had been merged, it would be `0.21.1`.
 
 ### Adding an entry
 
-1. Each PR adds a new section at the top, right under the introduction, with the next version and the merge date: `## [0.21.0] - 2026-10-14`.
-2. Under it go one or more of these headings, each with a short line that ends with the task and the PR number:
+1. Each PR adds its lines under `## [Unreleased]`, at the top, right under the introduction. If the section doesn't exist, the PR creates it.
+2. The lines go under one or more of these headings, each with a short line that ends with the task and the PR number:
    - **Added:** something new.
    - **Changed:** something that already existed and now works differently.
    - **Fixed:** a bug.
    - **Security:** a new protection or a fixed risk.
 3. Write each line for someone using the site or the panel, not for someone reading the code.
-4. If another PR is merged first, the open PR is rebased and its version moves to the next free number.
+4. If another PR is merged first, the open PR is rebased and keeps its lines under `[Unreleased]`, next to the new ones.
 
-When `dev` is released to `main`, the release gets a SemVer tag on `main` (`v1.0.0`), and its notes are the sections added since the previous release.
+### Cutting a release
+
+1. A `chore: release x.y.z` PR to `dev` renames `## [Unreleased]` to `## [x.y.z] - <date>`, with the number from the table above.
+2. Then the release PR `dev` → `main` is opened (ADR 0007).
+3. After the release, `main` gets a SemVer tag (`v0.21.0`), and its notes are that version's section.

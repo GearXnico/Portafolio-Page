@@ -19,7 +19,7 @@
 - [ ] New or updated tests, with coverage above the minimum
 - [ ] CI (continuous integration), security and E2E (end-to-end) checks green
 - [ ] No secrets or personal data
-- [ ] Documentation updated if something visible changes (README or docs/), and this PR's version recorded in `CHANGELOG.md`
+- [ ] Documentation updated if something visible changes (README or docs/), and this PR's change recorded under `[Unreleased]` in `CHANGELOG.md`
 - [ ] Branch up to date with its base
 - [ ] Automated review comments addressed or answered
 - [ ] Approved, or merged by Nicolas with a recorded bypass
