@@ -6,7 +6,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Changed
 
-- Docs: ADR 0010 (proposed) compares free hosts for publishing the portfolio while job hunting (Oracle Always Free VM, Render with Neon, or the planned VPS brought forward), with their limits checked on 2026-10-18; ADR 0001 and ADR 0008 stay as the target.
+- Docs: ADR 0010 picks an Oracle Always Free VM for a free production deployment while job hunting, after comparing free hosts for publishing the portfolio while job hunting (Oracle Always Free VM, Render with Neon, or the planned VPS brought forward), with their limits checked on 2026-10-18; the plan's milestone 5 starts with that free phase, and ADR 0001 and ADR 0008 stay as the target.
 - Versioning: PRs add their entry under `[Unreleased]` and the version number is chosen only when a release is cut, so open PRs no longer renumber after every merge. Versions up to 0.20.11 were set per PR under the previous rule.
 - `@tanstack/react-query` goes from 5.104.0 to 5.104.1, a patch release (Dependabot #47).
 - The type check and the build use TypeScript 7, the native compiler; ESLint keeps the TypeScript 6 API until typescript-eslint supports 7 (replaces Dependabot #48).

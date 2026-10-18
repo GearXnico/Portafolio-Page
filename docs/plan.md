@@ -99,6 +99,8 @@ The repo was called `plantilla-producto` because at first it was going to be the
 
 It starts when milestone 4 is done and tested locally and in CI, **and also** the template and at least one quick project are done (order decided by Nicolas on 2026-10-12). Before starting, review how the existing products share the VPS and Caddy.
 
+**Free phase first (ADR 0010, Nicolas, 2026-10-18):** while he is job hunting, tasks 5.1 to 5.4 run for production only on an Oracle Always Free VM instead of DigitalOcean, and the backups also leave the VM. The staging VPS and its release gate (ADR 0008) wait until the move to DigitalOcean, which reuses the same compose, `deploy.sh` and a backup restore.
+
 | # | Task | Hours | Done when |
 |---|---|---|---|
 | 5.1 | Create the DigitalOcean account with a billing alert and your SSH (Secure Shell, encrypted remote access) key, and register the .cl domain at NIC Chile (CLP 9,990 a year). You do it. | 1 | You can create a droplet and the domain is in your name |
