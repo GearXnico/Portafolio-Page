@@ -7,6 +7,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 ### Changed
 
 - Versioning: PRs add their entry under `[Unreleased]` and the version number is chosen only when a release is cut, so open PRs no longer renumber after every merge. Versions up to 0.20.11 were set per PR under the previous rule.
+- `@tanstack/react-query` goes from 5.104.0 to 5.104.1, a patch release (Dependabot #47).
 
 ## [0.20.11] - 2026-10-18
 
