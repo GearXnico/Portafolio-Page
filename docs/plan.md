@@ -24,14 +24,14 @@ Each task is meant to be finished in one Claude Code session. It is delivered as
 | Milestone | Deliverable | Hours | Status |
 |---|---|---|---|
 | 0 | Free accounts ready | 2 | Done |
-| 1 | Base with CI, security and a deployment test in CI | 22.5 | Done (1.9 in this PR) |
+| 1 | Base with CI, security and a deployment test in CI | 22.5 | Done |
 | 2 | API (application programming interface) and database | 14 | Done |
-| 3 | Bilingual public frontend | 17 | 3.1 and 3.2 done |
-| 4 | Admin panel | 18 | Pending |
+| 3 | Bilingual public frontend | 17 | Done |
+| 4 | Admin panel | 18 | 4.1 to 4.5 done; 4.6 pending |
 | 5 | Deployment, content and release of version 1 (~US$13.20 a month plus CLP 9,990 a year for the domain) | 20.5 | After the template and the quick projects |
 | | **Total** | **94** | |
 
-About 28 h of development remain (3.3 to 3.6 and milestone 4), plus the 20.5 h of milestone 5.
+Only task 4.6 remains before milestone 5 (1 h, done by Nicolas), plus the 20.5 h of milestone 5 (status on 2026-10-18).
 
 ## Milestone 0 · Free accounts (you do it, without Claude Code)
 
