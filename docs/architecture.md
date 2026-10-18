@@ -65,7 +65,7 @@ flowchart TB
 | caddy | Caddy 2.11 | Automatic HTTPS, serves `web` and `/media`, and forwards `/api` to the API. |
 | backup | Script with `pg_dump` and cron | Daily copy of the database and of `/media`, kept for 7 days, and an extra copy before each deployment. On top of that, DigitalOcean's weekly backup. Details in section 6. |
 
-TypeScript 7.0 is the first version with the native compiler. If some tool does not support it yet, 6.x is used without changing anything else.
+TypeScript 7.0 is the first version with the native compiler, and it runs `npm run typecheck` and the build. typescript-eslint does not support it yet, so the TypeScript 6 API stays installed under the `typescript` name (the official `@typescript/typescript6` package) only for ESLint, and TypeScript 7 is installed as `typescript-7`. Both packages ship a `tsc` command, so the `typecheck` script calls TypeScript 7 by its path. When typescript-eslint supports 7, the alias is removed.
 
 ### How they communicate
 
