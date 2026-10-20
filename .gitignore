@@ -32,3 +32,6 @@ backups/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Deployed version on the server (deploy/deploy.sh)
+deploy/.deployed-tag
