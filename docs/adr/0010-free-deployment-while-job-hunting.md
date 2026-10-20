@@ -1,6 +1,6 @@
 # 0010 · Free deployment while job hunting
 
-Status: accepted · Date: 2026-10-18 · Decided by: Nicolas
+Status: accepted · Date: 2026-10-18 · Decided by: Nicolas · Amended: 2026-10-20 (where backups go)
 
 ## Context
 
@@ -43,7 +43,7 @@ The .cl domain (CLP 9,990 a year, plan task 5.1) is optional with A and C: Caddy
 
 The two risks and how to handle them, without adding layers:
 
-- **Idle reclamation:** the daily `pg_dump` and `/media` copy (task 5.4) must leave the VM, for example as a GitHub Actions artifact or on the machine of whoever runs the backup, so a reclaimed VM is rebuilt with `deploy.sh` and a restore. Upgrading to Pay As You Go is reported to stop reclamation, but the official page does not say so; check before relying on it, and set a budget alert at US$1 if the account is upgraded.
+- **Idle reclamation:** the daily `pg_dump` and `/media` copy (task 5.4) must leave the VM, so a reclaimed VM is rebuilt with `deploy.sh` and a restore. **Amended on 2026-10-20 (Nicolas):** the backup is encrypted on the VM with age to a public key whose private key only Nicolas holds, and it is uploaded to a private Object Storage bucket in the same Oracle account (20 GB in Always Free; the idle reclamation applies only to compute instances, per the [Always Free resources page](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm), checked on 2026-10-20). The VM uploads with its instance principal and a policy that only allows creating objects, so there is no key on the server and a compromised server can't read or delete old backups; the bucket deletes them after 14 days, and Nicolas keeps a monthly copy on his machine in case the account closes. The first idea, a GitHub Actions artifact, was dropped: the repo is public and any signed-in GitHub user can download its artifacts, so even an encrypted backup would sit in public view. Upgrading to Pay As You Go is reported to stop reclamation, but the official page does not say so; check before relying on it, and set a budget alert at US$1 if the account is upgraded.
 - **Capacity at signup:** if no micro VM can be created in the home region, fall back to C rather than B, because B's changes are throwaway work.
 
 B is worth it only if a credit card at Oracle is a no-go. C is the fallback when $0 stops being the priority.
