@@ -1,0 +1,104 @@
+# Publishes the production images and deploys them to the server. Task 5.3, ADR (architecture decision record) 0010.
+# - Every push to main publishes the API and web images to GHCR (GitHub Container Registry), tagged with the commit SHA.
+# - The deploy is a manual button (Actions > deploy > Run workflow) that takes a SHA already published, so
+#   a rollback is the same button with an older SHA. It runs deploy/deploy.sh on the server over SSH.
+# The server is reached only with the secrets of the `production` environment (see deploy/README.md).
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full commit SHA of main whose images are deployed
+        required: true
+        type: string
+
+permissions: {}
+
+# One deploy at a time, and never cancelled halfway.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  # GHCR needs a lowercase name: ghcr.io/<owner>/<repo>/api and /web.
+  IMAGE_PREFIX: ghcr.io/gearxnico/portafolio-page
+
+jobs:
+  publish:
+    name: Publish images
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The same build as the deploy-check job in ci.yml, which already tested these images on this commit.
+      # Placeholders only so the compose file resolves: production values live on the server.
+      - name: Build
+        env:
+          SITE_ADDRESS: build
+          ADMIN_EMAIL: build
+          ADMIN_PASSWORD_HASH: build
+          JWT_SECRET: build
+        run: docker compose -f deploy/compose.prod.yml --env-file .env.example build migrate caddy
+      - name: Push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+          docker push "$IMAGE_PREFIX/api:$IMAGE_TAG"
+          docker push "$IMAGE_PREFIX/web:$IMAGE_TAG"
+          docker logout ghcr.io
+
+  deploy:
+    name: Deploy to production
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Check the SHA
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "The SHA must be the full 40-character commit hash"; exit 1; }
+      # The deploy files on the server come from the same commit as the images.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      # The host key is pinned (DEPLOY_KNOWN_HOSTS), so a different server is refused instead of trusted.
+      - name: Set up SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+      - name: Copy the deploy files and run deploy.sh
+        env:
+          SHA: ${{ inputs.sha }}
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+        run: |
+          ssh_cmd=(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes)
+          # deploy/.env and deploy/backups stay on the server: tar only sends files from the repo.
+          tar -cf - deploy/compose.prod.yml deploy/deploy.sh db/init \
+            | "${ssh_cmd[@]}" "$TARGET" 'mkdir -p ~/portafolio && tar -xf - -C ~/portafolio'
+          "${ssh_cmd[@]}" "$TARGET" "~/portafolio/deploy/deploy.sh $SHA"
+      - name: Remove the key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
