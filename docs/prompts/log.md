@@ -16,6 +16,9 @@ One row per plan task, in order. Cloud Claude Code sessions have no `/cost`, so 
 | 4.4 | 2026-10-13 | Editing profile, skills and experience | Opus | n/a | n/a | 1 | #33 | Merged | — |
 | 4.5 | 2026-10-13 | Messages and visits by UTM in the panel | Opus | n/a | n/a | 1 | #34 | Merged | — |
 | 4.3 | 2026-10-13 | Screenshot upload from the project form | Opus | n/a | n/a | 1 | #36 | Merged | — |
+| 5.3 | 2026-10-20 | Images in GHCR, `deploy.sh` with rollback and `deploy.yml` (free phase, ADR 0010) | Opus | n/a | n/a | 1 | #55 | In review | — |
+| 5.4 | 2026-10-20 | Encrypted daily backups to a private Object Storage bucket | Opus | n/a | n/a | 1 | #56 | In review | — |
+| 5.2 | 2026-10-20 | Oracle server setup guide | Opus | n/a | n/a | 1 | #57 | In review | — |
 
 ## Totals per milestone
 
