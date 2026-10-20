@@ -1,6 +1,6 @@
 # Oracle server setup (task 5.2, free phase)
 
-How to prepare the Oracle Always Free VM (virtual machine) from ADR (architecture decision record) 0010, production only. You do every step by hand once; after that, deploys are the `deploy` workflow (see `README.md` in this folder). If Oracle reclaims the VM, repeat steps 2 to 5 and 8, run the workflow and restore the latest backup.
+How to prepare the Oracle Always Free VM (virtual machine) from ADR (architecture decision record) 0010, production only. You do every step by hand once; after that, deploys are the `deploy` workflow (see `README.md` in this folder). If Oracle reclaims the VM, the new one has a new OCID (Oracle Cloud ID) and a new IP: repeat steps 2 to 5, update the dynamic group rule (6.3), the A record (7), the `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` secrets (8), the cron line (9), then run the workflow and restore the latest backup.
 
 Secrets are created only on the server and in GitHub. None of them goes into the repo, which is public.
 
@@ -117,7 +117,7 @@ Point an A record at the VM's public IP: a free DuckDNS subdomain, or the `.cl` 
    | Secret | Value |
    |---|---|
    | `DEPLOY_SSH_KEY` | the content of `~/.ssh/portafolio_actions` (private) |
-   | `DEPLOY_KNOWN_HOSTS` | the output of `ssh-keyscan -t ed25519 <ip>`; check its fingerprint against `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the VM |
+   | `DEPLOY_KNOWN_HOSTS` | the output of `ssh-keyscan -t ed25519 <ip> 2>/dev/null`. Before saving it, run `ssh-keyscan -t ed25519 <ip> 2>/dev/null \| ssh-keygen -lf -` on your machine and `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` on the VM: the two SHA256 strings must match |
    | `DEPLOY_HOST` | the VM's public IP |
    | `DEPLOY_USER` | `deploy` |
 
@@ -125,7 +125,7 @@ Point an A record at the VM's public IP: a free DuckDNS subdomain, or the `.cl` 
 
 ## 9. First deploy and backups
 
-1. **Actions > deploy > Run workflow** with the full SHA of `main`. It ends green when `/api/health` answers.
+1. **Actions > deploy > Run workflow**, from the `main` branch, with the full SHA of a commit on `main`. It ends green when `/api/health` answers.
 2. Daily backup, as `deploy` (`crontab -e`):
 
    ```
