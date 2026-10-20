@@ -76,6 +76,7 @@ npm run e2e                                # Playwright, with the compose up
 # Production locally (same as the deploy-check job); details in deploy/README.md
 cp .env.example deploy/.env                 # and fill in SITE_ADDRESS, ADMIN_* and JWT_SECRET
 docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --build --wait caddy
+DEPLOY_PULL=0 deploy/deploy.sh local        # deploy as on the server, with the local images; rolls back on failure
 cd web && E2E_BASE_URL=http://localhost npm run e2e
 
 # pre-commit: ruff, Prettier and private keys; it also runs in CI
