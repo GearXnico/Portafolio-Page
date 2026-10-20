@@ -59,7 +59,9 @@ docker compose -f deploy/compose.prod.yml --env-file deploy/.env exec -T api \
   tar -xf - -C /media < restore/media.tar
 ```
 
-Once a month, download the latest backup to your computer too: if the Oracle account were closed, the bucket would go with it.
+Once a month, download the latest backup to your computer too: if the Oracle account were closed, the bucket would go with it. That monthly look at the bucket is also how a failing cron job is noticed (a missing day, or `~/backup.log` on the server); `backup.sh` exits with an error when the bucket variable is missing or the upload fails.
+
+`deploy.sh` also leaves an unencrypted dump in `deploy/backups/` before each deploy, readable only by the `deploy` user (`umask 077`). It holds the same data as the database volume on the same disk, so it adds no exposure; it never leaves the server.
 
 ## Decisions in this folder
 
