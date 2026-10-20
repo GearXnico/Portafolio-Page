@@ -221,6 +221,24 @@ jobs:
           test "$(cat deploy/.deployed-tag)" = local
           test "$(docker inspect --format '{{.Config.Image}}' "$($COMPOSE ps -q api)")" = producto/api:local
           curl -fsS --max-time 5 http://localhost/api/health
+      # backup.sh as on the server, without a bucket, and a restore of what it encrypted into a scratch database.
+      - name: The encrypted backup restores
+        run: |
+          sudo apt-get install -y --no-install-recommends age > /dev/null
+          age-keygen -o "$RUNNER_TEMP/backup-key.txt" 2> /dev/null
+          echo "BACKUP_AGE_RECIPIENT=$(age-keygen -y "$RUNNER_TEMP/backup-key.txt")" >> deploy/.env
+          deploy/backup.sh
+          file=$(ls deploy/backups/portafolio-*.tar.age)
+          mkdir "$RUNNER_TEMP/restore"
+          age --decrypt --identity "$RUNNER_TEMP/backup-key.txt" "$file" | tar -xf - -C "$RUNNER_TEMP/restore"
+          tar -tf "$RUNNER_TEMP/restore/media.tar" > /dev/null
+          $COMPOSE exec -T db createdb -U app restore_check
+          $COMPOSE exec -T db pg_restore -U app -d restore_check --no-owner < "$RUNNER_TEMP/restore/db.dump"
+          tables="select count(*) from information_schema.tables where table_schema = 'public'"
+          original=$($COMPOSE exec -T db psql -U app -d app -tAc "$tables")
+          restored=$($COMPOSE exec -T db psql -U app -d restore_check -tAc "$tables")
+          echo "tables: $original original, $restored restored"
+          test "$original" -gt 0 && test "$original" = "$restored"
       - name: Compose logs on failure
         if: failure()
         run: $COMPOSE logs --no-color
