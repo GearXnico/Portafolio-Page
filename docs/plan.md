@@ -6,14 +6,14 @@ ID: 2026-10-08-sitio-portafolio · Version: draft 3 (2026-10-12) · Based on: `b
 
 This plan covers only the **portfolio site**. The repository started as `plantilla-producto`, but the code of milestones 2 and 3 is already the portfolio, so it was renamed to `Portafolio-Page` and it is finished here (Nicolas's decision, 2026-10-12). The reusable template is made later, as a separate project, by extracting what really repeats.
 
-The overall order of work (Nicolas's decision, 2026-10-12) is this:
+The overall order of work (Nicolas's decision, 2026-10-12, changed on 2026-10-20) is this:
 
 1. **Finish developing the portfolio:** milestones 3 and 4 of this plan.
-2. **Create the template** as a new project, with its own brief and plan, from the finished portfolio.
-3. **One or two quick projects** created from the template, which are then shown in the portfolio.
-4. **Only then, the spending:** milestone 5 of this plan deploys the portfolio, and the other products are deployed on the same VPS (virtual private server).
+2. **Deploy the portfolio for free** (milestone 5, free phase of ADR 0010) and present sunsapp in it. sunsapp is already deployed (its own repo), so it is the project shown at launch.
+3. **Later, create the template** as a new project, with its own brief and plan, from the finished portfolio.
+4. **Then one or two quick projects** created from the template, which are added to the portfolio. Paid hosting (ADR 0001 and ADR 0008) comes when Nicolas decides to leave the free phase; the other products can then share the same VPS (virtual private server).
 
-Points 2 and 3 are not part of this plan: each one will have its own documents. The template is part of the ecosystem (Nicolas, 2026-10-12), so it does not take the active idea slot; the quick projects do follow the activation rules.
+Until 2026-10-20 milestone 5 waited for the template and a quick project; Nicolas brought it forward because sunsapp already plays the role of the quick project. Points 3 and 4 are not part of this plan: each one will have its own documents. The template is part of the ecosystem (Nicolas, 2026-10-12), so it does not take the active idea slot; the quick projects do follow the activation rules.
 
 **Development costs nothing.** Milestones 0 to 4 use only free tools: GitHub, Actions on a public repo and Docker locally. Milestone 5 pays for the servers and the domain. Milestone 1 already built the production images and tests them in CI (continuous integration) with `deploy-check` (the ephemeral staging of ADR 0008), so milestone 5 is left with only the servers, the DNS (Domain Name System), the secrets and `deploy.yml`.
 
@@ -28,7 +28,7 @@ Each task is meant to be finished in one Claude Code session. It is delivered as
 | 2 | API (application programming interface) and database | 14 | Done |
 | 3 | Bilingual public frontend | 17 | Done |
 | 4 | Admin panel | 18 | 4.1 to 4.5 done; 4.6 pending |
-| 5 | Deployment, content and release of version 1 (~US$13.20 a month plus CLP 9,990 a year for the domain) | 20.5 | After the template and the quick projects |
+| 5 | Deployment, content and release of version 1 (~US$13.20 a month plus CLP 9,990 a year for the domain) | 20.5 | Next: free phase on Oracle (ADR 0010) |
 | | **Total** | **94** | |
 
 Only task 4.6 remains before milestone 5 (1 h, done by Nicolas), plus the 20.5 h of milestone 5 (status on 2026-10-18).
@@ -97,7 +97,7 @@ The repo was called `plantilla-producto` because at first it was going to be the
 
 ## Milestone 5 · Deployment, content and release (spending starts here)
 
-It starts when milestone 4 is done and tested locally and in CI, **and also** the template and at least one quick project are done (order decided by Nicolas on 2026-10-12). Before starting, review how the existing products share the VPS and Caddy.
+It starts when milestone 4 is done and tested locally and in CI (Nicolas, 2026-10-20: it no longer waits for the template or a quick project). Task 4.6 can be done in production by adding sunsapp as the timed real project.
 
 **Free phase first (ADR 0010, Nicolas, 2026-10-18):** while he is job hunting, tasks 5.1 to 5.4 run for production only on an Oracle Always Free VM instead of DigitalOcean, and the backups also leave the VM. The staging VPS and its release gate (ADR 0008) wait until the move to DigitalOcean, which reuses the same compose, `deploy.sh` and a backup restore.
 
@@ -117,7 +117,6 @@ It starts when milestone 4 is done and tested locally and in CI, **and also** th
 | Risk | Signal | What to do |
 |---|---|---|
 | The real deployment, the least practiced area, is left for the end | Tasks 5.2 or 5.3 go over 4 h each | `deploy-check` already tested the images, the compose and the migrations in milestone 1, so what remains is the server, DNS and secrets. If it gets stuck, publish production first and add staging a few days later. |
-| The portfolio takes long to publish because milestone 5 waits for the template and the quick projects | Weeks go by with the portfolio finished and unpublished | A conscious decision to save costs. If a job application needs it sooner, milestone 5 can be brought forward for the portfolio only. |
 | The panel grows | Milestone 4 goes over 18 h | Publish without project reordering (4.2) and without visits by UTM (4.5); add them later |
 | The future template cannot update the portfolio | When the template is created | Accepted: the portfolio is not synced with the template. If it is worth it later, connect them with a one-time merge and resolve the conflicts once. |
 
