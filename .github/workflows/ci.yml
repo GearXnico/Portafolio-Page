@@ -204,6 +204,23 @@ jobs:
         working-directory: web
         env:
           E2E_BASE_URL: http://localhost
+      # deploy/deploy.sh as on the server, with the images just built (tag "local") instead of GHCR.
+      - name: Deploy with deploy.sh
+        run: |
+          DEPLOY_PULL=0 deploy/deploy.sh local
+          test "$(cat deploy/.deployed-tag)" = local
+      - name: A failed deploy rolls back to the previous version
+        run: |
+          docker tag producto/web:local producto/web:broken
+          printf 'FROM producto/api:local\nCMD ["python", "-c", "raise SystemExit(1)"]\n' \
+            | docker build -t producto/api:broken -
+          if DEPLOY_PULL=0 deploy/deploy.sh broken; then
+            echo "deploy.sh accepted a version whose API doesn't start"
+            exit 1
+          fi
+          test "$(cat deploy/.deployed-tag)" = local
+          test "$(docker inspect --format '{{.Config.Image}}' "$($COMPOSE ps -q api)")" = producto/api:local
+          curl -fsS --max-time 5 http://localhost/api/health
       - name: Compose logs on failure
         if: failure()
         run: $COMPOSE logs --no-color
