@@ -7,8 +7,8 @@
 # 2. Encrypts them with age to BACKUP_AGE_RECIPIENT, a public key: the private key is only with
 #    Nicolas, so neither the server nor the bucket can read a backup.
 # 3. Uploads the file to the private Object Storage bucket BACKUP_BUCKET with the VM's own identity
-#    (instance principal): there is no key on the server, and the policy only lets it create objects,
-#    not read, overwrite or delete them. The bucket deletes them after 14 days.
+#    (instance principal): there is no key on the server, and the policy only lets it create objects
+#    and list their names, not read, overwrite or delete them. The bucket deletes them after 14 days.
 # Restoring is in deploy/README.md.
 set -euo pipefail
 umask 077

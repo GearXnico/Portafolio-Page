@@ -44,7 +44,7 @@ The server never builds images: with 1 GB of memory, building the page there wou
 
 ## Backups and restore (task 5.4)
 
-`backup.sh` runs every day from cron on the server. It encrypts the database dump and `/media` with [age](https://age-encryption.org) to the public key in `BACKUP_AGE_RECIPIENT`, keeps the last 3 on the server and uploads each one to the private Object Storage bucket `BACKUP_BUCKET`. The VM (virtual machine) uploads with its own Oracle identity (instance principal), and its policy only allows creating objects, so a compromised server can't read, replace or delete the backups. A lifecycle rule in the bucket deletes them after 14 days. The private key is only in Nicolas's password manager (two copies); without it no backup can be read. `deploy-check` makes a backup and restores it on every PR.
+`backup.sh` runs every day from cron on the server. It encrypts the database dump and `/media` with [age](https://age-encryption.org) to the public key in `BACKUP_AGE_RECIPIENT`, keeps the last 3 on the server and uploads each one to the private Object Storage bucket `BACKUP_BUCKET`. The VM (virtual machine) uploads with its own Oracle identity (instance principal), and its policy only allows creating objects and listing their names, so a compromised server can't read, replace or delete the backups. A lifecycle rule in the bucket deletes them after 14 days. The private key is only in Nicolas's password manager (two copies); without it no backup can be read. `deploy-check` makes a backup and restores it on every PR.
 
 To restore, on your machine with the production compose (see "Try it on your machine"):
 
