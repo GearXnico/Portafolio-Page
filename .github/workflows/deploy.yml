@@ -17,11 +17,6 @@ on:
 
 permissions: {}
 
-# One deploy at a time, and never cancelled halfway.
-concurrency:
-  group: deploy
-  cancel-in-progress: false
-
 env:
   # GHCR needs a lowercase name: ghcr.io/<owner>/<repo>/api and /web.
   IMAGE_PREFIX: ghcr.io/gearxnico/portafolio-page
@@ -41,7 +36,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # The same build as the deploy-check job in ci.yml, which already tested these images on this commit.
+      # The same build as the deploy-check job in ci.yml. main only receives PRs whose required checks,
+      # deploy-check included, are green (main ruleset, ADR 0007), so a red commit doesn't get here.
       # Placeholders only so the compose file resolves: production values live on the server.
       - name: Build
         env:
@@ -68,8 +64,12 @@ jobs:
     environment: production
     permissions:
       contents: read
+    # One deploy at a time, and never cancelled halfway.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     steps:
-      - name: Check the SHA
+      - name: Check the SHA format
         env:
           SHA: ${{ inputs.sha }}
         run: |
@@ -78,7 +78,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.sha }}
+          fetch-depth: 0
           persist-credentials: false
+      # The environment only limits which branch runs the workflow, not the SHA typed in. Without this,
+      # a commit from an unmerged branch could have its deploy.sh run on the server.
+      - name: Check the SHA is on main
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          git merge-base --is-ancestor "$SHA" origin/main || { echo "$SHA is not on main"; exit 1; }
       # The host key is pinned (DEPLOY_KNOWN_HOSTS), so a different server is refused instead of trusted.
       - name: Set up SSH
         env:
