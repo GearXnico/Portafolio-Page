@@ -7,7 +7,7 @@ Production and staging files. The images are `api/Dockerfile` (the API, or appli
 | `compose.prod.yml` | 1.6 | Database, migrations, API and Caddy, without root, without capabilities, with a read-only file system, memory limits and rotating logs |
 | `Caddyfile` | 1.6 | Automatic HTTPS, the page, `/media`, `/api` and the same security headers as `web/security-headers.ts` |
 | `deploy.sh` | 5.3 | Backup, migrations, health check and rollback |
-| `backup.sh` | 5.4 | Daily `pg_dump` |
+| `backup.sh` | 5.4 | Daily `pg_dump` and `/media`, encrypted with age and uploaded to a private bucket |
 
 ## Try it on your machine
 
@@ -41,6 +41,25 @@ On the server, besides `deploy/`, `db/init/` has to be there too; it creates the
 3. `deploy.sh` pulls the images, backs up the database, migrates, swaps the containers and waits for the health checks. If they fail, it starts the previous version again (saved in `deploy/.deployed-tag`) and the job ends in red. To roll back on purpose, run the workflow with an older SHA.
 
 The server never builds images: with 1 GB of memory, building the page there would be slow and could run out of memory. `deploy/.env` on the server needs `IMAGE_PREFIX=ghcr.io/gearxnico/portafolio-page`.
+
+## Backups and restore (task 5.4)
+
+`backup.sh` runs every day from cron on the server. It encrypts the database dump and `/media` with [age](https://age-encryption.org) to the public key in `BACKUP_AGE_RECIPIENT`, keeps the last 3 on the server and uploads each one to the private Object Storage bucket `BACKUP_BUCKET`. The VM (virtual machine) uploads with its own Oracle identity (instance principal), and its policy only allows creating objects, so a compromised server can't read, replace or delete the backups. A lifecycle rule in the bucket deletes them after 14 days. The private key is only in Nicolas's password manager (two copies); without it no backup can be read. `deploy-check` makes a backup and restores it on every PR.
+
+To restore, on your machine with the production compose (see "Try it on your machine"):
+
+```bash
+# 1. Download the file from the bucket (Oracle console or `oci os object get`) and decrypt it.
+mkdir restore && age --decrypt --identity backup-key.txt portafolio-<date>.tar.age | tar -xf - -C restore
+# 2. Database: replaces its content with the backup ("app" is your POSTGRES_USER and POSTGRES_DB).
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env exec -T db \
+  pg_restore -U app -d app --clean --if-exists --no-owner < restore/db.dump
+# 3. Screenshots.
+docker compose -f deploy/compose.prod.yml --env-file deploy/.env exec -T api \
+  tar -xf - -C /media < restore/media.tar
+```
+
+Once a month, download the latest backup to your computer too: if the Oracle account were closed, the bucket would go with it.
 
 ## Decisions in this folder
 

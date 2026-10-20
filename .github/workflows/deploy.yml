@@ -104,7 +104,7 @@ jobs:
         run: |
           ssh_cmd=(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes)
           # deploy/.env and deploy/backups stay on the server: tar only sends files from the repo.
-          tar -cf - deploy/compose.prod.yml deploy/deploy.sh db/init \
+          tar -cf - deploy/compose.prod.yml deploy/deploy.sh deploy/backup.sh db/init \
             | "${ssh_cmd[@]}" "$TARGET" 'mkdir -p ~/portafolio && tar -xf - -C ~/portafolio'
           "${ssh_cmd[@]}" "$TARGET" "~/portafolio/deploy/deploy.sh $SHA"
       - name: Remove the key
