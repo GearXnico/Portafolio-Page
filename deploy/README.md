@@ -30,9 +30,17 @@ The `.env` is never committed to the repo, which is public.
 
 - **In CI:** `deploy-check` uses the example passwords from `.env.example` and test values for the admin, because the database is destroyed at the end. It needs no GitHub secrets.
 - **In staging and production (milestone 5):** each server has its own `deploy/.env`, next to `compose.prod.yml`, with `600` permissions and owned by the `deploy` user. You create it once over SSH (encrypted remote access) and it doesn't change with each deployment. It holds the variables from `.env.example` with new, random values (not the ones from your machine), plus `SITE_ADDRESS` with the domain. Staging and production don't share passwords.
-- **In GitHub (milestone 5):** only what the deployment workflow needs to get into the server: the SSH key, the host and the user, as secrets of the `staging` or `production` environment (ADR (architecture decision record) 0008).
+- **In GitHub (milestone 5):** only what the deployment workflow needs to get into the server, as secrets of the `production` environment (ADR (architecture decision record) 0008 and 0010): `DEPLOY_SSH_KEY` (a private key used only by Actions), `DEPLOY_KNOWN_HOSTS` (the server's line from `ssh-keyscan`, so another host is refused), `DEPLOY_HOST` and `DEPLOY_USER`. Limit the environment to the `main` branch.
 
 On the server, besides `deploy/`, `db/init/` has to be there too; it creates the API user the first time the database starts.
+
+## How a deploy works (task 5.3)
+
+1. A push to `main` runs `.github/workflows/deploy.yml`, which builds the API and web images and publishes them to GHCR (GitHub Container Registry) as `ghcr.io/gearxnico/portafolio-page/api:<sha>` and `.../web:<sha>`. The packages must be public so the server pulls them without a token; they hold no secrets.
+2. **Actions > deploy > Run workflow** with the full SHA of that commit copies `compose.prod.yml`, `deploy.sh` and `db/init/` from the same commit to `~/portafolio` on the server and runs `deploy/deploy.sh <sha>`.
+3. `deploy.sh` pulls the images, backs up the database, migrates, swaps the containers and waits for the health checks. If they fail, it starts the previous version again (saved in `deploy/.deployed-tag`) and the job ends in red. To roll back on purpose, run the workflow with an older SHA.
+
+The server never builds images: with 1 GB of memory, building the page there would be slow and could run out of memory. `deploy/.env` on the server needs `IMAGE_PREFIX=ghcr.io/gearxnico/portafolio-page`.
 
 ## Decisions in this folder
 

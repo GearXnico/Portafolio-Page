@@ -4,6 +4,10 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ## [Unreleased]
 
+### Added
+
+- Deployment: every push to `main` publishes the API and web images to GHCR, and a manual `deploy` workflow runs `deploy/deploy.sh` on the server over SSH for a given SHA; `deploy.sh` backs up, migrates, waits for the health checks and rolls back to the previous version if they fail, which `deploy-check` now tests on every PR.
+
 ### Changed
 
 - Docs: the plan deploys the portfolio now (milestone 5, free phase on Oracle) instead of waiting for the template and a quick project; sunsapp, already deployed, is the project presented at launch, and the template comes later.
