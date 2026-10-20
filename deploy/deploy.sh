@@ -49,8 +49,11 @@ fi
 
 echo "Deploy of $tag failed" >&2
 "${compose[@]}" logs --no-color --tail 50 migrate api caddy >&2 || true
-if [[ -n "$previous" ]]; then
-  echo "Rolling back to $previous" >&2
-  start "$previous"
+if [[ -z "$previous" ]]; then
+  echo "There is no previous version to go back to: the site is down until a deploy works" >&2
+elif start "$previous"; then
+  echo "Rolled back to $previous" >&2
+else
+  echo "The rollback to $previous failed too: the site is down" >&2
 fi
 exit 1
