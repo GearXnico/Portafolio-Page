@@ -6,6 +6,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Added
 
+- Docs: `deploy/oracle-setup.md`, the step-by-step setup of the Oracle Always Free VM (firewall, Docker, a restricted `deploy` user, `deploy/.env`), the private backup bucket with its create-only policy and lifecycle rule, the domain, the `production` environment secrets and the first deploy.
 - Backups: `deploy/backup.sh` encrypts the daily database dump and `/media` with age and uploads them to a private Object Storage bucket with the VM's instance principal (ADR 0010 amended); `deploy-check` restores one on every PR.
 - Deployment: every push to `main` publishes the API and web images to GHCR, and a manual `deploy` workflow runs `deploy/deploy.sh` on the server over SSH for a given SHA; `deploy.sh` backs up, migrates, waits for the health checks and rolls back to the previous version if they fail, which `deploy-check` now tests on every PR.
 

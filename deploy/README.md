@@ -7,6 +7,7 @@ Production and staging files. The images are `api/Dockerfile` (the API, or appli
 | `compose.prod.yml` | 1.6 | Database, migrations, API and Caddy, without root, without capabilities, with a read-only file system, memory limits and rotating logs |
 | `Caddyfile` | 1.6 | Automatic HTTPS, the page, `/media`, `/api` and the same security headers as `web/security-headers.ts` |
 | `deploy.sh` | 5.3 | Backup, migrations, health check and rollback |
+| `oracle-setup.md` | 5.2 | Step by step to prepare the Oracle VM, the backup bucket and the GitHub secrets (free phase, ADR 0010) |
 | `backup.sh` | 5.4 | Daily `pg_dump` and `/media`, encrypted with age and uploaded to a private bucket |
 
 ## Try it on your machine
