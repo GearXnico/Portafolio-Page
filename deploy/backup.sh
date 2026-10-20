@@ -42,9 +42,15 @@ echo "Backup encrypted: backups/$name ($(du -h "backups/$name" | cut -f1))"
 # shellcheck disable=SC2012 # the names are made by this script, without spaces.
 ls -1t backups/portafolio-*.tar.age | tail -n +4 | xargs -r rm --
 
+# An empty bucket fails, so a forgotten variable doesn't leave the backups only on the VM.
+# BACKUP_LOCAL_ONLY=1 is for CI (continuous integration), which has no bucket.
 if [[ -z "$bucket" ]]; then
-  echo "BACKUP_BUCKET is empty: this backup stays only on this server" >&2
-  exit 0
+  if [[ "${BACKUP_LOCAL_ONLY:-0}" == 1 ]]; then
+    echo "BACKUP_LOCAL_ONLY=1: this backup stays only here"
+    exit 0
+  fi
+  echo "BACKUP_BUCKET in deploy/.env is empty: the backup did not leave the server" >&2
+  exit 1
 fi
 oci os object put --auth instance_principal --bucket-name "$bucket" \
   --file "backups/$name" --name "$name"
