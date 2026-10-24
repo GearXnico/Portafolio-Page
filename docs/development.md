@@ -1,61 +1,116 @@
-# Development rules
+# Development
 
-How this repository is built. This is the short version: the reasoning behind each rule is in ADR (architecture decision record) 0007, and the commands are in the README.
+How the code is organized, how changes reach `dev` and `main`, and what CI enforces. The reasoning behind these rules is in [ADR 0007](adr/0007-workflow-tests-and-security.md).
 
 ## Principle
 
-**No overengineer. Keep it simple and secure.** Between two secure solutions, pick the simpler one. Security is not cut back: it is solved with the most direct thing that works.
+Keep it simple and secure. Between two secure solutions, pick the simpler one; security is never traded away, it is solved with the most direct thing that works. Every part of the code should be readable and explainable by whoever maintains it.
 
-The underlying idea is that the project owner can read any part of the code and understand what it does and why. Code nobody understands cannot be maintained or defended in an interview.
+## When not to add a layer
 
-## What gets built now
+Before adding an abstraction, a setting or a new file, check it against this table. If the answer is no, it is not added.
 
-- Only what the task at hand needs.
-- If it needs something new (a table, a service, a dependency), agree on it first and record the decision in an ADR when it has lasting impact.
-
-## When not to create a layer
-
-Before adding an abstraction, a configuration variable or a new file, go through this list. If the answer is "no", it is not added.
-
-| Before... | Ask yourself | Example of "no" |
+| Before... | Ask | Example of "no" |
 |---|---|---|
-| Extracting a shared function or class | Are there already three places that use it the same way? | Two routes with a similar `if`: leave it repeated |
-| Adding an environment variable | Does it change between local, staging and production, or is it a secret? | The maximum length of a message goes in the code |
-| Creating a table or column | Does the plan or the data model in `docs/architecture.md` ask for it? | A users table when there is a single administrator (ADR 0004) |
-| Adding a dependency | Is what is already installed not enough, and does it pass `pip-audit` or `npm audit`? | A date library to format month and year |
-| Making something configurable | Are there two real cases today? | Supporting a third language "just in case" when the brief asks for Spanish and English |
+| Extracting a shared function or class | Do three places already use it the same way? | Two routes with a similar `if` stay repeated |
+| Adding an environment variable | Does it differ between environments, or is it a secret? | The maximum message length lives in the code |
+| Creating a table or column | Does the data model need it? | A users table for a single administrator ([ADR 0004](adr/0004-single-admin.md)) |
+| Adding a dependency | Is what is installed not enough, and does it pass `pip-audit` or `npm audit`? | A date library to format month and year |
+| Making something configurable | Are there two real cases today? | A third language "just in case" |
 
-There are two exceptions, decided on purpose: the language is decided only in `api/app/services/locale.py` (ADR 0002) and email is sent only from `api/app/services/mail.py` (ADR 0005). They are a single point because they are known to change.
+Two places are single points on purpose, because they are expected to change: the language is decided only in `api/app/services/locale.py` ([ADR 0002](adr/0002-language-from-browser.md)) and email is sent only from `api/app/services/mail.py` ([ADR 0005](adr/0005-contact-notice-gmail-smtp.md)).
 
-## Where each thing goes
+## Where code goes
 
-The full map is in the README. When writing code:
+- **API:** routes in `app/routers/` only receive, call a service and respond. Logic lives in `app/services/`, input and output validation in `app/schemas/`, tables in `app/models/`.
+- **Web:** pages in `src/pages/`, one component per file in `src/components/`, API calls in `src/api/`, UI text in `src/i18n/{es,en}.json`.
+- **Language:** code, names, comments and docs in English; user-facing text in both languages.
+- **Comments:** only for a non-obvious why. Clear names come first.
 
-- **API (application programming interface):** the route in `app/routers/` only receives, calls and responds. The logic goes in `app/services/`, validation of what comes in and goes out in `app/schemas/` (Pydantic) and the tables in `app/models/`.
-- **Web:** one page per file in `src/pages/`, one component per file in `src/components/`, API calls in `src/api/` and texts in `src/i18n/es.json` and `en.json`, never written inside a component.
-- **Names and language:** code, tests, code comments and documentation in English; user-facing texts in both languages, from `src/i18n/`.
-- **Comments:** they explain the why, not the what. Each file in `services/` opens with a paragraph that says what it is responsible for.
+## Branches, commits and PRs
 
-## Branches, commits and PRs (pull requests)
+1. Branch from `dev`: `feature/`, `fix/`, `docs/` or `chore/` plus 2 to 4 lowercase words, for example `feature/contact-form`. `hotfix/` branches from `main`.
+2. Conventional Commits: `feat: add contact form`. Each commit does one thing and keeps the tests green, because it reaches `dev` as is.
+3. One focused PR into `dev`, ideally under 400 lines, using the template: Before, After, How to test and the checklist.
+4. Each PR adds its entry under `## [Unreleased]` in `CHANGELOG.md`; the version is set when a release is cut.
+5. Merges use rebase & merge only.
+6. No secrets, `.env` files or personal data: the repository is public.
 
-Summary of ADR 0007:
+## Review
 
-1. Start from `dev` on a `feature/`, `fix/`, `docs/` or `chore/` branch with 2 to 4 English words, lowercase and hyphenated, for example `feature/contact-form`. `hotfix/` branches off `main`.
-2. Commits in English with Conventional Commits (a standard message format): `feat: add contact form`. Each commit does one thing and leaves the tests green, because it reaches `dev` as is.
-3. One PR per plan task, into `dev`, ideally under ~400 lines, in English and with the template: Before, After, How to test and the checklist.
-4. Merge only with rebase & merge, and delete the branch afterwards.
-5. Never push secrets, `.env` or personal data: the repository is public.
+1. **CI** must be green: tests, lint, types, security and E2E.
+2. **Automated review:** `ai-review.yml` comments on code PRs with Claude. It never approves and doesn't block. It skips drafts, Dependabot and docs-only PRs; commenting `@claude revisa` asks for another pass. It needs the `CLAUDE_CODE_OAUTH_TOKEN` secret and the Claude GitHub app.
+3. **Owner review** checks that the PR:
+   - does what it says and nothing more;
+   - is the simplest thing that works;
+   - validates input, requires a session on `/api/admin/*` and keeps personal data out of logs;
+   - tests what matters ([testing.md](testing.md));
+   - updates the docs when something visible changes.
 
-## How a PR is reviewed
+## CI
 
-1. **CI (continuous integration):** tests, lint, types, security and E2E (end-to-end tests) must be green. Without that, it cannot be merged.
-2. **AI (artificial intelligence) review:** `ai-review.yml` leaves comments on code PRs, never approves and does not block. Each comment is fixed or answered in its thread.
-3. **Owner review:** reads the PR in this order and approves it (or merges with a recorded bypass) only if the answer to everything is yes:
-   - Does it do what the task asks, and nothing more?
-   - Do I understand every file that changed? If not, ask for an explanation in the PR before going on.
-   - Is it the simplest thing that works? (table above)
-   - Are inputs validated, do `/api/admin/*` routes require a session, and do the logs keep personal data out?
-   - Do the tests test what matters? (`docs/testing.md`)
-   - Are the README or `docs/` up to date if something visible changed?
+`ci.yml` runs on every PR and every push to `dev` and `main`. A new push to the same PR cancels the previous run. It uses no secrets and a read-only token, actions are pinned by SHA, and pip, npm and pre-commit are cached.
 
-To understand a large PR, it helps to read it commit by commit: each one does one thing and its message says which.
+| Job | What it checks |
+|---|---|
+| pre-commit | `ruff` (lint, format and the Bandit `S` rules), Prettier and committed private keys |
+| API | `mypy` and `pytest` against Postgres, with 80 % coverage |
+| Web | ESLint, `tsc`, Vitest with 80 % coverage and `vite build` |
+| E2E | Playwright against the dev server, with the database, migrations and API from the compose stack |
+| Deployment (`deploy-check`) | Builds the production images, deploys them with `deploy/deploy.sh`, forces a failed deploy and checks the rollback, checks that no container runs as root, restores an encrypted backup and runs the E2E suite against Caddy |
+
+The same pre-commit hooks run locally:
+
+```bash
+pip install "pre-commit==4.6.*"
+pre-commit install
+pre-commit run --all-files
+```
+
+## Security checks
+
+`security.yml` runs on every PR, every push to `dev` and `main`, and every Monday at 09:00 UTC.
+
+| Job | Scope | Fails on |
+|---|---|---|
+| CodeQL | Python, TypeScript and the workflows | A high or critical finding |
+| pip-audit | API dependencies, including dev ones | Any known vulnerability |
+| npm audit | Web dependencies from `package-lock.json` | A high or critical vulnerability |
+| Trivy | The production images | A high or critical vulnerability with a fix that `.trivyignore` doesn't accept |
+
+Each entry in `.trivyignore` has an expiry date (`exp:`), after which the job fails again and the finding is reviewed. `pip-audit` and `npm audit` don't read that file, so our own dependencies are still checked.
+
+`dependabot.yml` checks pip, npm, the base images and the actions weekly. Minor and patch updates come as one PR per ecosystem, majors one by one, and new versions wait 7 days before being proposed; security alerts don't wait.
+
+Secret scanning and push protection are enabled in the repository settings. CodeQL's default setup stays off, because `security.yml` is the advanced setup and GitHub doesn't allow both.
+
+Locally:
+
+```bash
+cd api && pip install "pip-audit==2.10.*" && pip-audit --skip-editable
+cd web && npm audit --audit-level=high
+```
+
+## Branch protection
+
+`dev` and `main` are protected by three rulesets, versioned in `.github/rulesets/` so they can be re-imported from Settings > Rules > Rulesets.
+
+| Ruleset | Branch | Rules | Bypass |
+|---|---|---|---|
+| `main` | `main` | No deletion or force push, linear history, PR required, rebase & merge only, the `ci.yml` and `security.yml` checks green on an up-to-date branch | None |
+| `dev` | `dev` | Same as `main` | The `sync-dev.yml` deploy key |
+| `aprobacion` | `dev` and `main` | One approval, dismissed by a new push | Repository admin, with a recorded bypass, and the deploy key |
+
+Approval lives in its own ruleset so a bypass skips only the approval, never the checks. When a job is renamed or added, its ruleset JSON and the ruleset in GitHub change in the same PR; otherwise the required check stays pending.
+
+### `sync-dev.yml`
+
+After each push to `main` (a release or a hotfix), it rebases `dev` onto `main` and force-pushes it. That drops the copies that rebase & merge leaves on `main` with new SHAs and brings hotfixes into `dev`. On a conflict it fails without pushing, and the conflict is resolved by hand.
+
+It uses a deploy key with write access, stored as the `SYNC_DEV_SSH_KEY` secret:
+
+```bash
+ssh-keygen -t ed25519 -N "" -C sync-dev -f sync-dev
+```
+
+Add `sync-dev.pub` under Settings > Deploy keys with write access, save the private key as the secret, and delete both files.

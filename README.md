@@ -1,234 +1,100 @@
 # Portafolio-Page
 
-Portfolio website: a bilingual (Spanish and English) public page with profile, experience, projects and contact, plus an admin panel to edit it. It comes with tests, CI/CD (continuous integration and continuous deployment) and deployment already solved. It is a monorepo with three pieces:
+Bilingual (Spanish and English) portfolio site with an admin panel. The public page shows the profile, projects, experience and a contact form; the panel edits all of it, uploads project screenshots and shows contact messages and visits per campaign link.
 
-- **api/**: API (application programming interface) in Python with FastAPI.
-- **web/**: frontend in React and TypeScript, built into static files with Vite.
-- **db**: Postgres 18.
+The repository is also a sample of how I build software: a typed API with tests against a real database, a strict TypeScript frontend, security checks in CI and a deployment that rolls itself back when a health check fails.
 
-In production, Caddy serves the frontend and forwards `/api` to the API, all with Docker Compose on a VPS (virtual private server).
+## Stack
 
-> Status: under construction. The API and the web have their skeleton (the page shows whether the API and the database respond), the database has the content tables (profile, skills, experience, projects, screenshots, visits and messages), and the API already serves the content with `GET /api/bootstrap`, receives contact messages, has the admin login and lets you edit the content from the panel. The web has the `/admin` route with login and logout, and the screens to edit projects, profile, skills and experience, and to see the messages and the visits by UTM (Urchin Tracking Module) parameters (screenshots from the panel come in task 4.3).
+| Layer | Technology |
+|---|---|
+| API | Python 3.14, FastAPI, Pydantic 2, SQLAlchemy 2, Alembic |
+| Web | React 19, TypeScript (strict), Vite, React Router, TanStack Query |
+| Database | Postgres 18 |
+| Serving | Caddy: HTTPS, static files, `/media` and the `/api` proxy |
+| Tests | pytest, Vitest, Playwright |
+| CI/CD | GitHub Actions, images in GHCR, deployment over SSH |
 
-## Requirements
+## Architecture
 
-- Docker with Docker Compose v2.
-- Git.
+```mermaid
+flowchart LR
+    B[Browser] -->|HTTPS| C[Caddy]
+    C -->|static build| W[React app]
+    C -->|/media| M[(media volume)]
+    C -->|/api| A[FastAPI]
+    A --> D[(Postgres)]
+    A --> M
+    A -->|SMTP| G[Contact notice]
+```
+
+Everything runs under one domain with Docker Compose. The page loads its content with a single `GET /api/bootstrap` call, which also records the visit and picks the language. Details in [docs/architecture.md](docs/architecture.md).
 
 ## Run locally
 
+Requirements: Docker with Compose v2.
+
 ```bash
-cp .env.example .env      # development values; never commit .env
-docker compose up -d      # db, api (:8000) and web (:5173)
+cp .env.example .env
+docker compose up -d
 ```
 
-- Page: http://localhost:5173
-- API: http://localhost:8000/api/health (returns 200 if the database answers and 503 if not)
-- Interactive API documentation: http://localhost:8000/docs
-
-Changes in `api/app/` and `web/` reload on their own. Database migrations are applied automatically on every `docker compose up`, by the `migrate` service, before the API starts. To shut everything down: `docker compose down` (add `-v` to also delete the local database).
-
-If you change the dependencies (`api/pyproject.toml` or `web/package.json`), rebuild with `docker compose up -d --build`.
-
-## Repository map
-
-What is in each folder and what it is for. To understand a feature, follow the path of a request: `web/src/api/` calls a route in `api/app/routers/`, which uses the logic in `api/app/services/` and the tables in `api/app/models/`.
-
-```
-api/                    The API (application programming interface), in Python with FastAPI
-  app/
-    main.py             Builds the app: middlewares and routes
-    config.py           Reads the environment variables (.env)
-    db.py               Connection to Postgres
-    middleware.py       Request size limit
-    hash_password.py    Command to generate the hash of the admin password
-    routers/            Routes: receive the request, call a service and respond
-    services/           Logic: login, content, screenshots, contact, email, language, visits and limits
-    schemas/            What data goes in and out of each route, validated with Pydantic
-    models/             Database tables, with SQLAlchemy
-  alembic/versions/     Migrations: each change to the tables, in order
-  tests/                Tests with pytest against a real Postgres (one per area: test_<area>.py)
-web/                    The page, in React and TypeScript
-  src/
-    main.tsx, App.tsx   Web startup and its routes (`/admin` and the public page)
-    pages/              Full pages: the public page, the login and the panel
-    components/         Page sections, one component per file
-    api/                Calls to the API
-    i18n/               UI text in es.json and en.json
-  tests/                Component tests with Vitest
-  e2e/                  End-to-end tests with Playwright
-  security-headers.ts   Security headers (the same ones Caddy uses)
-db/init/                Script that creates the API user when the database is created
-deploy/                 Production: compose.prod.yml and Caddyfile (see deploy/README.md)
-docs/                   Project documentation (table below)
-.github/
-  workflows/            ci.yml (tests), security.yml (scans), ai-review.yml (review with AI, artificial intelligence) and sync-dev.yml
-  rulesets/             Protection for dev and main, to import into GitHub
-  dependabot.yml        Weekly dependency updates
-  pull_request_template.md
-compose.yml             Local development: db, migrate, api and web
-.env.example            Example environment variables; the real .env is never committed
-AGENTS.md               Guidance for coding agents (CLAUDE.md imports it)
-```
-
-| Document | Why read it |
+| URL | What |
 |---|---|
-| `docs/api.md` | API reference: routes, validations, protections and database users |
-| `docs/development.md` | Development rules: what gets built, when not to add layers, branches, commits and how it is reviewed |
-| `docs/testing.md` | What is tested, what is not and why each kind of test exists |
-| `docs/architecture.md` | Components, data model, security and deployment |
-| `docs/adr/` | The why behind each decision, one ADR (architecture decision record) per file |
+| http://localhost:5173 | The page (`/admin` for the panel) |
+| http://localhost:8000/api/health | 200 when the API and the database respond |
+| http://localhost:8000/docs | Interactive API documentation |
 
-## API: tests and lint
+Code changes reload on their own, and migrations run on every `up` before the API starts. To enable the admin panel and the contact email, fill in the `ADMIN_*` and `SMTP_*` variables described in `.env.example`.
 
-The tests run against the compose Postgres, with no mocks (simulated objects) of the database, so the `db` has to be up. Since they apply migrations, they run in the `migrate` service, the only one with the table owner's password:
+## Tests and checks
 
 ```bash
+# API: runs against the compose Postgres
 docker compose run --rm migrate pytest -q --cov=app --cov-fail-under=80
 docker compose run --rm migrate sh -c "ruff check . && ruff format --check . && mypy app"
-```
 
-Or from your machine, with Python 3.14 (it takes `DATABASE_URL` and `MIGRATION_DATABASE_URL` from the root `.env`):
-
-```bash
-cd api
-python -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"
-pytest -q --cov=app --cov-fail-under=80
-ruff check . && ruff format --check . && mypy app
-```
-
-## Web: tests, lint and E2E
-
-From `web/`, with Node 24:
-
-```bash
-npm ci
-npm run test -- --run          # Vitest (unit tests)
-npm run test:coverage          # with the 80 % line minimum
+# Web
+cd web && npm ci
+npm run test:coverage
 npm run lint && npm run typecheck && npm run format:check
-npx playwright install chromium   # first time only
-npm run e2e                    # Playwright, with the compose up
+npm run e2e        # Playwright, with the compose stack up
 ```
 
-The E2E (end-to-end) test also checks the security headers and that the console shows no errors (anything the CSP blocks shows up there). To test the build with the CSP (Content Security Policy), as in production:
+What each kind of test covers is in [docs/testing.md](docs/testing.md).
 
-```bash
-npm run build && npx vite preview &
-E2E_BASE_URL=http://localhost:4173 npm run e2e
-```
+## CI/CD
 
-The panel E2E tests log in with the test admin they read from `E2E_ADMIN_EMAIL` and `E2E_ADMIN_PASSWORD` (the ones in your `.env`, with the unhashed password). Without those variables they fail with a warning. In CI, each run generates a random password.
-
-The E2E test opens the page in Chromium and waits for `/api/bootstrap` to respond correctly and the title to show, so it tests the whole path: page, proxy, API and database. If nothing is on port 5173, it starts `npm run dev` on its own, but it still needs the API and the database from the compose.
-
-## API reference
-
-What each route does (`GET /api/bootstrap`, contact, admin login, panel content, messages and visits), what it validates, how it is protected and the two database users: [`docs/api.md`](docs/api.md). To configure the admin login in the `.env`, follow its admin login section.
-
-## API migrations
-
-Migrations with Alembic (SQLAlchemy's migration tool):
-
-```bash
-alembic revision --autogenerate -m "add table x"   # after changing app/models/
-alembic upgrade head                                # apply
-```
-
-## How we work
-
-The details are in `docs/development.md` and `docs/testing.md`. In short:
-
-- Start from `dev`, on a `feature/<name>`, `fix/<name>`, `docs/<name>` or `chore/<name>` branch.
-- Commits with Conventional Commits in English, for example `feat: add contact form`.
-- One PR (pull request) per task targeting `dev`, with the repo template. It is merged only with rebase & merge.
-- Each PR records its change under `## [Unreleased]` in `CHANGELOG.md`; the version number is chosen only when a release is cut. The guide is at the end of that file.
-- Secrets and `.env` are never committed: only `.env.example`.
-
-## Automated AI review
-
-The `.github/workflows/ai-review.yml` workflow reviews every PR targeting `dev` with Claude when it is opened or marked ready for review (ADR 0007). It leaves at most about 10 comments ordered by severity, never approves and doesn't block the merge. It skips drafts, Dependabot PRs and PRs that only change documentation (`docs/**` or `*.md`). To ask for another review, comment `@claude revisa` on the PR.
-
-It needs the `CLAUDE_CODE_OAUTH_TOKEN` secret in the repository (generated with `claude setup-token`) and the Claude GitHub app installed on it. It has minimal permissions, actions pinned by SHA (commit hash), doesn't show Claude's full log and doesn't run on PRs from forks.
-
-## Web security
-
-- The HTTP security headers are in `web/security-headers.ts`: `nosniff`, no iframes, `Referrer-Policy`, `Permissions-Policy` and `Cross-Origin-Opener-Policy`. The CSP only allows loading scripts, styles and data from the same domain, and it applies to the build (not in `npm run dev`, because Vite needs an inline script for reloading). In production, `deploy/Caddyfile` sets these same values plus HSTS (HTTP Strict Transport Security, HTTPS only), and the `deploy-check` job verifies it.
-- The build doesn't publish source maps (the original source code).
-- The web development container runs as the `node` user, not as root. In production no container runs as root (see `deploy/README.md`).
-
-## CI (continuous integration) and pre-commit
-
-The `.github/workflows/ci.yml` workflow runs on every PR and on every push to `dev` and `main`, with five jobs in parallel:
-
-| Job | What it checks |
-|---|---|
-| pre-commit | `ruff` (lint, formatting and Bandit security rules), Prettier and that no private key is committed |
-| API | `mypy` and `pytest` against the compose Postgres, with 80 % minimum coverage |
-| Web | ESLint, `tsc`, Vitest with 80 % minimum coverage and `vite build` |
-| E2E | Playwright against `npm run dev`, with the database, the migrations and the API from the compose |
-| Deployment (`deploy-check`) | Starts `deploy/compose.prod.yml` with the production images, backs up the database with `pg_dump`, applies the migrations, checks that no container runs as root and runs the E2E against Caddy. It is the ephemeral staging of each PR (ADR 0008) |
-
-It uses pip, npm and pre-commit caching. It uses no secrets and the token can only read the code, so it runs just as safely on PRs from forks. Actions are pinned by SHA. A new push to the same PR cancels the previous run.
-
-The same pre-commit hooks run on your machine before each commit:
-
-```bash
-pip install "pre-commit==4.6.*"
-pre-commit install              # once per clone
-pre-commit run --all-files      # manually, over the whole repo
-```
-
-## Security in CI
-
-The `.github/workflows/security.yml` workflow runs on every PR, on every push to `dev` and `main`, and on Mondays at 09:00 UTC (ADR 0007):
-
-| Job | What it checks | Fails if |
+| Workflow | Runs on | What it does |
 |---|---|---|
-| CodeQL | GitHub static analysis over Python, TypeScript and the workflows themselves | There is a high or critical severity finding (repo threshold) |
-| pip-audit | The API dependencies, including the development ones | There is any known vulnerability (pip-audit doesn't filter by severity) |
-| npm audit | The web dependencies, according to `package-lock.json` | There is a high or critical vulnerability |
-| Trivy | The production images (`api/Dockerfile` and `web/Dockerfile`) | There is a high or critical vulnerability that already has a fix and is not accepted in `.trivyignore` |
+| `ci.yml` | Every PR and push to `dev` and `main` | Lint, types, unit tests with 80 % coverage, E2E, and `deploy-check`: the production stack started from scratch, a deploy, a forced rollback and an encrypted backup restored |
+| `security.yml` | Every PR, push and weekly | CodeQL, `pip-audit`, `npm audit` and Trivy on the production images |
+| `deploy.yml` | Push to `main`, then a manual run | Publishes the images to GHCR; a manual run deploys a given commit and rolls back on a failed health check |
+| `ai-review.yml` | PRs to `dev` | An automated code review that comments and never approves |
 
-The `ruff` security rules (`S`, the Bandit ones) run in the pre-commit job of `ci.yml`. In tests, `assert` and fake passwords are allowed; in `app/` `assert` is not used, because Python drops it when running with `-O`.
+Deployment and backups are described in [deploy/README.md](deploy/README.md).
 
-`.github/dependabot.yml` checks pip, npm, the base images and the actions every week. Minor and patch versions arrive in one PR per ecosystem, and major ones each in a separate PR. It waits 7 days after a version is released before proposing it (in case it was malicious and gets pulled); security alerts don't wait. Those PRs go through the same checks.
+## Documentation
 
-`.trivyignore` lists the accepted findings, each with an expiration date (`exp:`). Today there are only three, from Caddy 2.11.7 (denial of service in HTTP/2 and TLS), fixed by the next Caddy version. The production images don't include pip or npm. When they expire, the job fails again and they are reviewed again. Each ID is ignored across the whole image; if one of our own dependencies falls into one of those same CVEs (Common Vulnerabilities and Exposures), `pip-audit` and `npm audit` still detect it, since they don't read that file.
+| Document | Content |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | Components, request flow, data model and security |
+| [docs/api.md](docs/api.md) | Routes, validation and protections |
+| [docs/testing.md](docs/testing.md) | What is tested, at which level and why |
+| [docs/development.md](docs/development.md) | Code conventions, branches, review, CI and repository rules |
+| [docs/adr/](docs/adr/) | Architecture decision records |
+| [deploy/README.md](deploy/README.md) | Production stack, deployment, backups and restore |
+| [CHANGELOG.md](CHANGELOG.md) | Changes per release |
 
-Secret scanning and push protection (which blocks a push containing a secret) are repo settings in Settings > Code security, not a workflow. In that same place, CodeQL's "default setup" has to stay disabled, because this workflow is the advanced configuration and GitHub doesn't accept both at once.
+## Repository layout
 
-To run the audits on your machine:
-
-```bash
-cd api && pip install "pip-audit==2.10.*" && pip-audit --skip-editable
-cd web && npm audit --audit-level=high
 ```
-
-## Branch rules
-
-`dev` and `main` are protected with three GitHub rulesets (ADR 0007). Their exact configuration is in `.github/rulesets/`, so it is versioned and can be imported again in Settings > Rules > Rulesets > New ruleset > Import a ruleset.
-
-| Ruleset | Branch | Rules | Who bypasses it |
-|---|---|---|---|
-| `main` | `main` | No deletion or force push, linear history, PR required, rebase & merge only and the 11 checks from `ci.yml` and `security.yml` green with the branch up to date | Nobody |
-| `dev` | `dev` | The same | The `sync-dev.yml` deploy key |
-| `aprobacion` (approval) | `dev` and `main` | 1 approval; a new push dismisses it | The admin role (only Nicolas) when merging a PR, with a recorded bypass, and the deploy key |
-
-Approval lives in a separate ruleset so that the bypass skips only the approval and not the checks. In Settings > General, the only enabled merge method is rebase & merge, and "Always suggest updating pull request branches" is on, so the branch can be rebased up to date from the PR.
-
-If a job is renamed or a new one is added, its JSON and the ruleset in GitHub are updated in the same PR; otherwise the check stays pending and blocks the merge.
-
-### `sync-dev.yml`
-
-After each push to `main` (a release PR or a hotfix), it rebases `dev` onto `main` and publishes it with a force push. That way `dev` drops the copies of commits that rebase & merge left on `main` with a different SHA, and it receives the hotfixes. If the rebase conflicts, the job fails without publishing anything and the conflict is resolved by hand.
-
-It needs a deploy key with write access, created once:
-
-```bash
-ssh-keygen -t ed25519 -N "" -C sync-dev -f sync-dev
+api/            FastAPI app, tests and Alembic migrations
+web/            React app, unit tests and Playwright tests
+deploy/         Production compose file, Caddyfile, deploy and backup scripts
+db/init/        Creates the API's database user on first start
+docs/           Architecture, API, testing, development rules and ADRs
+.github/        Workflows, rulesets, Dependabot and the PR template
+compose.yml     Local development stack
+AGENTS.md       Guidance for coding agents
 ```
-
-1. Settings > Deploy keys > Add deploy key: title `sync-dev`, the contents of `sync-dev.pub` and "Allow write access".
-2. Settings > Secrets and variables > Actions > New repository secret: `SYNC_DEV_SSH_KEY`, with the contents of `sync-dev` (the private key).
-3. Delete both files from your machine.

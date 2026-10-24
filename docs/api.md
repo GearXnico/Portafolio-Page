@@ -28,7 +28,7 @@ Response:
 }
 ```
 
-- **Language** (`app/services/locale.py`, ADR (architecture decision record) 0002): the first one in `Accept-Language`, which the browser sets as preferred. Spanish if it is `es`; otherwise, or if the header is missing, English.
+- **Language** (`app/services/locale.py`, ADR 0002): the first one in `Accept-Language`, which the browser sets as preferred. Spanish if it is `es`; otherwise, or if the header is missing, English.
 - **Content**: texts in both languages, so the selector switches without another call. `profile` is `null` until the profile is loaded. Only projects with `visible = true` are returned. Ids, order, visibility, edit dates and the contact email are not returned.
 - **Unique visitor per day**: the IP is not stored. What is stored is an HMAC-SHA256 (keyed hash) of the IP and user agent, whose key is a random salt created each day (UTC) in the `visitor_salt` table and deleted the next day. Without the salt, not even a database backup can lead back to the IP.
 - If recording the visit fails, the page still loads.
@@ -42,7 +42,7 @@ In production the API sits behind Caddy: `deploy/compose.prod.yml` sets `TRUSTED
 Against spam and abuse:
 
 - **Validation:** maximum lengths equal to those of the table (200, 320 and 5,000 characters), an email with a valid format, no control characters or line breaks outside the message (so nobody can inject headers into the email) and no extra fields. Responds 422 if something does not match.
-- **Honeypot (trap field):** the form must include a hidden `website` field. If it arrives filled in, it is a bot: the API still responds 201 but saves nothing.
+- **Honeypot:** the form must include a hidden `website` field. If it arrives filled in, it is a bot: the API still responds 201 but saves nothing.
 - **Per-IP limit:** 5 messages per hour; after that it responds 429 with `Retry-After`. It lives in the process memory, so the API runs with a single Uvicorn process. In production, `TRUSTED_PROXIES` must include Caddy so the limit sees the real IP and not the proxy's.
 - **Size:** the API rejects bodies larger than 64 KB (413) and those that do not declare their length (411).
 - **When displayed:** the API stores the text as is and never interprets it. The email is plain text and the web shows it as text (React escapes it); never with `dangerouslySetInnerHTML`.
@@ -64,7 +64,7 @@ The panel has a single user (ADR 0004), with no table: its credentials go in the
 Every new `/api/admin/*` route goes in the `router` of `app/routers/admin.py`, which requires a session by default; only login and logout go in `public_router`. A test walks every `/api/admin/*` route and fails if any of them responds without a session.
 
 - **Password:** Argon2 hash (`argon2-cffi`). The password is verified even if the email is wrong, so the response time does not reveal which one failed.
-- **Session:** JWT (JSON Web Token) signed with HS256 and `JWT_SECRET`, valid for 7 days, in an `httpOnly`, `Secure`, `SameSite=Strict` cookie with `path=/api/admin`. Changing `JWT_SECRET` closes every session; so does changing `ADMIN_EMAIL`.
+- **Session:** JWT signed with HS256 and `JWT_SECRET`, valid for 7 days, in an `httpOnly`, `Secure`, `SameSite=Strict` cookie with `path=/api/admin`. Changing `JWT_SECRET` closes every session; so does changing `ADMIN_EMAIL`.
 - **Limit:** 5 failed attempts every 15 minutes per IP; after that it responds 429 with `Retry-After`. A successful login clears that IP's attempts. It uses the same in-memory limit and `TRUSTED_PROXIES` as the contact form.
 
 ## Content from the panel
