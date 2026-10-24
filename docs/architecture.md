@@ -1,7 +1,5 @@
 # Architecture · Portfolio website
 
-ID: 2026-10-08-sitio-portafolio · Version: draft 2 (2026-10-11) · Brief: `brief.md`
-
 Versions checked on 2026-10-11 on PyPI, npm and Docker Hub. Prices taken from the official pages that same day, in USD (US dollars) and at about 950 CLP (Chilean pesos) per dollar.
 
 ## 1. Summary
