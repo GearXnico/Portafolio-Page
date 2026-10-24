@@ -10,3 +10,7 @@
 CVE-2026-78667 exp:2026-11-12
 CVE-2026-78669 exp:2026-11-12
 CVE-2026-97031 exp:2026-11-12
+
+# Go 1.26.8 crypto/x509 in the same Caddy binary: fixed in Go 1.26.10, which no Caddy 2.11 image
+# ships yet. Caddy only verifies certificate chains as a client when it talks to the ACME CA.
+CVE-2026-111943 exp:2026-11-24
