@@ -1,25 +1,25 @@
 # 0003 · Bilingual content in `_es` and `_en` columns
 
-Status: accepted · Date: 2026-10-11 · Proposed by: Claude, approved with the architecture
+Status: accepted · Date: 2026-10-11
 
 ## Context
 
-All editable content (profile, experience, projects and the images' alt text) exists in Spanish and in English. These are two fixed languages, and there are no plans to add more.
+All editable content (profile, experience, projects and image alt text) exists in Spanish and English. The two languages are fixed.
 
 ## Options considered
 
 | Option | Cost | Cons |
 |---|---|---|
-| A. Columns per language (`title_es`, `title_en`) | The lowest | Adding a third language requires a migration per table |
-| B. Translations table (entity, field, language, text) | ~4 h extra across the API and the panel | More complex queries and forms |
-| C. Translation JSON files in the frontend | Low for fixed text | The content couldn't be edited from the panel |
+| A. A column per language (`title_es`, `title_en`) | The lowest | A third language needs a migration per table |
+| B. A translations table (entity, field, language, text) | ~4 h more across the API and the panel | More complex queries and forms |
+| C. Translation files in the frontend | Low for fixed text | Content can't be edited from the panel |
 
 ## Decision
 
-A for the database content. The UI's fixed text (buttons and headings) goes in JSON files in the frontend, which aren't edited from the panel.
+A for database content. Fixed UI text lives in `web/src/i18n/{es,en}.json`, which the panel doesn't edit.
 
 ## Consequences
 
-- The panel form shows both languages side by side, which helps not to forget a translation.
-- The API (application programming interface) returns both languages and the frontend chooses which one to show, so switching languages doesn't require another call.
-- A third language would cost a migration per table. This is accepted because it isn't planned.
+- The panel shows both languages side by side, which makes a missing translation obvious.
+- The API returns both languages and the frontend picks one, so switching language needs no new request.
+- A third language would cost a migration per table, which is accepted because none is planned.

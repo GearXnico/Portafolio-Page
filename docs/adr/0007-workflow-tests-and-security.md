@@ -1,149 +1,99 @@
 # 0007 · Workflow, testing and security
 
-Status: accepted · Date: 2026-10-11 · Requested by: Nicolas
+Status: accepted · Date: 2026-10-11 · Amended: 2026-10-18 (versioning)
 
 ## Context
 
-Nicolas asked for these rules for the site's repo, which the template later inherits:
+The repository needs rules for branches, reviews, tests and security that CI enforces, with a readable linear history. It replaces the "`main` only" branching from [ADR 0006](0006-cicd-github-actions.md).
 
-- Mandatory testing to approve into `dev`, automated with CI/CD (continuous integration and continuous deployment).
-- Security validation.
-- `feature/descriptive-name` branches.
-- PRs (pull requests) with approval, and later a deployment check.
-- Good development and version control practices.
-- During the review he added two requests: a staging environment, which ADR 0008 addresses, and that every merge to `dev` or `main` be done with rebase & merge, for a clearer commit history.
-
-This ADR (architecture decision record) replaces the "`main` only" rule from 0006.
-
-There is a GitHub limitation: a PR's author can't approve it. The PRs Claude opens are under Nicolas's name, so a mandatory approval would block them. Nicolas chose how to solve it on 2026-10-11.
+Most PRs are opened by a coding agent under the owner's GitHub account, and GitHub doesn't let a PR's author approve it, so a required approval needs a way through.
 
 ## Options considered
 
-On the branching model:
+Branching:
 
 | Option | Cost | Cons |
 |---|---|---|
-| A. `main` only, with short-lived branches (what 0006 proposed) | The lowest | No branch to integrate and test in before publishing |
-| B. `dev` for integration and `main` for production, with `feature/*` branches from `dev` | One extra PR per published release | `dev` and `main` have to be kept in sync |
-| C. Full Git Flow (permanent `release/*` and `hotfix/*` branches) | Several PRs per release | Overkill for one person |
+| A. `main` only, with short-lived branches | The lowest | Nowhere to integrate and test before publishing |
+| B. `dev` for integration, `main` for releases, feature branches from `dev` | One extra PR per release | `dev` and `main` must be kept in sync |
+| C. Full Git Flow with permanent `release/*` branches | Several PRs per release | Too much for a one-person project |
 
-On mandatory approval:
+Required approval:
 
 | Option | Cost | Cons |
 |---|---|---|
-| A. Your merge is the approval: mandatory PR and checks, no approvals | None | No formal approval is recorded in GitHub |
-| B. 1 mandatory approval with a bypass only for you: you merge by ticking "bypass" and GitHub records it | One extra click per PR | The approval is your explicit action, not someone else's |
-| C. A second account (bot or collaborator) that approves | ~1 h and one more account | Approving with another account of yours is just a formality |
+| A. The merge is the approval: required PR and checks, no approvals | None | No approval is recorded |
+| B. One required approval, with a bypass for the admin that GitHub records | One click per PR | The approval is the owner's explicit action |
+| C. A second account that approves | ~1 h and another account | A formality |
 
 ## Decision
 
-- **Branching model: B**, because it is what Nicolas asked for.
-- **Approval: B, 1 approval with a recorded bypass** (Nicolas, 2026-10-11). `main` and `dev` require 1 approval, and only Nicolas can skip it, by ticking the bypass when merging; GitHub records every bypass. When the factory's agents open PRs with their own account, Nicolas will approve them normally.
+Branching B and approval B.
 
-### Branches and version control
+### Branches and history
 
-| Branch | Branches off | Merges into | Purpose |
+| Branch | From | Into | Purpose |
 |---|---|---|---|
-| `main` | — | — | What is published. Every merge deploys to production. |
-| `dev` | `main` | `main` through a release PR | Integration. It is the repo's default branch, and every merge deploys to staging (ADR 0008). |
-| `feature/<descriptive-name>` | `dev` | `dev` | New functionality, for example `feature/contact-form` |
-| `fix/<name>` | `dev` | `dev` | Fix |
-| `docs/<name>`, `chore/<name>` | `dev` | `dev` | Documentation, configuration and dependencies |
-| `hotfix/<name>` | `main` | `main` and then `dev` | Urgent fix in production |
+| `main` | — | — | What is released |
+| `dev` | `main` | `main` through a release PR | Integration; the default branch |
+| `feature/<name>`, `fix/<name>`, `docs/<name>`, `chore/<name>` | `dev` | `dev` | Changes |
+| `hotfix/<name>` | `main` | `main`, then `dev` | Urgent production fixes |
 
-Names are lowercase, hyphenated, in English and 2 to 4 words long. Documentation, commit messages and PR text are also in English (Nicolas, 2026-10-13: documentation, commits, branches and PRs in English).
+- Branch names are lowercase, hyphenated, in English, 2 to 4 words.
+- Commits follow Conventional Commits (`feat`, `fix`, `test`, `docs`, `refactor`, `chore`). Each commit does one thing and keeps the tests green.
+- PRs into `dev` are focused, ideally under 400 lines, use the template and merge with **rebase & merge**, so the history stays linear.
+- Rebase & merge gives commits new SHAs on `main`. `sync-dev.yml` rebases `dev` onto `main` after every push to `main`, which drops the duplicates and brings hotfixes into `dev`; it is the only actor allowed to force-push `dev`.
+- **Versions:** SemVer. PRs add entries under `## [Unreleased]` in `CHANGELOG.md`; the number is set when a release is cut (MINOR with a feature, PATCH otherwise; MAJOR stays 0 until 1.0.0). Before 2026-10-18 each PR set its own number.
+- `main` and `dev` forbid deletion and force pushes (except `sync-dev.yml` on `dev`), require linear history, an up-to-date branch, green checks and one approval.
+- `.env` files, keys and real data are never committed.
 
-1. **Commits:** Conventional Commits (a standard message format) is used, for example `feat: add contact form` or `fix: correct default language`. The types are `feat`, `fix`, `test`, `docs`, `refactor` and `chore`.
-2. **PRs to `dev`:**
-   - One per feature, ideally with fewer than ~400 changed lines.
-   - Uses the repo's template: Before, After, How to test and the definition-of-done checklist.
-   - Merged with **rebase & merge**: the branch's commits are copied one by one onto `dev`, without merge commits, and the history stays linear.
-   - Since each commit lands as is, before opening the PR they are tidied up with `git rebase -i`: each commit does a single thing, follows Conventional Commits and leaves the tests green.
-   - The branch is deleted after the merge.
-3. **Release PR `dev` → `main`:** also with **rebase & merge**. It requires staging to be healthy with the same SHA (ADR 0008). After the deployment, a SemVer (semantic versioning) tag (`v1.2.0`) is created, with the release notes in `CHANGELOG.md`.
-   - **Watch out:** GitHub rewrites every commit on rebase & merge, so in `main` they end up with a different SHA (identifier) than in `dev`. If this isn't corrected, the next release PR shows repeated commits or conflicts.
-   - To avoid it, the `sync-dev.yml` workflow runs after every push to `main` and runs `git rebase main` on `dev`. Git drops only the commits that are already in `main` and keeps the new ones. Then it runs `git push --force-with-lease` to `dev`. It is the only actor with a bypass of the "no force push" rule on `dev`.
-   - A `hotfix/*` goes into `main` and reaches `dev` through that same workflow.
-4. **Versions** (Nicolas, 2026-10-13; changed 2026-10-18): versions use SemVer (`MAJOR.MINOR.PATCH`). Each PR adds its entry under `## [Unreleased]` in `CHANGELOG.md`, without a number. The number is chosen only when a release is cut: MINOR if that section has a feature, PATCH otherwise. MAJOR stays at `0` until version 1 of the site is published (`1.0.0`). Until 2026-10-18 every PR set its own number, which forced open PRs to renumber after every merge. The guide, with an example, is at the end of `CHANGELOG.md`.
-5. **Protection of `main` and `dev`:**
-   - No force push or deletion (except `sync-dev.yml` on `dev`).
-   - Linear history required, and rebase & merge as the only enabled merge method.
-   - Mandatory PR with 1 approval; the bypass is allowed only for Nicolas.
-   - The checks below have to be green.
-   - The branch has to be up to date with its base before merging.
-   - On your own `feature/*` branch, `git push --force-with-lease` is allowed.
-6. **Never in the repo:** `.env`, keys or real data. Only `.env.example` is versioned.
+### Testing
 
-### Testing (requirement to merge into `dev`)
-
-| Level | Tool | What it covers | Rule |
+| Level | Tool | Covers | Rule |
 |---|---|---|---|
-| API (application programming interface) | pytest 9 with real Postgres in CI and `pytest-cov` | Endpoints, business rules, `/api/admin/*` permissions | Minimum coverage of 80 % of lines; if it drops, the check fails |
-| Frontend | Vitest 5 with Testing Library | Components with logic: language switcher, forms, panel | Minimum coverage of 80 % (it was 60 %; Nicolas raised it on 2026-10-12) |
-| E2E (end-to-end) | Playwright 1.64 | The page loads in both languages, the contact form, and logging in plus creating a project in the panel | Runs on every PR, against the `compose` stack started on the runner |
-| Types and style | `ruff`, `mypy`, `tsc --strict`, ESLint and Prettier | Formatting, common errors and types | No errors |
+| API | pytest against real Postgres, `pytest-cov` | Endpoints, business rules, admin permissions | 80 % line coverage |
+| Web | Vitest with Testing Library | Components with logic | 80 % line coverage |
+| E2E | Playwright | Both languages, contact, admin login and editing | Every PR, against the compose stack |
+| Static | `ruff`, `mypy`, `tsc --strict`, ESLint, Prettier | Format, common errors, types | No errors |
 
-The testing rules are:
+- Features come with tests; fixes start with a failing test.
+- Tests are never skipped or disabled to get green; a flaky test is fixed in its own PR.
+- API tests don't mock the database.
+- `pre-commit` runs `ruff`, Prettier and private-key detection before each commit.
 
-- Each `feature/*` comes with its tests.
-- Each `fix/*` comes with a test that reproduces the bug before fixing it.
-- A test is never skipped or disabled to get CI green. A flaky test is fixed in its own PR.
-- The database is not replaced by mocks in the API tests: they run against real Postgres.
-- `pre-commit` 4.6 runs `ruff`, Prettier and private key detection before each commit, to catch errors before CI.
+### Security
 
-### Security validation
-
-| Control | When | The check fails if |
+| Control | When | Fails on |
 |---|---|---|
-| GitHub secret scanning with push protection (free on public repos) | On every push | Someone tries to push a secret (it blocks the push) |
-| CodeQL (GitHub's static analysis) for Python and TypeScript | On every PR and every week | There is a high or critical severity finding |
-| `ruff` security rules (Bandit's) | On every PR | There is any finding |
-| `pip-audit` 2.10 and `npm audit --audit-level=high` | On every PR and every week | There is a dependency with a high vulnerability |
-| Trivy (Docker image scanner) | On every PR, on the built images | There is a high or critical vulnerability with a fix available |
-| Dependabot (alerts and update PRs) | Every week | It doesn't block; its PRs go through the same checks |
+| Secret scanning with push protection | Every push | A secret in the push |
+| CodeQL for Python, TypeScript and workflows | Every PR and weekly | A high or critical finding |
+| `ruff` Bandit rules | Every PR | Any finding |
+| `pip-audit` and `npm audit --audit-level=high` | Every PR and weekly | A high vulnerability |
+| Trivy on the production images | Every PR | A high or critical vulnerability with a fix |
+| Dependabot | Weekly | Doesn't block; its PRs pass the same checks |
 
-On every PR, these checklist items are also reviewed by hand:
+Reviews also check that input is validated with Pydantic, that admin routes have a no-session test, and that logs hold no personal data.
 
-- Inputs are validated with Pydantic.
-- Admin routes have a test that checks access without a session.
-- No personal data is written to the logs.
+### Automated review
 
-### Automated AI review
-
-On 2026-10-11, Nicolas asked for an agent to review PRs so that nothing important slips past his own review.
-
-- **Tool:** `anthropics/claude-code-action@v1` in the `ai-review.yml` workflow.
-- **Authentication:** `CLAUDE_CODE_OAUTH_TOKEN`, generated with `claude setup-token`. With it, usage is deducted from the Claude subscription instead of being charged per token. If an API key is used later, it is billed separately.
-- **When it runs:** when a PR to `dev` is opened and when it is marked ready for review, not on every push. It can also be requested again by commenting `@claude revisa`.
-- **When it doesn't run:** on PRs that only change documentation (`docs/**`, `*.md`), on Dependabot's, and on drafts.
-- **What it reviews:** the diff, against the rules in `docs/` (ADRs, architecture) and in `CLAUDE.md`: bugs, security, missing tests and rules not followed.
-- **Criteria (Nicolas, 2026-10-12):** "no overengineer" and "keep it simple and secure". It flags as important only what is a real risk, and it doesn't propose extra layers or abstractions if the simple option is already secure.
-- **How it responds:** only with comments, at most about 10, ordered by severity. **It never approves**, so that the approval from ADR 0007 (your recorded bypass) stays your decision and isn't triggered by a bot.
-- **It doesn't block the merge:** it is an aid for your review, not a required check.
-
-Estimated cost, not measured: per PR of 300 to 800 lines, between 40,000 and 120,000 input tokens and between 3,000 and 8,000 output tokens. With caching and a mid-range model, about a third less. With about 25 PRs in version 1, that would be on the order of 1 to 3 million input tokens in total. It is measured on the first 5 PRs and, if it uses too much of your plan, the comment cap is lowered or it is limited to `feature/*` PRs.
+`ai-review.yml` runs `anthropics/claude-code-action` when a PR to `dev` opens or is marked ready, and on an `@claude revisa` comment. It skips drafts, Dependabot and docs-only PRs. It reviews the diff against `docs/` and `AGENTS.md`, flags only real risks without proposing extra layers, leaves at most about 10 comments by severity, never approves and never blocks the merge.
 
 ### Deployment check
 
-There are two levels, and the details are in ADR 0008:
+Every PR runs `deploy-check`: the production stack on the CI runner with the PR's images, the E2E suite and the health checks. Release PRs to `main` also require staging green on the same SHA ([ADR 0008](0008-staging-environments.md)).
 
-1. **On every PR to `dev`:** the `deploy-check` job starts `compose.prod.yml` on the CI runner, with the PR's images, and runs the E2E tests and `GET /api/health`.
-2. **On the release PR to `main`:** staging is required to be deployed with the same SHA and its E2E tests must be green.
-
-### Definition of done for a PR
+### Definition of done
 
 - [ ] New or updated tests, with coverage above the minimum
 - [ ] CI, security and E2E green
 - [ ] No secrets or personal data
-- [ ] Documentation updated if something visible changes (README or docs/)
+- [ ] Docs updated when something visible changes, and an entry under `[Unreleased]`
 - [ ] Branch up to date with its base
 - [ ] Automated review comments addressed or answered
-- [ ] Approved, or merged by Nicolas with a recorded bypass
+- [ ] Approved, or merged with a recorded bypass
 
 ## Consequences
 
-- Nothing reaches `dev` without tests and security checks, and nothing reaches `main` without going through staging.
-- The history of `dev` and `main` is linear. In exchange, each commit has to be clean before the PR, and `dev` resyncs itself after every release.
-- CI goes from ~5 to about ~8-10 minutes because of the E2E tests and the scans. It stays free on a public repo.
-- Setting all this up adds about 6 h to milestone 1 of the plan, and `sync-dev.yml` adds ~1 h. With staging (ADR 0008), the estimate goes up from 80 to ~92 h.
-- The rules live in the template and in CLAUDE.md, so Claude Code follows them in every new product.
+- Nothing reaches `dev` without tests and security checks.
+- The history of `dev` and `main` is linear, at the cost of tidy commits before each PR and a `dev` resync after each release.
+- CI takes about 8 to 10 minutes with E2E and scans, and stays free on a public repository.
