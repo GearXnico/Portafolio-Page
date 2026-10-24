@@ -13,6 +13,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Changed
 
+- Security: Pillow goes from 12.3 to 13.0 and undici from 8.11.2 to 8.12.3 for new advisories, the web image applies Alpine security updates on build, and the Caddy Go `crypto/x509` advisory is accepted until 2026-11-24 while no Caddy image ships the fixed Go.
 - Docs: the plan deploys the portfolio now (milestone 5, free phase on Oracle) instead of waiting for the template and a quick project; sunsapp, already deployed, is the project presented at launch, and the template comes later.
 - Docs: ADR 0010 picks an Oracle Always Free VM for a free production deployment while job hunting, after comparing free hosts for publishing the portfolio while job hunting (Oracle Always Free VM, Render with Neon, or the planned VPS brought forward), with their limits checked on 2026-10-18; the plan's milestone 5 starts with that free phase, and ADR 0001 and ADR 0008 stay as the target.
 - Versioning: PRs add their entry under `[Unreleased]` and the version number is chosen only when a release is cut, so open PRs no longer renumber after every merge. Versions up to 0.20.11 were set per PR under the previous rule.
