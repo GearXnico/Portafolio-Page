@@ -4,7 +4,7 @@ from sqlalchemy import inspect
 
 from app.db import engine
 
-TABLAS = {
+TABLES = {
     "profile",
     "skill",
     "experience",
@@ -16,7 +16,7 @@ TABLAS = {
 }
 
 
-def tablas_de_la_app() -> set[str]:
+def app_tables() -> set[str]:
     return set(inspect(engine).get_table_names()) - {"alembic_version"}
 
 
@@ -24,13 +24,13 @@ def test_migrations_apply_and_revert() -> None:
     config = Config("alembic.ini")
 
     command.upgrade(config, "head")
-    assert tablas_de_la_app() == TABLAS
+    assert app_tables() == TABLES
 
     command.downgrade(config, "base")
-    assert tablas_de_la_app() == set()
+    assert app_tables() == set()
 
     command.upgrade(config, "head")
-    assert tablas_de_la_app() == TABLAS
+    assert app_tables() == TABLES
 
 
 def test_models_match_the_migrations() -> None:

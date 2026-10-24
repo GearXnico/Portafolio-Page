@@ -19,11 +19,11 @@ def test_health_responds_503_if_the_database_does_not_answer(client: TestClient)
     # A real connection to a port where nothing is listening.
     engine = create_engine("postgresql+psycopg://nadie:nada@127.0.0.1:1/nada")
 
-    def session_sin_base() -> Iterator[Session]:
+    def session_without_url() -> Iterator[Session]:
         with Session(engine) as session:
             yield session
 
-    app.dependency_overrides[get_session] = session_sin_base
+    app.dependency_overrides[get_session] = session_without_url
 
     response = client.get("/api/health")
 

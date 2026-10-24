@@ -30,14 +30,14 @@ from app.schemas.content import SkillCategory
 from app.services import auth, images
 from app.services.images import MAX_IMAGE_BYTES
 
-PROYECTO: dict[str, Any] = {
+PROJECT: dict[str, Any] = {
     "slug": "mi-proyecto",
     "title_es": "Mi proyecto",
     "title_en": "My project",
     "summary_es": "Resumen",
     "summary_en": "Summary",
 }
-PERFIL: dict[str, Any] = {
+PROFILE: dict[str, Any] = {
     "headline_es": "Desarrollador",
     "headline_en": "Developer",
     "about_es": "Sobre mí",
@@ -45,8 +45,8 @@ PERFIL: dict[str, Any] = {
     "contact_email": "yo@example.com",
     "links": {"github": "https://github.com/ejemplo"},
 }
-HABILIDAD: dict[str, Any] = {"name": "Python", "category": "language"}
-EXPERIENCIA: dict[str, Any] = {
+SKILL: dict[str, Any] = {"name": "Python", "category": "language"}
+EXPERIENCE: dict[str, Any] = {
     "company": "Empresa",
     "role_es": "Desarrollador",
     "role_en": "Developer",
@@ -55,7 +55,7 @@ EXPERIENCIA: dict[str, Any] = {
 
 
 @pytest.fixture(autouse=True)
-def admin_configurado(monkeypatch: pytest.MonkeyPatch) -> None:
+def admin_configured(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "admin_email", "admin@example.com")
     # These tests don't log in: having a hash is enough.
     monkeypatch.setattr(settings, "admin_password_hash", SecretStr("$argon2id$no-se-usa"))
@@ -63,15 +63,15 @@ def admin_configurado(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-def anonimo(db_session: Session) -> Iterator[TestClient]:
+def anonymous(db_session: Session) -> Iterator[TestClient]:
     """Client without a session. The API uses the test's session and starts with empty tables."""
-    for modelo in (ProjectImage, Project, Skill, Experience, Profile):
-        db_session.execute(delete(modelo))
+    for model in (ProjectImage, Project, Skill, Experience, Profile):
+        db_session.execute(delete(model))
 
-    def sesion_del_test() -> Iterator[Session]:
+    def test_session() -> Iterator[Session]:
         yield db_session
 
-    app.dependency_overrides[get_session] = sesion_del_test
+    app.dependency_overrides[get_session] = test_session
     # Over HTTPS, because the session cookie is Secure.
     with TestClient(app, base_url="https://testserver") as client:
         yield client
@@ -79,14 +79,14 @@ def anonimo(db_session: Session) -> Iterator[TestClient]:
 
 
 @pytest.fixture
-def admin(anonimo: TestClient) -> TestClient:
+def admin(anonymous: TestClient) -> TestClient:
     """The same client, with the administrator's session."""
-    anonimo.cookies.set(COOKIE_NAME, auth.create_session_token())
-    return anonimo
+    anonymous.cookies.set(COOKIE_NAME, auth.create_session_token())
+    return anonymous
 
 
-def crear(admin: TestClient, ruta: str, datos: dict[str, Any], **cambios: Any) -> Any:
-    response = admin.post(ruta, json=datos | cambios)
+def create(admin: TestClient, route: str, data: dict[str, Any], **changes: Any) -> Any:
+    response = admin.post(route, json=data | changes)
     assert response.status_code == 201, response.text
     return response.json()
 
@@ -94,66 +94,65 @@ def crear(admin: TestClient, ruta: str, datos: dict[str, Any], **cambios: Any) -
 # Access without a session: every /api/admin/* route, except login and logout.
 
 
-def _rutas_protegidas() -> list[tuple[str, str]]:
-    # From the OpenAPI schema (the API description FastAPI generates): it has every route
-    # with its methods, including the ones added later.
-    rutas = []
-    for ruta, metodos in app.openapi()["paths"].items():
-        if not ruta.startswith("/api/admin") or ruta in ("/api/admin/login", "/api/admin/logout"):
+def _protected_routes() -> list[tuple[str, str]]:
+    # The OpenAPI schema lists every route with its methods, including ones added later.
+    routes = []
+    for route, methods in app.openapi()["paths"].items():
+        if not route.startswith("/api/admin") or route in ("/api/admin/login", "/api/admin/logout"):
             continue
-        for metodo in sorted(metodos):
-            rutas.append((metodo.upper(), ruta.replace("{", "").replace("}", "")))
-    return rutas
+        for method in sorted(methods):
+            routes.append((method.upper(), route.replace("{", "").replace("}", "")))
+    return routes
 
 
-RUTAS_PROTEGIDAS = _rutas_protegidas()
+PROTECTED_ROUTES = _protected_routes()
 
 
 def test_content_routes_are_in_the_list() -> None:
     """If someone changes the prefixes, the list below can't silently end up empty."""
-    assert ("DELETE", "/api/admin/projects/project_id") in RUTAS_PROTEGIDAS
-    assert ("PUT", "/api/admin/profile") in RUTAS_PROTEGIDAS
-    assert ("POST", "/api/admin/projects/project_id/images") in RUTAS_PROTEGIDAS
-    assert len(RUTAS_PROTEGIDAS) == 21
+    assert ("DELETE", "/api/admin/projects/project_id") in PROTECTED_ROUTES
+    assert ("PUT", "/api/admin/profile") in PROTECTED_ROUTES
+    assert ("POST", "/api/admin/projects/project_id/images") in PROTECTED_ROUTES
+    assert len(PROTECTED_ROUTES) == 21
 
 
-@pytest.mark.parametrize(("metodo", "ruta"), RUTAS_PROTEGIDAS)
+@pytest.mark.parametrize(("method", "route"), PROTECTED_ROUTES)
 def test_content_routes_without_session_respond_401(
-    anonimo: TestClient, metodo: str, ruta: str
+    anonymous: TestClient, method: str, route: str
 ) -> None:
     # With an id that doesn't exist and an empty body: the 401 comes before the 404 or the 422,
     # so without a session nothing is learned about the content or the schema.
-    url = ruta
-    for parametro in ("project_id", "image_id", "skill_id", "experience_id", "message_id"):
-        url = url.replace(parametro, "1")
-    response = anonimo.request(metodo, url, json={})
+    url = route
+    for param in ("project_id", "image_id", "skill_id", "experience_id", "message_id"):
+        url = url.replace(param, "1")
+    response = anonymous.request(method, url, json={})
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Log in."}
 
 
-def test_without_session_nothing_changes(anonimo: TestClient, db_session: Session) -> None:
-    anonimo.post("/api/admin/projects", json=PROYECTO)
-    anonimo.put("/api/admin/profile", json=PERFIL)
+def test_without_session_nothing_changes(anonymous: TestClient, db_session: Session) -> None:
+    anonymous.post("/api/admin/projects", json=PROJECT)
+    anonymous.put("/api/admin/profile", json=PROFILE)
 
     assert db_session.scalars(select(Project)).all() == []
     assert db_session.get(Profile, 1) is None
 
 
-def test_an_invalid_session_responds_401(anonimo: TestClient) -> None:
-    anonimo.cookies.set(COOKIE_NAME, "no-es-un-jwt")
+def test_an_invalid_session_responds_401(anonymous: TestClient) -> None:
+    anonymous.cookies.set(COOKIE_NAME, "no-es-un-jwt")
 
-    assert anonimo.get("/api/admin/projects").status_code == 401
+    assert anonymous.get("/api/admin/projects").status_code == 401
 
 
 # Projects
 
 
 def test_creating_a_project_leaves_it_hidden_with_default_values(admin: TestClient) -> None:
-    creado = crear(admin, "/api/admin/projects", PROYECTO)
+    created = create(admin, "/api/admin/projects", PROJECT)
 
-    assert creado == PROYECTO | {
-        "id": creado["id"],
+    assert created == PROJECT | {
+        "id": created["id"],
         "body_es": "",
         "body_en": "",
         "stack": [],
@@ -162,86 +161,86 @@ def test_creating_a_project_leaves_it_hidden_with_default_values(admin: TestClie
         "visible": False,
         "position": 0,
         "images": [],
-        "created_at": creado["created_at"],
-        "updated_at": creado["updated_at"],
+        "created_at": created["created_at"],
+        "updated_at": created["updated_at"],
     }
-    assert admin.get(f"/api/admin/projects/{creado['id']}").json() == creado
+    assert admin.get(f"/api/admin/projects/{created['id']}").json() == created
 
 
 def test_list_includes_hidden_ones_in_order(admin: TestClient) -> None:
-    crear(admin, "/api/admin/projects", PROYECTO, slug="segundo", position=2)
-    crear(admin, "/api/admin/projects", PROYECTO, slug="oculto", position=1)
-    crear(admin, "/api/admin/projects", PROYECTO, slug="publicado", position=1, visible=True)
+    create(admin, "/api/admin/projects", PROJECT, slug="segundo", position=2)
+    create(admin, "/api/admin/projects", PROJECT, slug="oculto", position=1)
+    create(admin, "/api/admin/projects", PROJECT, slug="publicado", position=1, visible=True)
 
-    lista = admin.get("/api/admin/projects").json()
+    listed = admin.get("/api/admin/projects").json()
 
-    assert [p["slug"] for p in lista] == ["oculto", "publicado", "segundo"]
+    assert [p["slug"] for p in listed] == ["oculto", "publicado", "segundo"]
 
 
 def test_editing_a_project_replaces_all_its_fields(admin: TestClient) -> None:
-    creado = crear(
-        admin, "/api/admin/projects", PROYECTO, stack=["Python"], repo_url="https://github.com/x"
+    created = create(
+        admin, "/api/admin/projects", PROJECT, stack=["Python"], repo_url="https://github.com/x"
     )
-    nuevo = PROYECTO | {
+    new = PROJECT | {
         "title_es": "  Otro título  ",
         "body_es": "# Cuerpo\n\nEn **Markdown**.",
         "visible": True,
         "position": 3,
     }
 
-    response = admin.put(f"/api/admin/projects/{creado['id']}", json=nuevo)
+    response = admin.put(f"/api/admin/projects/{created['id']}", json=new)
 
     assert response.status_code == 200
-    editado = response.json()
-    assert editado["title_es"] == "Otro título"
-    assert editado["body_es"] == "# Cuerpo\n\nEn **Markdown**."
-    assert (editado["visible"], editado["position"]) == (True, 3)
+    edited = response.json()
+    assert edited["title_es"] == "Otro título"
+    assert edited["body_es"] == "# Cuerpo\n\nEn **Markdown**."
+    assert (edited["visible"], edited["position"]) == (True, 3)
     # Whatever isn't sent takes its default value.
-    assert (editado["stack"], editado["repo_url"]) == ([], None)
+    assert (edited["stack"], edited["repo_url"]) == ([], None)
 
 
 def test_publishing_a_project_shows_it_on_the_page(admin: TestClient) -> None:
-    creado = crear(admin, "/api/admin/projects", PROYECTO)
+    created = create(admin, "/api/admin/projects", PROJECT)
     assert admin.get("/api/bootstrap").json()["projects"] == []
 
-    admin.put(f"/api/admin/projects/{creado['id']}", json=PROYECTO | {"visible": True})
+    admin.put(f"/api/admin/projects/{created['id']}", json=PROJECT | {"visible": True})
 
     assert [p["slug"] for p in admin.get("/api/bootstrap").json()["projects"]] == ["mi-proyecto"]
 
 
 def test_deleting_a_project_deletes_its_screenshots(admin: TestClient, db_session: Session) -> None:
-    creado = crear(admin, "/api/admin/projects", PROYECTO)
-    db_session.add(ProjectImage(project_id=creado["id"], path="mi-proyecto/1.webp"))
+    created = create(admin, "/api/admin/projects", PROJECT)
+    db_session.add(ProjectImage(project_id=created["id"], path="mi-proyecto/1.webp"))
     db_session.flush()
 
-    assert admin.delete(f"/api/admin/projects/{creado['id']}").status_code == 204
+    assert admin.delete(f"/api/admin/projects/{created['id']}").status_code == 204
 
-    assert admin.get(f"/api/admin/projects/{creado['id']}").status_code == 404
+    assert admin.get(f"/api/admin/projects/{created['id']}").status_code == 404
     assert db_session.scalars(select(ProjectImage)).all() == []
 
 
 def test_a_duplicate_slug_responds_409(admin: TestClient) -> None:
-    crear(admin, "/api/admin/projects", PROYECTO)
-    otro = crear(admin, "/api/admin/projects", PROYECTO, slug="otro")
+    create(admin, "/api/admin/projects", PROJECT)
+    other = create(admin, "/api/admin/projects", PROJECT, slug="otro")
 
-    al_crear = admin.post("/api/admin/projects", json=PROYECTO)
-    al_editar = admin.put(f"/api/admin/projects/{otro['id']}", json=PROYECTO)
+    on_create = admin.post("/api/admin/projects", json=PROJECT)
+    on_edit = admin.put(f"/api/admin/projects/{other['id']}", json=PROJECT)
 
-    for response in (al_crear, al_editar):
+    for response in (on_create, on_edit):
         assert response.status_code == 409
         assert response.json() == {"detail": "A project with that slug already exists."}
     # After the error, the API keeps working and the project didn't change.
-    assert admin.get(f"/api/admin/projects/{otro['id']}").json()["slug"] == "otro"
+    assert admin.get(f"/api/admin/projects/{other['id']}").json()["slug"] == "otro"
 
 
 def test_an_empty_link_is_saved_as_null(admin: TestClient) -> None:
-    creado = crear(admin, "/api/admin/projects", PROYECTO, demo_url="", repo_url="  ")
+    created = create(admin, "/api/admin/projects", PROJECT, demo_url="", repo_url="  ")
 
-    assert (creado["demo_url"], creado["repo_url"]) == (None, None)
+    assert (created["demo_url"], created["repo_url"]) == (None, None)
 
 
 @pytest.mark.parametrize(
-    "cambios",
+    "changes",
     [
         {"demo_url": "javascript:alert(1)"},
         {"demo_url": "http://example.com"},
@@ -270,8 +269,8 @@ def test_an_empty_link_is_saved_as_null(admin: TestClient) -> None:
         {"created_at": "2020-01-01T00:00:00Z"},
     ],
 )
-def test_invalid_project_responds_422(admin: TestClient, cambios: dict[str, Any]) -> None:
-    response = admin.post("/api/admin/projects", json=PROYECTO | cambios)
+def test_invalid_project_responds_422(admin: TestClient, changes: dict[str, Any]) -> None:
+    response = admin.post("/api/admin/projects", json=PROJECT | changes)
 
     assert response.status_code == 422
     assert admin.get("/api/admin/projects").json() == []
@@ -304,11 +303,11 @@ def test_a_maxed_out_project_fits_within_the_api_limit(admin: TestClient) -> Non
     assert int(response.request.headers["content-length"]) < MAX_BODY_BYTES
 
 
-@pytest.mark.parametrize(("metodo", "cuerpo"), [("GET", None), ("PUT", PROYECTO), ("DELETE", None)])
+@pytest.mark.parametrize(("method", "body"), [("GET", None), ("PUT", PROJECT), ("DELETE", None)])
 def test_nonexistent_project_responds_404(
-    admin: TestClient, metodo: str, cuerpo: dict[str, Any] | None
+    admin: TestClient, method: str, body: dict[str, Any] | None
 ) -> None:
-    response = admin.request(metodo, "/api/admin/projects/999999", json=cuerpo)
+    response = admin.request(method, "/api/admin/projects/999999", json=body)
 
     assert response.status_code == 404
 
@@ -324,27 +323,27 @@ def test_without_profile_responds_404(admin: TestClient) -> None:
 
 
 def test_first_put_creates_the_profile_and_later_ones_replace_it(admin: TestClient) -> None:
-    assert admin.put("/api/admin/profile", json=PERFIL).status_code == 200
+    assert admin.put("/api/admin/profile", json=PROFILE).status_code == 200
 
-    nuevo = PERFIL | {"headline_es": "Desarrollador backend", "links": {}}
-    response = admin.put("/api/admin/profile", json=nuevo)
+    new = PROFILE | {"headline_es": "Desarrollador backend", "links": {}}
+    response = admin.put("/api/admin/profile", json=new)
 
     assert response.status_code == 200
-    guardado = admin.get("/api/admin/profile").json()
-    assert guardado == nuevo | {"updated_at": guardado["updated_at"]}
+    saved = admin.get("/api/admin/profile").json()
+    assert saved == new | {"updated_at": saved["updated_at"]}
 
 
 def test_profile_email_is_not_shown_on_the_page(admin: TestClient) -> None:
-    admin.put("/api/admin/profile", json=PERFIL)
+    admin.put("/api/admin/profile", json=PROFILE)
 
-    perfil = admin.get("/api/bootstrap").json()["profile"]
+    profile = admin.get("/api/bootstrap").json()["profile"]
 
-    assert perfil["headline_es"] == "Desarrollador"
-    assert "contact_email" not in perfil
+    assert profile["headline_es"] == "Desarrollador"
+    assert "contact_email" not in profile
 
 
 @pytest.mark.parametrize(
-    "cambios",
+    "changes",
     [
         {"links": {"github": "javascript:alert(1)"}},
         {"links": {"github": "http://github.com/x"}},
@@ -360,8 +359,8 @@ def test_profile_email_is_not_shown_on_the_page(admin: TestClient) -> None:
         {"id": 2},
     ],
 )
-def test_invalid_profile_responds_422(admin: TestClient, cambios: dict[str, Any]) -> None:
-    response = admin.put("/api/admin/profile", json=PERFIL | cambios)
+def test_invalid_profile_responds_422(admin: TestClient, changes: dict[str, Any]) -> None:
+    response = admin.put("/api/admin/profile", json=PROFILE | changes)
 
     assert response.status_code == 422
     assert admin.get("/api/admin/profile").status_code == 404
@@ -371,13 +370,13 @@ def test_invalid_profile_responds_422(admin: TestClient, cambios: dict[str, Any]
 
 
 def test_skills_crud(admin: TestClient) -> None:
-    python = crear(admin, "/api/admin/skills", HABILIDAD, position=1)
-    fastapi = crear(admin, "/api/admin/skills", HABILIDAD, name="FastAPI", category="framework")
-    assert python == HABILIDAD | {"id": python["id"], "position": 1}
+    python = create(admin, "/api/admin/skills", SKILL, position=1)
+    fastapi = create(admin, "/api/admin/skills", SKILL, name="FastAPI", category="framework")
+    assert python == SKILL | {"id": python["id"], "position": 1}
     assert [s["name"] for s in admin.get("/api/admin/skills").json()] == ["FastAPI", "Python"]
 
-    response = admin.put(f"/api/admin/skills/{fastapi['id']}", json=HABILIDAD | {"position": 2})
-    assert response.json() == HABILIDAD | {"id": fastapi["id"], "position": 2}
+    response = admin.put(f"/api/admin/skills/{fastapi['id']}", json=SKILL | {"position": 2})
+    assert response.json() == SKILL | {"id": fastapi["id"], "position": 2}
 
     assert admin.delete(f"/api/admin/skills/{python['id']}").status_code == 204
     assert [s["id"] for s in admin.get("/api/admin/skills").json()] == [fastapi["id"]]
@@ -388,7 +387,7 @@ def test_categories_match_the_database() -> None:
 
 
 @pytest.mark.parametrize(
-    "cambios",
+    "changes",
     [
         {"category": "idioma"},
         {"name": ""},
@@ -397,45 +396,45 @@ def test_categories_match_the_database() -> None:
         {"id": 1},
     ],
 )
-def test_invalid_skill_responds_422(admin: TestClient, cambios: dict[str, Any]) -> None:
-    assert admin.post("/api/admin/skills", json=HABILIDAD | cambios).status_code == 422
+def test_invalid_skill_responds_422(admin: TestClient, changes: dict[str, Any]) -> None:
+    assert admin.post("/api/admin/skills", json=SKILL | changes).status_code == 422
 
 
-@pytest.mark.parametrize(("metodo", "cuerpo"), [("PUT", HABILIDAD), ("DELETE", None)])
+@pytest.mark.parametrize(("method", "body"), [("PUT", SKILL), ("DELETE", None)])
 def test_nonexistent_skill_responds_404(
-    admin: TestClient, metodo: str, cuerpo: dict[str, Any] | None
+    admin: TestClient, method: str, body: dict[str, Any] | None
 ) -> None:
-    assert admin.request(metodo, "/api/admin/skills/999999", json=cuerpo).status_code == 404
+    assert admin.request(method, "/api/admin/skills/999999", json=body).status_code == 404
 
 
 # Experience
 
 
 def test_experience_crud(admin: TestClient) -> None:
-    actual = crear(admin, "/api/admin/experience", EXPERIENCIA, start_date="2025-03-01")
-    anterior = crear(
-        admin, "/api/admin/experience", EXPERIENCIA, company="Antes", end_date="2025-02-28"
+    current = create(admin, "/api/admin/experience", EXPERIENCE, start_date="2025-03-01")
+    previous = create(
+        admin, "/api/admin/experience", EXPERIENCE, company="Antes", end_date="2025-02-28"
     )
-    assert actual["end_date"] is None
+    assert current["end_date"] is None
     # Same order as the page: by position and, at equal position, the most recent first.
-    lista = admin.get("/api/admin/experience").json()
-    assert [e["id"] for e in lista] == [actual["id"], anterior["id"]]
+    listed = admin.get("/api/admin/experience").json()
+    assert [e["id"] for e in listed] == [current["id"], previous["id"]]
 
-    cambios = EXPERIENCIA | {"description_es": "Hice\n- esto\n- y esto", "end_date": "2025-06-30"}
-    editado = admin.put(f"/api/admin/experience/{actual['id']}", json=cambios).json()
-    assert editado["description_es"] == "Hice\n- esto\n- y esto"
-    assert editado["end_date"] == "2025-06-30"
+    changes = EXPERIENCE | {"description_es": "Hice\n- esto\n- y esto", "end_date": "2025-06-30"}
+    edited = admin.put(f"/api/admin/experience/{current['id']}", json=changes).json()
+    assert edited["description_es"] == "Hice\n- esto\n- y esto"
+    assert edited["end_date"] == "2025-06-30"
 
-    assert admin.delete(f"/api/admin/experience/{anterior['id']}").status_code == 204
-    assert [e["id"] for e in admin.get("/api/admin/experience").json()] == [actual["id"]]
+    assert admin.delete(f"/api/admin/experience/{previous['id']}").status_code == 204
+    assert [e["id"] for e in admin.get("/api/admin/experience").json()] == [current["id"]]
 
 
 def test_an_experience_can_start_and_end_on_the_same_day(admin: TestClient) -> None:
-    crear(admin, "/api/admin/experience", EXPERIENCIA, end_date=EXPERIENCIA["start_date"])
+    create(admin, "/api/admin/experience", EXPERIENCE, end_date=EXPERIENCE["start_date"])
 
 
 @pytest.mark.parametrize(
-    "cambios",
+    "changes",
     [
         {"end_date": "2023-12-31"},
         {"start_date": "no-es-fecha"},
@@ -446,34 +445,34 @@ def test_an_experience_can_start_and_end_on_the_same_day(admin: TestClient) -> N
     ],
 )
 def test_invalid_experience_responds_422(
-    admin: TestClient, db_session: Session, cambios: dict[str, Any]
+    admin: TestClient, db_session: Session, changes: dict[str, Any]
 ) -> None:
-    response = admin.post("/api/admin/experience", json=EXPERIENCIA | cambios)
+    response = admin.post("/api/admin/experience", json=EXPERIENCE | changes)
 
     assert response.status_code == 422
     assert db_session.scalars(select(Experience)).all() == []
 
 
-@pytest.mark.parametrize(("metodo", "cuerpo"), [("PUT", EXPERIENCIA), ("DELETE", None)])
+@pytest.mark.parametrize(("method", "body"), [("PUT", EXPERIENCE), ("DELETE", None)])
 def test_nonexistent_experience_responds_404(
-    admin: TestClient, metodo: str, cuerpo: dict[str, Any] | None
+    admin: TestClient, method: str, body: dict[str, Any] | None
 ) -> None:
-    assert admin.request(metodo, "/api/admin/experience/999999", json=cuerpo).status_code == 404
+    assert admin.request(method, "/api/admin/experience/999999", json=body).status_code == 404
 
 
 def test_the_date_is_saved_as_a_date(admin: TestClient, db_session: Session) -> None:
-    creado = crear(admin, "/api/admin/experience", EXPERIENCIA)
+    created = create(admin, "/api/admin/experience", EXPERIENCE)
 
-    guardado = db_session.get(Experience, creado["id"])
-    assert guardado is not None
-    assert guardado.start_date == date(2024, 1, 1)
+    saved = db_session.get(Experience, created["id"])
+    assert saved is not None
+    assert saved.start_date == date(2024, 1, 1)
 
 
-@pytest.mark.parametrize("ruta", ["projects", "skills", "experience"])
+@pytest.mark.parametrize("route", ["projects", "skills", "experience"])
 @pytest.mark.parametrize("item_id", ["0", "-1", str(2**31), "abc"])
-def test_an_out_of_range_id_responds_422(admin: TestClient, ruta: str, item_id: str) -> None:
+def test_an_out_of_range_id_responds_422(admin: TestClient, route: str, item_id: str) -> None:
     """Postgres uses `integer`: a larger id must not reach the database (it would be a 500)."""
-    assert admin.delete(f"/api/admin/{ruta}/{item_id}").status_code == 422
+    assert admin.delete(f"/api/admin/{route}/{item_id}").status_code == 422
 
 
 # Project screenshots
@@ -486,133 +485,133 @@ def media(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return tmp_path
 
 
-def imagen(
-    formato: str = "PNG",
-    tamano: tuple[int, int] = (40, 30),
-    modo: str = "RGB",
+def image(
+    image_format: str = "PNG",
+    size: tuple[int, int] = (40, 30),
+    mode: str = "RGB",
     color: str | tuple[int, ...] = "red",
 ) -> bytes:
-    salida = io.BytesIO()
-    Image.new(modo, tamano, color).save(salida, format=formato)
-    return salida.getvalue()
+    output = io.BytesIO()
+    Image.new(mode, size, color).save(output, format=image_format)
+    return output.getvalue()
 
 
-def subir(
-    cliente: TestClient,
+def upload(
+    client: TestClient,
     project_id: int,
-    contenido: bytes,
-    nombre: str = "captura.png",
-    tipo: str = "image/png",
-    **textos: str,
+    content: bytes,
+    name: str = "captura.png",
+    kind: str = "image/png",
+    **texts: str,
 ) -> Response:
-    return cliente.post(
+    return client.post(
         f"/api/admin/projects/{project_id}/images",
-        files={"file": (nombre, contenido, tipo)},
-        data=textos,
+        files={"file": (name, content, kind)},
+        data=texts,
     )
 
 
-def archivos(carpeta: Path) -> list[Path]:
-    return [ruta for ruta in carpeta.rglob("*") if ruta.is_file()]
+def files(folder: Path) -> list[Path]:
+    return [route for route in folder.rglob("*") if route.is_file()]
 
 
 @pytest.fixture
-def proyecto(admin: TestClient) -> Any:
-    return crear(admin, "/api/admin/projects", PROYECTO)
+def project(admin: TestClient) -> Any:
+    return create(admin, "/api/admin/projects", PROJECT)
 
 
-@pytest.mark.parametrize("formato", ["PNG", "JPEG", "WEBP"])
+@pytest.mark.parametrize("image_format", ["PNG", "JPEG", "WEBP"])
 def test_a_valid_image_is_saved_as_webp(
-    admin: TestClient, proyecto: Any, media: Path, formato: str
+    admin: TestClient, project: Any, media: Path, image_format: str
 ) -> None:
-    response = subir(admin, proyecto["id"], imagen(formato), alt_es="Inicio", alt_en="Home")
+    response = upload(admin, project["id"], image(image_format), alt_es="Inicio", alt_en="Home")
 
     assert response.status_code == 201, response.text
-    captura = response.json()
-    assert captura == {
-        "id": captura["id"],
-        "url": captura["url"],
+    screenshot = response.json()
+    assert screenshot == {
+        "id": screenshot["id"],
+        "url": screenshot["url"],
         "alt_es": "Inicio",
         "alt_en": "Home",
         "position": 0,
     }
-    assert re.fullmatch(r"/media/projects/[0-9a-f]{32}\.webp", captura["url"])
-    [guardado] = archivos(media)
-    assert guardado == media / captura["url"].removeprefix("/media/")
-    with Image.open(guardado) as webp:
+    assert re.fullmatch(r"/media/projects/[0-9a-f]{32}\.webp", screenshot["url"])
+    [saved] = files(media)
+    assert saved == media / screenshot["url"].removeprefix("/media/")
+    with Image.open(saved) as webp:
         assert (webp.format, webp.size) == ("WEBP", (40, 30))
-    assert admin.get(f"/api/admin/projects/{proyecto['id']}").json()["images"] == [captura]
+    assert admin.get(f"/api/admin/projects/{project['id']}").json()["images"] == [screenshot]
 
 
-def test_the_screenshot_shows_on_the_public_page(admin: TestClient, proyecto: Any) -> None:
-    admin.put(f"/api/admin/projects/{proyecto['id']}", json=PROYECTO | {"visible": True})
-    captura = subir(admin, proyecto["id"], imagen(), alt_es="Inicio").json()
+def test_the_screenshot_shows_on_the_public_page(admin: TestClient, project: Any) -> None:
+    admin.put(f"/api/admin/projects/{project['id']}", json=PROJECT | {"visible": True})
+    screenshot = upload(admin, project["id"], image(), alt_es="Inicio").json()
 
-    [publico] = admin.get("/api/bootstrap").json()["projects"]
-    assert publico["images"] == [{"url": captura["url"], "alt_es": "Inicio", "alt_en": ""}]
+    [public] = admin.get("/api/bootstrap").json()["projects"]
+    assert public["images"] == [{"url": screenshot["url"], "alt_es": "Inicio", "alt_en": ""}]
 
 
-def test_the_server_sets_the_file_name(admin: TestClient, proyecto: Any, media: Path) -> None:
-    response = subir(admin, proyecto["id"], imagen(), nombre="../../app/main.py")
+def test_the_server_sets_the_file_name(admin: TestClient, project: Any, media: Path) -> None:
+    response = upload(admin, project["id"], image(), name="../../app/main.py")
 
     assert response.status_code == 201
     assert "main" not in response.json()["url"]
-    assert [ruta.parent for ruta in archivos(media)] == [media / "projects"]
+    assert [route.parent for route in files(media)] == [media / "projects"]
 
 
-def test_screenshots_go_at_the_end_in_order(admin: TestClient, proyecto: Any) -> None:
+def test_screenshots_go_at_the_end_in_order(admin: TestClient, project: Any) -> None:
     for _ in range(3):
-        subir(admin, proyecto["id"], imagen())
+        upload(admin, project["id"], image())
 
-    capturas = admin.get(f"/api/admin/projects/{proyecto['id']}").json()["images"]
-    assert [c["position"] for c in capturas] == [0, 1, 2]
+    screenshots = admin.get(f"/api/admin/projects/{project['id']}").json()["images"]
+    assert [c["position"] for c in screenshots] == [0, 1, 2]
 
 
 @pytest.mark.parametrize(
-    "contenido",
+    "content",
     [
         b"esto es texto, no una imagen",
         b"",
         b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
         b"<?php system($_GET['c']); ?>",
-        imagen("GIF"),
-        imagen("BMP"),
+        image("GIF"),
+        image("BMP"),
     ],
     ids=["text", "empty", "svg", "php", "gif", "bmp"],
 )
 def test_a_file_that_is_not_an_accepted_image_responds_415(
-    admin: TestClient, proyecto: Any, media: Path, db_session: Session, contenido: bytes
+    admin: TestClient, project: Any, media: Path, db_session: Session, content: bytes
 ) -> None:
     # The name and the type say PNG: only the content counts.
-    response = subir(admin, proyecto["id"], contenido)
+    response = upload(admin, project["id"], content)
 
     assert response.status_code == 415
     assert response.json() == {"detail": "The file is not a JPEG, PNG or WebP image."}
-    assert archivos(media) == []
+    assert files(media) == []
     assert db_session.scalars(select(ProjectImage)).all() == []
 
 
-def test_an_image_over_5_mb_responds_413(admin: TestClient, proyecto: Any, media: Path) -> None:
+def test_an_image_over_5_mb_responds_413(admin: TestClient, project: Any, media: Path) -> None:
     # It fits the body limit (5 MB plus the form), but the image is over 5 MB.
-    contenido = imagen() + b"\0" * MAX_IMAGE_BYTES
+    content = image() + b"\0" * MAX_IMAGE_BYTES
 
-    response = subir(admin, proyecto["id"], contenido)
+    response = upload(admin, project["id"], content)
 
     assert response.status_code == 413
     assert response.json() == {"detail": "The screenshot exceeds 5 MB."}
-    assert archivos(media) == []
+    assert files(media) == []
 
 
-def test_an_image_of_exactly_5_mb_is_accepted(admin: TestClient, proyecto: Any) -> None:
+def test_an_image_of_exactly_5_mb_is_accepted(admin: TestClient, project: Any) -> None:
     # Pillow ignores the extra bytes after the end of the PNG.
-    contenido = imagen()
-    contenido += b"\0" * (MAX_IMAGE_BYTES - len(contenido))
+    content = image()
+    content += b"\0" * (MAX_IMAGE_BYTES - len(content))
 
-    assert subir(admin, proyecto["id"], contenido).status_code == 201
+    assert upload(admin, project["id"], content).status_code == 201
 
 
-def test_a_body_larger_than_the_upload_limit_responds_413(admin: TestClient, proyecto: Any) -> None:
-    response = subir(admin, proyecto["id"], b"\0" * MAX_UPLOAD_BYTES)
+def test_a_body_larger_than_the_upload_limit_responds_413(admin: TestClient, project: Any) -> None:
+    response = upload(admin, project["id"], b"\0" * MAX_UPLOAD_BYTES)
 
     assert response.status_code == 413
     assert response.json() == {"detail": "The body is too large"}
@@ -636,149 +635,149 @@ def test_the_upload_limit_does_not_apply_to_other_routes(admin: TestClient) -> N
     assert response.status_code == 413
 
 
-def test_a_damaged_image_responds_422(admin: TestClient, proyecto: Any, media: Path) -> None:
-    ruido = Image.frombytes("RGB", (200, 200), os.urandom(200 * 200 * 3))
-    salida = io.BytesIO()
-    ruido.save(salida, format="PNG")
-    cortada = salida.getvalue()[: len(salida.getvalue()) // 2]
+def test_a_damaged_image_responds_422(admin: TestClient, project: Any, media: Path) -> None:
+    noise = Image.frombytes("RGB", (200, 200), os.urandom(200 * 200 * 3))
+    output = io.BytesIO()
+    noise.save(output, format="PNG")
+    cut = output.getvalue()[: len(output.getvalue()) // 2]
 
-    response = subir(admin, proyecto["id"], cortada)
+    response = upload(admin, project["id"], cut)
 
     assert response.status_code == 422
     assert response.json() == {"detail": "The image is damaged or can't be read."}
-    assert archivos(media) == []
+    assert files(media) == []
 
 
-@pytest.mark.parametrize("tamano", [(5000, 5001), (20_000, 20_000)], ids=["25mp", "bomb"])
+@pytest.mark.parametrize("size", [(5000, 5001), (20_000, 20_000)], ids=["25mp", "bomb"])
 def test_an_image_with_too_many_pixels_responds_422(
-    admin: TestClient, proyecto: Any, media: Path, tamano: tuple[int, int]
+    admin: TestClient, project: Any, media: Path, size: tuple[int, int]
 ) -> None:
     # In black and white it weighs a few KB, but opened it would take hundreds of MB.
-    response = subir(admin, proyecto["id"], imagen(tamano=tamano, modo="1"))
+    response = upload(admin, project["id"], image(size=size, mode="1"))
 
     assert response.status_code == 422
     assert "too many pixels" in response.json()["detail"]
-    assert archivos(media) == []
+    assert files(media) == []
 
 
-def test_a_large_image_is_shrunk_to_2560_px(admin: TestClient, proyecto: Any, media: Path) -> None:
-    subir(admin, proyecto["id"], imagen(tamano=(5120, 100)))
+def test_a_large_image_is_shrunk_to_2560_px(admin: TestClient, project: Any, media: Path) -> None:
+    upload(admin, project["id"], image(size=(5120, 100)))
 
-    with Image.open(archivos(media)[0]) as webp:
+    with Image.open(files(media)[0]) as webp:
         assert webp.size == (2560, 50)
 
 
-def test_transparency_is_kept(admin: TestClient, proyecto: Any, media: Path) -> None:
-    subir(admin, proyecto["id"], imagen(modo="RGBA", color=(255, 0, 0, 128)))
+def test_transparency_is_kept(admin: TestClient, project: Any, media: Path) -> None:
+    upload(admin, project["id"], image(mode="RGBA", color=(255, 0, 0, 128)))
 
-    with Image.open(archivos(media)[0]) as webp:
+    with Image.open(files(media)[0]) as webp:
         assert webp.mode == "RGBA"
 
 
 def test_metadata_is_discarded_and_rotation_is_respected(
-    admin: TestClient, proyecto: Any, media: Path
+    admin: TestClient, project: Any, media: Path
 ) -> None:
     exif = Image.Exif()
     exif[ExifTags.Base.Orientation] = 6  # Rotated 90°, like phone photos.
     exif[ExifTags.Base.Make] = "Celular"
-    salida = io.BytesIO()
-    Image.new("RGB", (40, 30), "red").save(salida, format="JPEG", exif=exif)
+    output = io.BytesIO()
+    Image.new("RGB", (40, 30), "red").save(output, format="JPEG", exif=exif)
 
-    subir(admin, proyecto["id"], salida.getvalue())
+    upload(admin, project["id"], output.getvalue())
 
-    with Image.open(archivos(media)[0]) as webp:
+    with Image.open(files(media)[0]) as webp:
         assert webp.size == (30, 40)
         assert "exif" not in webp.info
         assert len(webp.getexif()) == 0
 
 
 @pytest.mark.parametrize(
-    "textos",
+    "texts",
     [{"alt_es": "a" * 301}, {"alt_en": "dos\nlíneas"}, {"alt_es": "\x00"}],
     ids=["long", "newline", "control"],
 )
 def test_invalid_alt_text_responds_422(
-    admin: TestClient, proyecto: Any, media: Path, textos: dict[str, str]
+    admin: TestClient, project: Any, media: Path, texts: dict[str, str]
 ) -> None:
-    assert subir(admin, proyecto["id"], imagen(), **textos).status_code == 422
-    assert archivos(media) == []
+    assert upload(admin, project["id"], image(), **texts).status_code == 422
+    assert files(media) == []
 
 
-def test_uploading_without_a_file_responds_422(admin: TestClient, proyecto: Any) -> None:
-    response = admin.post(f"/api/admin/projects/{proyecto['id']}/images", data={"alt_es": "x"})
+def test_uploading_without_a_file_responds_422(admin: TestClient, project: Any) -> None:
+    response = admin.post(f"/api/admin/projects/{project['id']}/images", data={"alt_es": "x"})
 
     assert response.status_code == 422
 
 
 def test_uploading_to_a_nonexistent_project_responds_404(admin: TestClient, media: Path) -> None:
-    assert subir(admin, 999_999, imagen()).status_code == 404
-    assert archivos(media) == []
+    assert upload(admin, 999_999, image()).status_code == 404
+    assert files(media) == []
 
 
 def test_uploading_without_session_does_not_save_the_file(
-    anonimo: TestClient, db_session: Session, media: Path
+    anonymous: TestClient, db_session: Session, media: Path
 ) -> None:
-    proyecto = Project(**PROYECTO)
-    db_session.add(proyecto)
+    project = Project(**PROJECT)
+    db_session.add(project)
     db_session.flush()
 
-    assert subir(anonimo, proyecto.id, imagen()).status_code == 401
-    assert archivos(media) == []
+    assert upload(anonymous, project.id, image()).status_code == 401
+    assert files(media) == []
 
 
 @pytest.mark.parametrize("cookie", [None, "no-es-un-jwt"], ids=["no-cookie", "invalid"])
 def test_without_session_the_upload_does_not_read_the_form(
-    anonimo: TestClient, monkeypatch: pytest.MonkeyPatch, cookie: str | None
+    anonymous: TestClient, monkeypatch: pytest.MonkeyPatch, cookie: str | None
 ) -> None:
     # FastAPI reads the form before checking the session: the middleware cuts it off first.
-    leidos: list[bool] = []
-    monkeypatch.setattr(StarletteRequest, "form", lambda *_a, **_k: leidos.append(True))
+    read: list[bool] = []
+    monkeypatch.setattr(StarletteRequest, "form", lambda *_a, **_k: read.append(True))
     if cookie:
-        anonimo.cookies.set(COOKIE_NAME, cookie)
+        anonymous.cookies.set(COOKIE_NAME, cookie)
 
-    response = subir(anonimo, 1, b"\0" * MAX_IMAGE_BYTES)
+    response = upload(anonymous, 1, b"\0" * MAX_IMAGE_BYTES)
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Log in."}
-    assert leidos == []
+    assert read == []
 
 
 def test_deleting_a_screenshot_deletes_its_file(
-    admin: TestClient, proyecto: Any, media: Path, db_session: Session
+    admin: TestClient, project: Any, media: Path, db_session: Session
 ) -> None:
-    captura = subir(admin, proyecto["id"], imagen()).json()
+    screenshot = upload(admin, project["id"], image()).json()
 
-    url = f"/api/admin/projects/{proyecto['id']}/images/{captura['id']}"
+    url = f"/api/admin/projects/{project['id']}/images/{screenshot['id']}"
     assert admin.delete(url).status_code == 204
 
-    assert archivos(media) == []
+    assert files(media) == []
     assert db_session.scalars(select(ProjectImage)).all() == []
     assert admin.delete(url).status_code == 404
 
 
 def test_deleting_another_projects_screenshot_responds_404(
-    admin: TestClient, proyecto: Any, media: Path
+    admin: TestClient, project: Any, media: Path
 ) -> None:
-    otro = crear(admin, "/api/admin/projects", PROYECTO, slug="otro")
-    captura = subir(admin, proyecto["id"], imagen()).json()
+    other = create(admin, "/api/admin/projects", PROJECT, slug="otro")
+    screenshot = upload(admin, project["id"], image()).json()
 
-    response = admin.delete(f"/api/admin/projects/{otro['id']}/images/{captura['id']}")
+    response = admin.delete(f"/api/admin/projects/{other['id']}/images/{screenshot['id']}")
 
     assert response.status_code == 404
-    assert len(archivos(media)) == 1
+    assert len(files(media)) == 1
 
 
 def test_deleting_a_project_deletes_its_screenshot_files(
-    admin: TestClient, proyecto: Any, media: Path
+    admin: TestClient, project: Any, media: Path
 ) -> None:
-    otro = crear(admin, "/api/admin/projects", PROYECTO, slug="otro")
-    subir(admin, proyecto["id"], imagen())
-    subir(admin, proyecto["id"], imagen())
-    queda = subir(admin, otro["id"], imagen()).json()
+    other = create(admin, "/api/admin/projects", PROJECT, slug="otro")
+    upload(admin, project["id"], image())
+    upload(admin, project["id"], image())
+    remaining = upload(admin, other["id"], image()).json()
 
-    assert admin.delete(f"/api/admin/projects/{proyecto['id']}").status_code == 204
+    assert admin.delete(f"/api/admin/projects/{project['id']}").status_code == 204
 
-    assert archivos(media) == [media / queda["url"].removeprefix("/media/")]
+    assert files(media) == [media / remaining["url"].removeprefix("/media/")]
 
 
 def test_a_file_that_cannot_be_deleted_is_logged(

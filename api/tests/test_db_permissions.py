@@ -11,7 +11,7 @@ from sqlalchemy.exc import ProgrammingError
 from app.db import engine
 
 
-def ejecutar(sql: str) -> None:
+def run(sql: str) -> None:
     with engine.connect() as connection:
         connection.execute(text(sql))
         connection.rollback()
@@ -19,19 +19,19 @@ def ejecutar(sql: str) -> None:
 
 def test_api_user_is_neither_superuser_nor_owner() -> None:
     with engine.connect() as connection:
-        rol = connection.execute(
+        role = connection.execute(
             text(
                 "SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls"
                 " FROM pg_roles WHERE rolname = current_user"
             )
         ).one()
-        dueno = connection.execute(
+        owner = connection.execute(
             text("SELECT tableowner FROM pg_tables WHERE tablename = 'project'")
         ).scalar_one()
-        usuario = connection.execute(text("SELECT current_user")).scalar_one()
+        user = connection.execute(text("SELECT current_user")).scalar_one()
 
-    assert tuple(rol) == (False, False, False, False)
-    assert dueno != usuario
+    assert tuple(role) == (False, False, False, False)
+    assert owner != user
 
 
 @pytest.mark.parametrize(
@@ -46,7 +46,7 @@ def test_api_user_is_neither_superuser_nor_owner() -> None:
 )
 def test_api_user_cannot_change_the_schema(sql: str) -> None:
     with pytest.raises(ProgrammingError, match="InsufficientPrivilege|permission denied|must be"):
-        ejecutar(sql)
+        run(sql)
 
 
 def test_api_user_reads_and_writes_rows() -> None:
