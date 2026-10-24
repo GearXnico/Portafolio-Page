@@ -12,6 +12,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Changed
 
+- Code: comments in the API, deploy scripts, compose files and workflows keep only the non-obvious reasons, and API tests use English names; no behavior changes.
 - Docs: README, architecture, development rules and ADRs rewritten to describe the current system; ADR 0010 is renamed to free-tier deployment, and `deploy/README.md` lists the server requirements.
 - `CLAUDE.md` becomes `AGENTS.md`, a short guide for coding agents with the stack, commands and conventions; `CLAUDE.md` only imports it.
 - Security: Pillow goes from 12.3 to 13.0 and undici from 8.11.2 to 8.12.3 for new advisories, the web image applies Alpine security updates on build, and the Caddy Go `crypto/x509` advisory is accepted until 2026-11-24 while no Caddy image ships the fixed Go.

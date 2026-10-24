@@ -1,6 +1,6 @@
-# Production web server (ADR, architecture decision record, 0001): automatic HTTPS, the page, /media and /api.
+# Production web server: automatic HTTPS, the page, /media and /api.
 # SITE_ADDRESS is the domain (for example, ejemplo.cl). With http://localhost it serves HTTP only,
-# as in the CI (continuous integration) deploy-check job.
+# as in the CI deploy-check job.
 {
 	# No admin API: the configuration changes only with a new deployment.
 	admin off
@@ -9,7 +9,7 @@
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
-	# The same values as web/security-headers.ts; the deploy-check E2E (end-to-end) tests compare them.
+	# The same values as web/security-headers.ts; the deploy-check E2E tests compare them.
 	header {
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"

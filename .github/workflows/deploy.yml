@@ -1,5 +1,5 @@
-# Publishes the production images and deploys them to the server. Task 5.3, ADR (architecture decision record) 0010.
-# - Every push to main publishes the API and web images to GHCR (GitHub Container Registry), tagged with the commit SHA.
+# Publishes the production images and deploys them to the server.
+# - Every push to main publishes the API and web images to GHCR, tagged with the commit SHA.
 # - The deploy is a manual button (Actions > deploy > Run workflow) that takes a SHA already published, so
 #   a rollback is the same button with an older SHA. It runs deploy/deploy.sh on the server over SSH.
 # The server is reached only with the secrets of the `production` environment (see deploy/README.md).
@@ -37,7 +37,7 @@ jobs:
         with:
           persist-credentials: false
       # The same build as the deploy-check job in ci.yml. main only receives PRs whose required checks,
-      # deploy-check included, are green (main ruleset, ADR 0007), so a red commit doesn't get here.
+      # deploy-check included, are green (main ruleset), so a red commit doesn't get here.
       # Placeholders only so the compose file resolves: production values live on the server.
       - name: Build
         env:

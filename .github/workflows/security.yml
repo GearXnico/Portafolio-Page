@@ -1,4 +1,4 @@
-# Security checks for every PR (pull request), every push to dev and main, and once a week. ADR (architecture decision record) 0007.
+# Security checks for every PR, every push to dev and main, and once a week.
 # The ruff security rules (S, the Bandit ones) run in the pre-commit job of ci.yml.
 # Secret scanning and push protection are repo settings on GitHub, not part of this workflow.
 name: security
@@ -8,7 +8,7 @@ on:
     branches: [dev, main]
   push:
     branches: [dev, main]
-  # Mondays at 09:00 UTC (Coordinated Universal Time), to catch new vulnerabilities even if nobody pushes.
+  # Mondays at 09:00 UTC, to catch new vulnerabilities even if nobody pushes.
   schedule:
     - cron: "0 9 * * 1"
 
@@ -37,7 +37,7 @@ jobs:
         # actions checks the workflows themselves (injection in `run:`, excess permissions).
         language: [actions, python, javascript-typescript]
     steps:
-      # Actions pinned by SHA (commit hash) so that a moved tag can't change the code that runs.
+      # Actions pinned by SHA so that a moved tag can't change the code that runs.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -124,5 +124,5 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
-          # Findings accepted one by one, with an expiry date: a new CVE (Common Vulnerabilities and Exposures entry) still fails.
+          # Findings accepted one by one, with an expiry date: a new CVE still fails.
           trivyignores: .trivyignore
