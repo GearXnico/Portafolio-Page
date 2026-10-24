@@ -1,28 +1,28 @@
 # 0001 · Deployment on a VPS with Docker Compose and Caddy
 
-Status: accepted · Date: 2026-10-11 · Decided by: Nicolas
+Status: accepted · Date: 2026-10-11
 
 ## Context
 
-The site needs a frontend, an API (application programming interface) and Postgres that are always available, because a recruiter's first visit can't be slow to load. Deployment is an area Nicolas wants to strengthen, and it is also something the job postings he reviewed ask for. Besides, the server should be able to host upcoming products without multiplying the cost.
+The site needs a frontend, an API and Postgres that are always available: a first visit can't wait for a service to wake up. The same server should be able to host later projects without multiplying the cost.
 
 ## Options considered
 
-| Option | Monthly cost | Extra work | Cons |
+| Option | Monthly cost | Setup | Cons |
 |---|---|---|---|
-| A. VPS (virtual private server) on DigitalOcean, 1 vCPU (virtual CPU) and 1 GiB of memory, with weekly backup | US$7.20 | ~6 h | The server has to be maintained |
-| B. Render (managed API plus Postgres) | US$13 | ~1-2 h | Each new product adds the same again |
-| C. Fly.io plus Neon plus static hosting | ~US$2-4 | ~4 h | The API and the database go to sleep; three providers |
+| A. DigitalOcean VPS, 1 vCPU and 1 GiB, with weekly backup | US$7.20 | ~6 h | The server has to be maintained |
+| B. Render (managed API and Postgres) | US$13 | ~1-2 h | Each new project adds the same again |
+| C. Fly.io, Neon and static hosting | ~US$2-4 | ~4 h | The API and the database sleep; three providers |
 
-Prices checked on 2026-10-11 on the official pages.
+Prices from the official pages on 2026-10-11.
 
 ## Decision
 
-A: a VPS on DigitalOcean (New York region) with Docker Compose. Caddy 2.11 serves the frontend, passes `/api` to FastAPI and renews the HTTPS (encrypted connection) certificate on its own. Images are built in GitHub Actions, not on the server.
+A: a VPS with Docker Compose. Caddy serves the frontend, proxies `/api` to FastAPI and renews the HTTPS certificate on its own. Images are built in GitHub Actions, never on the server.
 
 ## Consequences
 
-- It is the cheapest option without slow cold starts, and the same machine hosts the upcoming products.
-- Nicolas maintains the server: SSH (encrypted remote access) with keys only, firewall, automatic patches and disk alerts.
-- The configuration (Compose, Caddyfile and scripts) lives in the template and is reused.
-- With 1 GiB of memory, building on the server isn't possible. If a future product needs more, the plan is upgraded (US$12 for 2 GiB).
+- The cheapest option without cold starts, and the same machine can host later projects.
+- The server is maintained by hand: SSH with keys only, a firewall, automatic security patches and disk alerts.
+- 1 GiB is not enough to build images on the server, which is why CI builds them. A project that needs more moves to the 2 GiB plan (US$12).
+- [ADR 0010](0010-free-tier-deployment.md) adds a free phase on Oracle Cloud before this target.
