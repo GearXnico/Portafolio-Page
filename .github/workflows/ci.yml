@@ -1,4 +1,4 @@
-# Tests for every PR (pull request) and every push to dev and main. ADR (architecture decision record) 0007.
+# Tests for every PR and every push to dev and main.
 # The five jobs run in parallel. It uses no secrets, so it is just as safe on PRs from forks.
 name: ci
 
@@ -11,13 +11,13 @@ on:
 # No permissions by default; each job asks only to read the code.
 permissions: {}
 
-# A new push to the same PR cancels the previous run; on dev and main every commit finishes its CI (continuous integration).
+# A new push to the same PR cancels the previous run; on dev and main every commit finishes its CI.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  # Argon2 hash of the E2E (end-to-end) test admin's password, computed inside the API image.
+  # Argon2 hash of the E2E test admin's password, computed inside the API image.
   # The password comes through the E2E_ADMIN_PASSWORD variable (not as an argument, which shows in `ps`).
   HASH_PY: "import os; from argon2 import PasswordHasher; print(PasswordHasher().hash(os.environ['E2E_ADMIN_PASSWORD']))"
 
@@ -30,7 +30,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      # Actions pinned by SHA (commit hash) so that a moved tag can't change the code that runs.
+      # Actions pinned by SHA so that a moved tag can't change the code that runs.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -143,8 +143,8 @@ jobs:
         run: docker compose logs --no-color
 
   # Deployment test: the production compose on the runner, with backup and migrations as on
-  # the server, and the E2E tests against Caddy (headers and CSP, Content Security Policy, included).
-  # It is the ephemeral staging of every PR (ADR 0008).
+  # the server, and the E2E tests against Caddy (headers and CSP included).
+  # It is the ephemeral staging of every PR.
   deploy-check:
     name: Deployment
     runs-on: ubuntu-latest

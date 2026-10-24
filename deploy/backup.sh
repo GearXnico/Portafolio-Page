@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Daily backup of the database and /media, encrypted and sent off the server. Task 5.4, ADR (architecture decision record) 0010.
+# Daily backup of the database and /media, encrypted and sent off the server.
 # cron runs it on the server as the deploy user (deploy/README.md):
 #   15 4 * * * ~/portafolio/deploy/backup.sh >> ~/backup.log 2>&1
 #
 # 1. pg_dump of the database and a tar of /media, both read from the running containers.
-# 2. Encrypts them with age to BACKUP_AGE_RECIPIENT, a public key: the private key is only with
-#    Nicolas, so neither the server nor the bucket can read a backup.
+# 2. Encrypts them with age to BACKUP_AGE_RECIPIENT, a public key: the private key is kept
+#    offline, so neither the server nor the bucket can read a backup.
 # 3. Uploads the file to the private Object Storage bucket BACKUP_BUCKET with the VM's own identity
 #    (instance principal): there is no key on the server, and the policy only lets it create objects
 #    and list their names, not read, overwrite or delete them. The bucket deletes them after 14 days.
@@ -43,7 +43,7 @@ echo "Backup encrypted: backups/$name ($(du -h "backups/$name" | cut -f1))"
 ls -1t backups/portafolio-*.tar.age | tail -n +4 | xargs -r rm --
 
 # An empty bucket fails, so a forgotten variable doesn't leave the backups only on the VM.
-# BACKUP_LOCAL_ONLY=1 is for CI (continuous integration), which has no bucket.
+# BACKUP_LOCAL_ONLY=1 is for CI, which has no bucket.
 if [[ -z "$bucket" ]]; then
   if [[ "${BACKUP_LOCAL_ONLY:-0}" == 1 ]]; then
     echo "BACKUP_LOCAL_ONLY=1: this backup stays only here"

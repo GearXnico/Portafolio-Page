@@ -5,7 +5,7 @@
 # or npm. Reviewed: 2026-10-12.
 
 # Caddy 2.11.7 (web/Dockerfile), built with Go 1.26.8 and golang.org/x/net 0.59.0. They are
-# denial-of-service issues in HTTP/2 and TLS (Transport Layer Security); the next Caddy release fixes them, and the
+# denial-of-service issues in HTTP/2 and TLS; the next Caddy release fixes them, and the
 # image picks it up on its own when rebuilt because it uses the 2.11-alpine tag.
 CVE-2026-78667 exp:2026-11-12
 CVE-2026-78669 exp:2026-11-12

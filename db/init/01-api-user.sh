@@ -3,7 +3,7 @@
 #
 # - POSTGRES_USER owns the tables and runs the migrations (Alembic).
 # - APP_DB_USER can only read and write rows: it can't create, drop or truncate tables,
-#   so a bug or an SQL (Structured Query Language) injection in the API can't change the schema.
+#   so a bug or an SQL injection in the API can't change the schema.
 #
 # Postgres runs the scripts in /docker-entrypoint-initdb.d only when the database
 # volume is empty. If you already had the database, recreate it with `docker compose down -v`.

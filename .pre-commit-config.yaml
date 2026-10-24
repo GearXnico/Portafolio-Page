@@ -1,5 +1,5 @@
-# Hooks that run before every commit (`pre-commit install`) and in CI (continuous integration, ci.yml).
-# Versions pinned by SHA (commit hash); the comment says which version it matches.
+# Hooks that run before every commit (`pre-commit install`) and in CI (ci.yml).
+# Versions pinned by SHA; the comment says which version it matches.
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Deploys one version of the site on the server: deploy/deploy.sh <image tag>
-# Task 5.3. deploy.yml runs it over SSH with the commit SHA as the tag; you can also run it by hand.
+# deploy.yml runs it over SSH with the commit SHA as the tag; you can also run it by hand.
 #
-# 1. Pulls the API and web images of that tag from GHCR (GitHub Container Registry).
+# 1. Pulls the API and web images of that tag from GHCR.
 # 2. Backs up the database before migrating.
 # 3. Runs the migrations and swaps the containers, waiting for their health checks.
 # 4. If anything fails, starts the previous version again and exits with an error.
 #
-# The previous version can always come back because migrations only add (ADR 0007), so the
+# The previous version can always come back because migrations only add, so the
 # old code still works on the migrated database and no restore is needed.
 set -euo pipefail
 umask 077

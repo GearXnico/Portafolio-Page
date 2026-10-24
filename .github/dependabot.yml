@@ -1,5 +1,5 @@
-# Weekly dependency updates (ADR, architecture decision record, 0007). The PRs (pull requests) go through
-# the same checks as any other and are not reviewed by the AI (artificial intelligence; ai-review.yml skips Dependabot).
+# Weekly dependency updates. The PRs go through
+# the same checks as any other and are not reviewed by the AI (ai-review.yml skips Dependabot).
 # Minor and patch updates arrive in one PR per ecosystem; major ones, in a separate PR
 # each, because they can break things and are best reviewed one by one.
 # cooldown: waits 7 days after a version is released before proposing it, in case it was malicious
@@ -43,8 +43,8 @@ updates:
     groups:
       docker:
         update-types: [minor, patch]
-    # Node only in LTS (long-term support) versions, the even ones. Odd versions last about 6
-    # months and dependencies don't always accept them (PR #15 to Node 25 didn't build).
+    # Node only in LTS versions, the even ones. Odd versions last about 6
+    # months and dependencies don't always accept them (Node 25 didn't build).
     # Patches of the LTS in use still arrive: the `24-alpine` tag is floating and Trivy checks
     # the image every week. New LTS versions (26, 28) are still proposed.
     # Add the next odd version (29.x) when it's due.

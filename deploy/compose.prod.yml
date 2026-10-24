@@ -1,4 +1,4 @@
-# Production (and staging): database, migrations, API and Caddy. ADR (architecture decision record) 0001.
+# Production: database, migrations, API and Caddy.
 # Reads the variables from deploy/.env, which is never committed to the repo (see deploy/README.md):
 #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --wait caddy
 name: ${COMPOSE_PROJECT_NAME:-producto}
@@ -18,13 +18,13 @@ x-base: &base
       max-size: 10m
       max-file: "3"
 
-# API and Caddy images. In CI (continuous integration) they are built here; on the server they are pulled from
-# GHCR (GitHub Container Registry) by SHA (task 5.3) with IMAGE_PREFIX=ghcr.io/<owner>/<repo> and IMAGE_TAG=<sha>.
+# API and Caddy images. In CI they are built here; on the server they are pulled from
+# GHCR by SHA with IMAGE_PREFIX=ghcr.io/<owner>/<repo> and IMAGE_TAG=<sha>.
 x-api-image: &api-image
   image: ${IMAGE_PREFIX:-producto}/api:${IMAGE_TAG:-local}
   build: ../api
 
-# Memory limits sized for the 1 GiB VPS (virtual private server): they add up to 768 MiB and leave the rest to the system.
+# Memory limits sized for a 1 GiB VM: they add up to 768 MiB and leave the rest to the system.
 services:
   db:
     <<: *base
@@ -67,7 +67,7 @@ services:
     mem_limit: 256m
     environment:
       DATABASE_URL: postgresql+psycopg://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB}
-      # Only Caddy, from the internal network below, can report the visitor's real IP (ADR 0004).
+      # Only Caddy, from the internal network below, can report the visitor's real IP.
       TRUSTED_PROXIES: 172.30.0.0/24
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -78,7 +78,7 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:?}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:?}
       JWT_SECRET: ${JWT_SECRET:?}
-      # Project screenshots (task 2.5), in the volume Caddy serves at /media.
+      # Project screenshots, in the volume Caddy serves at /media.
       MEDIA_DIR: /media
     volumes:
       - media:/media

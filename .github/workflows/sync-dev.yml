@@ -1,5 +1,5 @@
-# After every push to main, rebases dev onto main and publishes it with a force push. ADR (architecture decision record) 0007.
-# Rebase & merge copies the commits to main with a different SHA; without this, the next release PR (pull request)
+# After every push to main, rebases dev onto main and publishes it with a force push.
+# Rebase & merge copies the commits to main with a different SHA; without this, the next release PR
 # would show repeated commits. Git drops the ones already in main and keeps the new ones.
 # It uses the deploy key from the SYNC_DEV_SSH_KEY secret, the only exception in the dev ruleset.
 name: sync-dev
