@@ -9,7 +9,7 @@ ENV PIP_NO_CACHE_DIR=1 \
 WORKDIR /code
 COPY pyproject.toml ./
 COPY app ./app
-# Remove pip at the end: the app doesn't need it to run, and it brings CVEs (Common Vulnerabilities and Exposures) in the libraries it vendors.
+# Remove pip at the end: the app doesn't need it to run, and it brings CVEs in the libraries it vendors.
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install . \
     && /opt/venv/bin/pip uninstall -y pip

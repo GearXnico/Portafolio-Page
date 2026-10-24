@@ -16,8 +16,7 @@ NAMING_CONVENTION = {
 }
 
 # Links the page shows in an <a href>: https only, with a host and no spaces, so that a
-# `javascript:` link never reaches the page (XSS, cross-site scripting). Uses POSIX classes
-# instead of "\\" escapes.
+# `javascript:` link never reaches the page. POSIX classes avoid "\\" escapes.
 URL_HTTPS_REGEX = "^https://[^[:space:]/]+[^[:space:]]*$"
 URL_MAX_LENGTH = 2048
 

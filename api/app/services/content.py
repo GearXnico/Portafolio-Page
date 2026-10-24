@@ -1,5 +1,3 @@
-"""Saving of the content edited from the admin panel."""
-
 from collections.abc import Sequence
 from typing import Any
 
@@ -38,7 +36,7 @@ def create[M: Base](session: Session, model: type[M], data: BaseModel) -> M:
 
 
 def update[M: Base](session: Session, item: M, data: BaseModel) -> M:
-    """Replace every editable field (PUT): whatever isn't sent takes its default value."""
+    """Replace every editable field: whatever isn't sent takes its default value."""
     for field, value in data.model_dump().items():
         setattr(item, field, value)
     _commit(session)

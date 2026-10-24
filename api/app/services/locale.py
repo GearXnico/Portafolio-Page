@@ -1,8 +1,4 @@
-"""Decide the page language (ADR (Architecture Decision Record) 0002).
-
-Everything goes through `decide_locale`, so that the day the country is used (Cloudflare,
-`CF-IPCountry` header) changing this function is enough.
-"""
+"""The only place that decides the page language."""
 
 from typing import Literal
 
@@ -21,10 +17,9 @@ def parse_lang(value: str | None) -> Lang | None:
 def decide_locale(country: str | None, accept_language: str | None) -> Lang:
     """Spanish if the browser's first language is Spanish; otherwise, English.
 
-    Browsers put the preferred language first (`es-CL,es;q=0.9,en;q=0.8`), so looking at the
-    first entry is enough. `country` is reserved for detection by country (ISO 3166-1 code,
-    like "CL"); version 1 doesn't use it.
+    Browsers put the preferred language first (`es-CL,es;q=0.9,en;q=0.8`). `country` is
+    accepted so detection by country can be added here without touching the callers.
     """
-    del country  # Reserved for when the country comes from Cloudflare.
+    del country
     first = (accept_language or "").split(",", 1)[0].split(";", 1)[0]
     return "es" if first.strip().lower().split("-", 1)[0] == "es" else "en"

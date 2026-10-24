@@ -1,5 +1,4 @@
-"""What reaches the site, seen from the panel: contact messages and visits by UTM (Urchin
-Tracking Module).
+"""Contact messages and visits by UTM, for the panel.
 
 Every route requires the administrator's session (`require_admin`, on the whole router).
 Messages carry the sender's personal data; visits come out only as counts.

@@ -47,7 +47,7 @@ line-length = 100
 
 [tool.ruff.lint]
 # E/W: style, F: errors, I: import order, B: common bugs, UP: modern syntax,
-# S: security (the Bandit rules, ADR (Architecture Decision Record) 0007).
+# S: security (the Bandit rules).
 select = ["E", "W", "F", "I", "B", "UP", "S"]
 
 [tool.ruff.lint.isort]

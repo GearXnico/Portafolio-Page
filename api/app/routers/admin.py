@@ -15,7 +15,6 @@ from app.services.rate_limit import SlidingWindowLimiter, client_key
 COOKIE_NAME = "admin_session"
 COOKIE_PATH = "/api/admin"
 
-# 5 failed attempts every 15 minutes per IP (ADR (Architecture Decision Record) 0004).
 # A successful login resets the count.
 login_limiter = SlidingWindowLimiter(limit=5, window_seconds=15 * 60)
 

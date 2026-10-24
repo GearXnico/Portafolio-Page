@@ -24,8 +24,7 @@ from app.schemas.contact import EMAIL_PATTERN
 from app.schemas.text import multiline, single_line
 
 # The same pattern as the database constraint (URL_HTTPS_REGEX): https only, with a host and no
-# spaces, so a `javascript:` link never reaches an <a href> on the page (XSS, cross-site
-# scripting).
+# spaces, so a `javascript:` link never reaches an <a href> on the page.
 _URL_PATTERN = r"^https://[^\s/]+\S*$"
 
 
@@ -58,7 +57,6 @@ Url = Annotated[
     AfterValidator(single_line),
 ]
 OptionalUrl = Annotated[Url | None, BeforeValidator(_empty_as_none)]
-# Order on the page: the lowest goes first.
 Position = Annotated[int, Field(strict=True, ge=0, le=1_000_000)]
 # The slug goes in the URL: lowercase letters, digits and single hyphens (same as the database).
 Slug = Annotated[str, StringConstraints(max_length=100, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")]
@@ -79,9 +77,6 @@ class _In(BaseModel):
 
 class _Out(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
-
-# Projects
 
 
 class ProjectIn(_In):
@@ -127,9 +122,6 @@ class ProjectOut(_Out):
     updated_at: datetime
 
 
-# Profile (a single row)
-
-
 class ProfileIn(_In):
     headline_es: Line200
     headline_en: Line200
@@ -150,9 +142,6 @@ class ProfileOut(_Out):
     updated_at: datetime
 
 
-# Skills
-
-
 class SkillIn(_In):
     name: Line100
     category: SkillCategory
@@ -164,9 +153,6 @@ class SkillOut(_Out):
     name: str
     category: str
     position: int
-
-
-# Experience
 
 
 class ExperienceIn(_In):

@@ -1,5 +1,3 @@
-"""Admin panel login."""
-
 from pydantic import BaseModel, ConfigDict, Field
 
 

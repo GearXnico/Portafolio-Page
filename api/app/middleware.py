@@ -1,5 +1,3 @@
-"""The API's own ASGI (interface between the server and the app) middlewares."""
-
 import re
 from collections.abc import Callable
 

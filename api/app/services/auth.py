@@ -1,5 +1,4 @@
-"""Login of the single administrator (ADR (Architecture Decision Record) 0004): password with
-Argon2 and session with JWT (JSON Web Token).
+"""Login of the single administrator: Argon2 password and JWT session.
 
 The credentials come from environment variables; there is no users table.
 """
@@ -32,8 +31,7 @@ def verify_credentials(email: str, password: str) -> bool:
     The password is verified even if the email doesn't match, so the response time doesn't
     reveal which of the two was wrong.
     """
-    # Repeats part of is_configured() so mypy knows they aren't None. No `assert`, because
-    # Python skips it with `-O` (ruff rule S101).
+    # Narrows the types for mypy; `assert` would vanish under `python -O`.
     if not (is_configured() and settings.admin_email and settings.admin_password_hash):
         return False
     email_ok = hmac.compare_digest(
