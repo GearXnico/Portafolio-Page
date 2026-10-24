@@ -11,7 +11,7 @@ from app.models.base import Base
 class ContactMessage(Base):
     __tablename__ = "contact_message"
     # Messages come from a public form: the length limits stop abuse even if the API's
-    # validation fails. The same values apply to the API (task 2.6).
+    # validation fails.
     __table_args__ = (
         CheckConstraint("lang IN ('es', 'en')", name="lang"),
         CheckConstraint("char_length(name) BETWEEN 1 AND 200", name="name_length"),

@@ -25,7 +25,6 @@ from app.models import Project, ProjectImage
 logger = logging.getLogger(__name__)
 
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
-# Accepted formats, according to the file's content.
 ACCEPTED_FORMATS = ("JPEG", "PNG", "WEBP")
 # An image small in bytes can take up gigabytes when opened (decompression bomb). 25 MP
 # covers a 6K screenshot (21 MP) and is checked before decoding the pixels.
@@ -36,7 +35,6 @@ _conversions = threading.Semaphore(2)
 # Longest side of the saved image: enough for a large screen and light to load.
 MAX_SIDE = 2560
 WEBP_QUALITY = 85
-# Subfolder inside the media folder.
 FOLDER = "projects"
 
 
@@ -60,7 +58,7 @@ def add_image(
     relative_path = f"{FOLDER}/{uuid4().hex}.webp"
     file_path = settings.media_dir / relative_path
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    # "x": fails if the file already exists, instead of overwriting it.
+    # "x" never overwrites an existing file.
     with file_path.open("xb") as output:
         output.write(data)
 

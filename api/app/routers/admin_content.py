@@ -118,9 +118,6 @@ def save_profile(payload: ProfileIn, session: DbSession) -> Profile:
     return content.save_profile(session, payload)
 
 
-# Skills
-
-
 @router.get("/skills", response_model=list[SkillOut])
 def list_skills(session: DbSession) -> Sequence[Skill]:
     return content.list_ordered(session, Skill, Skill.position, Skill.id)

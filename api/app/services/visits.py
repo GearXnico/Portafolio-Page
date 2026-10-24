@@ -1,5 +1,4 @@
-"""Visit recording (cleans what the visitor sends and computes the daily hash) and its counts
-for the panel.
+"""Visit recording and the panel's visit counts.
 
 Anyone controls what arrives in the URL or the headers, so it is cleaned and trimmed before
 saving it. The visit is never rejected because of that: the page has to load even if the
@@ -44,8 +43,7 @@ def clean_text(value: str | None, max_length: int) -> str | None:
     """
     if value is None:
         return None
-    # Trim before filtering, so a value of many KB (kilobytes) isn't walked through. The margin
-    # leaves room for the characters the filter removes.
+    # Trim before filtering so huge values aren't walked; the margin covers removed characters.
     cleaned = "".join(
         c for c in value[: max_length * 4] if unicodedata.category(c) not in _REMOVED_CATEGORIES
     )
@@ -92,7 +90,7 @@ def daily_salt(session: Session, day: date) -> bytes:
 
 
 def visitor_hash(salt: bytes, ip: str, user_agent: str) -> str:
-    """HMAC-SHA256 (keyed hash) of IP and user agent, as 64 hexadecimal characters."""
+    """HMAC-SHA256 of IP and user agent, as 64 hexadecimal characters."""
     message = f"{ip}\n{user_agent[:USER_AGENT_MAX_LENGTH]}".encode()
     return hmac.new(salt, message, hashlib.sha256).hexdigest()
 
@@ -100,7 +98,7 @@ def visitor_hash(salt: bytes, ip: str, user_agent: str) -> str:
 def count_by_utm(session: Session) -> list[VisitCountOut]:
     """Visits and unique visitors by `utm_source` and `utm_campaign`, most visited first.
 
-    Visits without UTM (Urchin Tracking Module) parameters fall in the group with both set to
+    Visits without UTM parameters fall in the group with both set to
     `null` (direct traffic), which goes last in a tie.
     """
     visits = func.count().label("visits")

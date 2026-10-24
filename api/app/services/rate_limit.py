@@ -1,4 +1,4 @@
-"""Rate limit per IP (Internet Protocol address), in memory.
+"""In-memory rate limit per IP.
 
 It lives in the API process: it resets with each deployment and isn't shared between processes.
 That is enough for a site with a single Uvicorn process; if there are ever several, it has to

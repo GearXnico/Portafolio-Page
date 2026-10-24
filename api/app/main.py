@@ -1,5 +1,3 @@
-"""API entry point."""
-
 import re
 
 from fastapi import FastAPI, Request
@@ -13,8 +11,7 @@ from app.services.images import MAX_IMAGE_BYTES
 # The API's JSON bodies are small: the largest is a project with its two Markdown bodies
 # (up to 10,000 characters each, ~25 KB in Spanish).
 MAX_BODY_BYTES = 64 * 1024
-# Screenshot upload: the image (5 MB) plus the alt texts and the form's separators.
-# app/services/images.py checks the exact image size.
+# The image plus the alt texts and form separators; images.py checks the exact image size.
 UPLOAD_PATHS = re.compile(r"/api/admin/projects/\d+/images")
 MAX_UPLOAD_BYTES = MAX_IMAGE_BYTES + 64 * 1024
 

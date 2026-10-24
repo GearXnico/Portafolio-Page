@@ -33,9 +33,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["bootstrap"])
 
 
-# The parameters have no length limit on purpose: a link with UTM (Urchin Tracking Module,
-# the link's source parameters) values that are too long or odd is cleaned and trimmed,
-# instead of responding 422 and leaving the visitor without a page.
+# No length limits on purpose: odd UTM values are cleaned and trimmed instead of
+# responding 422 and leaving the visitor without a page.
 @router.get("/bootstrap", response_model=Bootstrap)
 def bootstrap(
     request: Request,
@@ -56,8 +55,6 @@ def bootstrap(
       over the browser's. If it is neither `es` nor `en`, it is ignored.
     - `referrer`: the page's `document.referrer`. Only its domain is saved.
     """
-    # The country will come from Cloudflare (ADR (Architecture Decision Record) 0002); for now
-    # it isn't known.
     country = None
     page_lang = parse_lang(lang) or decide_locale(country, accept_language)
     content = _visible_content(session, page_lang)
@@ -68,7 +65,6 @@ def bootstrap(
             session.add(
                 Visit(
                     lang=page_lang,
-                    # Behind Caddy, the real IP arrives with TRUSTED_PROXIES (ADR 0004).
                     visitor_hash=visitor_hash(
                         salt, request.client.host if request.client else "", user_agent or ""
                     ),

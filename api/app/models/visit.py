@@ -1,4 +1,4 @@
-"""Page visits, with their source (UTM, Urchin Tracking Module: the link's source parameters).
+"""Page visits and the UTM parameters of the link that brought them.
 
 The IP is not stored: only a hash of the IP, user agent and a salt that changes every day,
 enough to count unique visitors per day.
@@ -16,7 +16,6 @@ class Visit(Base):
     __tablename__ = "visit"
     __table_args__ = (
         CheckConstraint("lang IN ('es', 'en')", name="lang"),
-        # sha256 in hexadecimal.
         CheckConstraint("visitor_hash ~ '^[0-9a-f]{64}$'", name="visitor_hash"),
         # UTM and referrer come from the visitor's URL and headers: their length is limited.
         CheckConstraint(
@@ -25,7 +24,6 @@ class Visit(Base):
             name="utm_length",
         ),
         CheckConstraint("char_length(referrer) <= 2048", name="referrer_length"),
-        # Two-letter ISO 3166-1 country code.
         CheckConstraint("country ~ '^[A-Z]{2}$'", name="country"),
     )
 

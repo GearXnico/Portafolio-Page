@@ -31,7 +31,6 @@ class Project(Base):
     title_en: Mapped[str]
     summary_es: Mapped[str]
     summary_en: Mapped[str]
-    # Body in Markdown.
     body_es: Mapped[str] = mapped_column(server_default="")
     body_en: Mapped[str] = mapped_column(server_default="")
     stack: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
@@ -67,7 +66,6 @@ class ProjectImage(Base):
     project_id: Mapped[int] = mapped_column(
         ForeignKey("project.id", ondelete="CASCADE"), index=True
     )
-    # Path relative to /media.
     path: Mapped[str]
     alt_es: Mapped[str] = mapped_column(server_default="")
     alt_en: Mapped[str] = mapped_column(server_default="")

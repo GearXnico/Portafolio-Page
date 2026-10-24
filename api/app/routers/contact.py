@@ -1,5 +1,3 @@
-"""Public contact form."""
-
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
@@ -12,7 +10,6 @@ from app.services.rate_limit import SlidingWindowLimiter, client_key
 
 router = APIRouter(prefix="/api", tags=["contact"])
 
-# 5 messages per hour per IP (architecture, section 6).
 contact_limiter = SlidingWindowLimiter(limit=5, window_seconds=60 * 60)
 
 

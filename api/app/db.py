@@ -1,5 +1,3 @@
-"""Postgres connection with SQLAlchemy."""
-
 from collections.abc import Iterator
 
 from sqlalchemy import create_engine
