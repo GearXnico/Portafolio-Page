@@ -5,8 +5,7 @@
   --accent: #0b57d0;
   --surface: #f3f4f6;
   --border: #d9dbe0;
-  /* Button and field borders: at least 3:1 contrast with the background (WCAG (Web Content
-     Accessibility Guidelines) 1.4.11). */
+  /* Button and field borders: at least 3:1 contrast with the background (WCAG 1.4.11). */
   --control-border: #80838a;
   --bg: #fff;
   --on-accent: #fff;
@@ -379,7 +378,7 @@ a {
   }
 }
 
-/* Admin panel: messages and visits (task 4.5) */
+/* Admin panel: messages and visits */
 .message {
   border-top: 1px solid currentColor;
   padding: 1rem 0;

@@ -1,4 +1,4 @@
-// First page load: GET /api/bootstrap (task 2.2).
+// First page load: GET /api/bootstrap.
 import { useQuery } from "@tanstack/react-query";
 
 import { storedLang, type Lang } from "../i18n";
@@ -58,17 +58,16 @@ export interface Bootstrap {
   projects: PublicProject[];
 }
 
-// If the API (application programming interface) doesn't respond in time, the page renders in the
-// default language instead of staying blank.
+// If the API doesn't respond in time, the page renders in the default language instead of staying
+// blank.
 export const BOOTSTRAP_TIMEOUT_MS = 5000;
 
 export async function fetchBootstrap(
   signal?: AbortSignal,
   timeoutMs = BOOTSTRAP_TIMEOUT_MS,
 ): Promise<Bootstrap> {
-  // The UTM (Urchin Tracking Module) parameters from the URL and the referrer domain are recorded
-  // with the visit (task 3.5). The saved language is sent as `lang` so the API uses it and records
-  // it with the visit.
+  // The UTM parameters from the URL and the referrer domain are recorded with the visit. The saved
+  // language is sent as `lang` so the API uses it and records it with the visit.
   const params = new URLSearchParams(readUtm());
   if (document.referrer) params.set("referrer", document.referrer);
   const lang = storedLang();

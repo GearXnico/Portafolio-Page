@@ -1,6 +1,5 @@
-// Profile, skills and experience from the admin panel (task 4.4), on top of the task 2.4 routes.
-// The session cookie is sent automatically (same origin); without it the API (application
-// programming interface) responds 401.
+// Profile, skills and experience from the admin panel. The session cookie is sent automatically
+// (same origin); without it the API responds 401.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";

@@ -85,7 +85,7 @@ describe("HomePage", () => {
     expect(container.querySelector("img")).toBeNull();
   });
 
-  it("shows a notice if the API (application programming interface) fails", async () => {
+  it("shows a notice if the API fails", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 500 })));
 
     renderPage();

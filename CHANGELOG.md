@@ -12,6 +12,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Changed
 
+- Code: comments in the web app, its tests and the E2E suite drop task numbers and acronym expansions; no behavior changes.
 - Code: comments in the API, deploy scripts, compose files and workflows keep only the non-obvious reasons, and API tests use English names; no behavior changes.
 - Docs: README, architecture, development rules and ADRs rewritten to describe the current system; ADR 0010 is renamed to free-tier deployment, and `deploy/README.md` lists the server requirements.
 - `CLAUDE.md` becomes `AGENTS.md`, a short guide for coding agents with the stack, commands and conventions; `CLAUDE.md` only imports it.

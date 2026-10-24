@@ -1,6 +1,5 @@
-// Admin panel session (task 2.3): the API (application programming interface) sets an httpOnly
-// cookie on login, so the web app never sees the token; it only asks GET /api/admin/session
-// whether the session is still valid.
+// Admin panel session: the API sets an httpOnly cookie on login, so the web app never sees the
+// token; it only asks GET /api/admin/session whether the session is still valid.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const SESSION_KEY = ["admin", "session"] as const;

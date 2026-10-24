@@ -1,5 +1,5 @@
-// Contact messages and visits by UTM (Urchin Tracking Module) for the admin panel (task 4.5).
-// The routes require the session cookie, which the browser sends on its own.
+// Contact messages and visits by UTM for the admin panel. The routes require the session cookie,
+// which the browser sends on its own.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";

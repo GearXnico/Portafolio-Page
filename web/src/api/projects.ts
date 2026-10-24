@@ -1,14 +1,11 @@
-// Admin panel projects (task 4.2): CRUD (create, read, update, delete) on /api/admin/projects
-// (task 2.4). The panel also sees hidden projects; the public page only sees the visible ones, on
-// the next `bootstrap` load. Screenshots (task 4.3) use the task 2.5 routes.
+// Admin panel projects: CRUD on /api/admin/projects. The panel also sees hidden projects; the
+// public page only sees the visible ones, on the next `bootstrap` load. Screenshots have their own
+// routes.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";
 
-/**
- * What the API (application programming interface) accepts on create or edit (ProjectIn); it
- * rejects extra fields.
- */
+/** What the API accepts on create or edit (ProjectIn); it rejects extra fields. */
 export interface ProjectInput {
   slug: string;
   title_es: string;
@@ -89,8 +86,8 @@ export function useSaveProject(id?: number) {
 }
 
 /**
- * Screenshots update the project in the cache instead of fetching it again: that way the form
- * next to them isn't rebuilt and unsaved changes aren't lost.
+ * Screenshots update the project in the cache instead of fetching it again: that way the form next
+ * to them isn't rebuilt and unsaved changes aren't lost.
  */
 function useUpdateCachedImages(projectId: number) {
   const queryClient = useQueryClient();

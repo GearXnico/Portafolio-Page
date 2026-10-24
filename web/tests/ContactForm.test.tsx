@@ -78,7 +78,7 @@ describe("ContactForm", () => {
     expect(trap?.closest('[aria-hidden="true"]')).not.toBeNull();
   });
 
-  it("if the honeypot field is filled, sends it as website so the API (application programming interface) discards it", async () => {
+  it("if the honeypot field is filled, sends it as website so the API discards it", async () => {
     const fetchMock = stubContact(new Response("{}", { status: 201 }));
     renderForm();
 
@@ -104,7 +104,7 @@ describe("ContactForm", () => {
     expect(fetchMock.mock.calls[0]?.[1]?.body).toContain('"lang":"en"');
   });
 
-  it("sends utm_source and utm_campaign from the URL, and not the UTM (Urchin Tracking Module) parameters the API doesn't store", async () => {
+  it("sends utm_source and utm_campaign from the URL, and not the UTM parameters the API doesn't store", async () => {
     window.history.replaceState(
       null,
       "",

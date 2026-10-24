@@ -19,8 +19,7 @@ export function PublicSite() {
   const { data, isPending, isError } = useBootstrap();
   const [chosen, setChosen] = useState<Lang | null>(storedLang);
 
-  // The switcher choice wins; if there is none, the language the API (application programming
-  // interface) decided.
+  // The switcher choice wins; if there is none, the language the API decided.
   const apiLang = isLang(data?.lang) ? data.lang : null;
   const lang = chosen ?? apiLang ?? DEFAULT_LANG;
 

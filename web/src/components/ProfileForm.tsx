@@ -5,10 +5,9 @@ import { useLang } from "../i18n";
 import { BilingualField } from "./BilingualField";
 import { FormStatus } from "./FormStatus";
 
-// Links are edited as text, one per line: «github https://github.com/…».
-// A line without exactly a name and a URL, or with a repeated name, isn't sent: the user is warned
-// first, instead of silently losing a link. The API (application programming interface)
-// validates the rest (422).
+// Links are edited as text, one per line: «github https://github.com/…». A line without exactly a
+// name and a URL, or with a repeated name, isn't sent: the user is warned first, instead of
+// silently losing a link. The API validates the rest (422).
 function linksToText(links: Record<string, string>): string {
   return Object.entries(links)
     .map(([name, url]) => `${name} ${url}`)

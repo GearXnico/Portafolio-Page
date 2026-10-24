@@ -10,8 +10,7 @@ export default defineConfig({
   server: {
     port: 5173,
     headers: securityHeaders,
-    // Locally, /api is forwarded to the compose API (application programming interface), just as
-    // Caddy will do in production.
+    // Locally, /api is forwarded to the compose API, just as Caddy will do in production.
     proxy: apiProxy,
   },
   preview: {

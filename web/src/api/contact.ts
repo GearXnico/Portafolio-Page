@@ -1,4 +1,4 @@
-// Contact form submission: POST /api/contact (task 2.6).
+// Contact form submission: POST /api/contact.
 import { useMutation } from "@tanstack/react-query";
 
 import type { Lang } from "../i18n";
@@ -8,7 +8,7 @@ export interface ContactInput {
   email: string;
   message: string;
   lang: Lang;
-  // Source of the link the visitor came from; only sent if present in the URL (task 3.5).
+  // Source of the link the visitor came from; only sent if present in the URL.
   utm_source?: string;
   utm_campaign?: string;
   // Honeypot field: a person leaves it empty; if it arrives with a value, the API saves nothing.

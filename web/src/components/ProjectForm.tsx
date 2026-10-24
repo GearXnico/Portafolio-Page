@@ -32,9 +32,8 @@ interface Props {
 }
 
 /**
- * Project form: the Spanish and English texts side by side, and below them the slug, the stack,
- * the links, the order and whether it shows on the page. The API (application programming
- * interface) validates everything again on save.
+ * Project form: the Spanish and English texts side by side, and below them the slug, the stack, the
+ * links, the order and whether it shows on the page. The API validates everything again on save.
  */
 export function ProjectForm({ project, onSaved }: Props) {
   const { t } = useLang();

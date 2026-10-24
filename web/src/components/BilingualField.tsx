@@ -9,10 +9,7 @@ interface Props {
   required?: boolean;
 }
 
-/**
- * A field in both languages, side by side (ADR (architecture decision record) 0003):
- * «Titular · Español» and «Titular · English».
- */
+/** A field in both languages, side by side: «Titular · Español» and «Titular · English». */
 export function BilingualField({ label, values, onChange, maxLength, multiline, required }: Props) {
   const { t } = useLang();
   return (

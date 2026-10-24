@@ -30,8 +30,7 @@ export function ExperienceForm({ item }: { item?: Experience }) {
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    // Only the fields the API (application programming interface) accepts (the response also
-    // includes the id).
+    // Only the fields the API accepts (the response also includes the id).
     const { company, role_es, role_en, description_es, description_en } = form;
     const { start_date, end_date, position } = form;
     save.mutate(

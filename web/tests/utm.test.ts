@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { readUtm } from "../src/utm";
 
 describe("readUtm", () => {
-  it("reads the four UTM (Urchin Tracking Module) parameters and leaves out the others", () => {
+  it("reads the four UTM parameters and leaves out the others", () => {
     const search =
       "?utm_source=linkedin&utm_medium=social&utm_campaign=postulacion&utm_content=perfil&otro=x";
 

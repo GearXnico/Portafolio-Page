@@ -5,10 +5,7 @@ interface Props {
   skills: PublicSkill[];
 }
 
-/**
- * Skills grouped by category, in the order they arrive from the API (application programming
- * interface).
- */
+/** Skills grouped by category, in the order they arrive from the API. */
 export function SkillsSection({ skills }: Props) {
   const { t } = useLang();
   if (skills.length === 0) return null;
