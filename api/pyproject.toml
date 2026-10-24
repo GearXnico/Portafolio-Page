@@ -15,7 +15,7 @@ dependencies = [
     "pyjwt==2.15.*",
     # Project screenshots: read the form (multipart) and convert to WebP.
     "python-multipart==0.0.32",
-    "pillow==12.3.*",
+    "pillow==13.0.*",
 ]
 
 [project.optional-dependencies]
