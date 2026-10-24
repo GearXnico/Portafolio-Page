@@ -2,18 +2,17 @@ import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./login";
 
-// 1×1 px PNG (Portable Network Graphics): the API (application programming interface) re-encodes
-// it as WebP.
+// 1×1 px PNG: the API re-encodes it as WebP.
 const PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
   "base64",
 );
 
-// Task 4.3 criterion: a screenshot uploaded from the form shows up on the public page.
+// A screenshot uploaded from the form shows up on the public page.
 test("a screenshot uploaded in the admin panel shows up on the public page", async ({ page }) => {
   const id = String(Date.now());
   await loginAsAdmin(page);
-  // The project is created through the API (4.2 already tests the form); the session is in the
+  // The project is created through the API (projects.spec.ts tests the form); the session is in the
   // cookies.
   const created = await page.request.post("/api/admin/projects", {
     data: {
@@ -47,8 +46,7 @@ test("a screenshot uploaded in the admin panel shows up on the public page", asy
     await expect(image).toHaveAttribute("src", /^\/media\/projects\/.+\.webp$/);
 
     // Vite (development) doesn't serve /media; Caddy does, and there it checks that the file exists
-    // and is WebP. The CI (continuous integration) "Deployment" job runs these E2E (end-to-end)
-    // tests against Caddy.
+    // and is WebP. The CI "Deployment" job runs these E2E tests against Caddy.
     const file = await page.request.get((await image.getAttribute("src")) ?? "");
     if (!file.headers()["content-type"]?.startsWith("text/html")) {
       expect(file.status()).toBe(200);

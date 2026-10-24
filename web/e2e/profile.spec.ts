@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./login";
 
-// Task 4.4 criterion: a profile change made in the admin panel shows up on the public page.
+// A profile change made in the admin panel shows up on the public page.
 test("a profile change in the admin panel shows up on the page", async ({ page }) => {
   const headline = `Titular de prueba ${String(Date.now())}`;
   await loginAsAdmin(page);

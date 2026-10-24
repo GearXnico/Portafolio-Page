@@ -4,10 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { App } from "../src/App";
 import { renderWithQuery } from "./render";
 
-/**
- * Fakes the admin panel API (application programming interface): each route responds with the
- * status code given in `statuses`.
- */
+/** Fakes the admin panel API: each route responds with the status code given in `statuses`. */
 function stubAdminApi(statuses: { session?: number; login?: number; logout?: number }) {
   const fetchMock = vi.fn((input: string) => {
     const status =

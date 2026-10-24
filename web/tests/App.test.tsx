@@ -8,10 +8,7 @@ function bootstrapBody(lang: string) {
   return JSON.stringify({ lang, profile: null, skills: [], experience: [], projects: [] });
 }
 
-/**
- * Fakes the API (application programming interface): /api/bootstrap responds with `lang` and
- * /api/health with ok.
- */
+/** Fakes the API: /api/bootstrap responds with `lang` and /api/health with ok. */
 function stubApi(lang: string | null) {
   const fetchMock = vi.fn((input: string) => {
     if (input.startsWith("/api/bootstrap")) {

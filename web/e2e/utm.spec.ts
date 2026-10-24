@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-// A link with UTM (Urchin Tracking Module, the link source parameters): the page passes them to
-// `bootstrap`, which records the visit with them, and to the contact form, which saves them with
-// the message. test_bootstrap.py and test_contact.py prove they are saved in the database; this
-// test proves the browser reads them from the URL and sends them through the proxy to the API.
+// A link with UTM: the page passes them to `bootstrap`, which records the visit with them, and to
+// the contact form, which saves them with the message. test_bootstrap.py and test_contact.py prove
+// they are saved in the database; this test proves the browser reads them from the URL and sends
+// them through the proxy to the API.
 test("a visit with UTM reaches the API with its source, also in the contact form", async ({
   page,
 }) => {
@@ -31,8 +31,7 @@ test("a visit with UTM reaches the API with its source, also in the contact form
   await form.getByRole("button", { name: "Enviar" }).click();
 
   const sent = await contact;
-  // The API (application programming interface) responds 201 only after saving the message (with
-  // its UTM parameters).
+  // The API responds 201 only after saving the message (with its UTM parameters).
   expect(sent.status()).toBe(201);
   expect(sent.request().postDataJSON()).toMatchObject({
     utm_source: "e2e",

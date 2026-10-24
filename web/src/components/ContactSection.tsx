@@ -7,8 +7,8 @@ interface Props {
 }
 
 /**
- * Contact: profile links (GitHub, LinkedIn, CV (curriculum vitae)…) and the form. The email
- * address isn't published; direct contact is only through the form.
+ * Contact: profile links (GitHub, LinkedIn, CV…) and the form. The email address isn't published;
+ * direct contact is only through the form.
  */
 export function ContactSection({ links }: Props) {
   const { t } = useLang();

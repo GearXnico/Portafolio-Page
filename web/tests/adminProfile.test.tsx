@@ -7,8 +7,7 @@ import { renderWithQuery } from "./render";
 type Reply = { status: number; body?: unknown };
 
 /**
- * Fakes the API (application programming interface) with a session: `routes` answers by
- * "METHOD /path"; anything else gets 200 with {}.
+ * Fakes the API with a session: `routes` answers by "METHOD /path"; anything else gets 200 with {}.
  */
 function stubApi(routes: Record<string, Reply>) {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {

@@ -19,8 +19,7 @@ const PROJECT = {
   repo_url: "https://github.com/ejemplo/sitio",
   visible: false,
   position: 2,
-  // Fields the API (application programming interface) sends but that aren't edited: they must
-  // not come back in the PUT.
+  // Fields the API sends but that aren't edited: they must not come back in the PUT.
   images: [],
   created_at: "2026-10-01T00:00:00Z",
   updated_at: "2026-10-01T00:00:00Z",

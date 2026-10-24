@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { loginAsAdmin } from "./login";
 
-// Task 4.2 criterion: a project created from the admin panel shows up on the public page.
+// A project created from the admin panel shows up on the public page.
 test("a project created in the admin panel shows up on the public page", async ({ page }) => {
   // Unique slug and title, so the test can run several times against the same database.
   const id = String(Date.now());

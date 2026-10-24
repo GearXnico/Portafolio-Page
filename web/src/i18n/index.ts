@@ -1,6 +1,5 @@
-// Fixed UI (user interface) text and page language (ADR (architecture decision record) 0002).
-// The API (application programming interface) decides the initial language based on the browser;
-// the switcher choice is saved in localStorage and takes precedence.
+// Fixed UI text and page language. The API decides the initial language based on the browser; the
+// switcher choice is saved in localStorage and takes precedence.
 import { createContext, useContext, useEffect } from "react";
 
 import en from "./en.json";
@@ -70,9 +69,8 @@ export function useLang() {
 }
 
 /**
- * Document language, title and description (SEO (search engine optimization) and screen
- * readers). There is a single URL for both languages, so `hreflang` isn't used: the language goes
- * in `<html lang>`.
+ * Document language, title and description (SEO and screen readers). There is a single URL for both
+ * languages, so `hreflang` isn't used: the language goes in `<html lang>`.
  */
 export function useDocumentMeta(lang: Lang, title: string, noindex = false): void {
   useEffect(() => {
@@ -85,8 +83,8 @@ export function useDocumentMeta(lang: Lang, title: string, noindex = false): voi
       document.head.append(meta);
     }
     meta.content = translate(lang, "meta.description");
-    // The admin panel isn't indexed: robots.txt only asks crawlers not to crawl it, and an
-    // external link would be enough.
+    // The admin panel isn't indexed: robots.txt only asks crawlers not to crawl it, and an external
+    // link would be enough.
     if (!noindex) return;
     const robots = document.createElement("meta");
     robots.name = "robots";

@@ -7,8 +7,8 @@ interface Props {
 }
 
 /**
- * Published projects (the API (application programming interface) already leaves out hidden
- * ones), with their first screenshot as the cover, the stack and the demo and repository links.
+ * Published projects (the API already leaves out hidden ones), with their first screenshot as the
+ * cover, the stack and the demo and repository links.
  */
 export function ProjectsSection({ projects }: Props) {
   const { lang, t } = useLang();

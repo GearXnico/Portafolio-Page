@@ -13,8 +13,8 @@ function errorKey(error: Error): MessageKey {
 
 /**
  * Screenshots of a saved project: the current ones, each with its delete button, and a form to
- * upload another. The first one is the cover on the public page. The API (application
- * programming interface) validates and converts the file.
+ * upload another. The first one is the cover on the public page. The API validates and converts the
+ * file.
  */
 export function ProjectImages({ project }: { project: AdminProject }) {
   const { t } = useLang();

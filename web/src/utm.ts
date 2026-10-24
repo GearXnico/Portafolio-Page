@@ -1,11 +1,11 @@
-// UTM (Urchin Tracking Module, the link source parameters): read from the page URL (task 3.5).
+// UTM: read from the page URL.
 
 export const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content"] as const;
 export type UtmKey = (typeof UTM_KEYS)[number];
 export type Utm = Partial<Record<UtmKey, string>>;
 
-// The same length and the same characters that `POST /api/contact` rejects (schemas/text.py):
-// an odd link must not leave the visitor unable to write.
+// The same length and the same characters that `POST /api/contact` rejects (schemas/text.py): an
+// odd link must not leave the visitor unable to write.
 const UTM_MAX_LENGTH = 200;
 // eslint-disable-next-line no-control-regex
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g;

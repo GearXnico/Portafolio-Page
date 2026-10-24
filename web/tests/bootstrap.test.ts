@@ -9,7 +9,7 @@ describe("fetchBootstrap", () => {
     localStorage.clear();
   });
 
-  it("sends the UTM (Urchin Tracking Module) parameters from the URL, the referrer and the saved language", async () => {
+  it("sends the UTM parameters from the URL, the referrer and the saved language", async () => {
     window.history.replaceState(null, "", "/?utm_source=linkedin&utm_campaign=postulacion&x=1");
     vi.spyOn(document, "referrer", "get").mockReturnValue("https://www.linkedin.com/feed/");
     localStorage.setItem("lang", "en");
@@ -38,7 +38,7 @@ describe("fetchBootstrap", () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it("fails if the API (application programming interface) responds with an error", async () => {
+  it("fails if the API responds with an error", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("", { status: 503 })));
 
     await expect(fetchBootstrap()).rejects.toThrow("503");

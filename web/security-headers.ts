@@ -1,8 +1,8 @@
 // The page's HTTP security headers. Locally Vite sets them; in production Caddy sets them with
-// these same values (deploy/Caddyfile). The E2E (end-to-end) test (e2e/security.spec.ts) checks
-// them, also against Caddy in the CI (continuous integration) deploy-check job.
+// these same values (deploy/Caddyfile). The E2E test (e2e/security.spec.ts) checks them, also
+// against Caddy in the CI deploy-check job.
 
-/** CSP (Content Security Policy): only content from the same domain is loaded. */
+/** CSP: only content from the same domain is loaded. */
 export const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self'",
@@ -31,9 +31,9 @@ export const securityHeaders: Record<string, string> = {
 };
 
 /**
- * Headers for the served build (vite preview and production): the ones above plus the CSP.
- * `npm run dev` doesn't send the CSP, because Vite and React inject an inline script for live
- * reload and the CSP would block it.
+ * Headers for the served build (vite preview and production): the ones above plus the CSP. `npm run
+ * dev` doesn't send the CSP, because Vite and React inject an inline script for live reload and the
+ * CSP would block it.
  */
 export const productionHeaders: Record<string, string> = {
   ...securityHeaders,

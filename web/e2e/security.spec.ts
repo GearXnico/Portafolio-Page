@@ -10,8 +10,8 @@ test("the page responds with the security headers", async ({ request }) => {
   for (const [name, value] of Object.entries(securityHeaders)) {
     expect(headers[name.toLowerCase()], name).toBe(value);
   }
-  // The CSP (Content Security Policy) is only sent in the build (vite preview and production); if
-  // present, it must be the defined one.
+  // The CSP is only sent in the build (vite preview and production); if present, it must be the
+  // defined one.
   const csp = headers["content-security-policy"];
   if (csp !== undefined) expect(csp).toBe(contentSecurityPolicy);
 });

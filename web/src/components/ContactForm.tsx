@@ -4,8 +4,7 @@ import { ContactError, useSendContact } from "../api/contact";
 import { useLang, type MessageKey } from "../i18n";
 import { readUtm } from "../utm";
 
-// Maximum lengths from the API (application programming interface) (docs/api.md): the browser
-// cuts off before sending.
+// Maximum lengths from the API (docs/api.md): the browser cuts off before sending.
 const MAX = { name: 200, email: 320, message: 5000 } as const;
 
 const ERROR_KEYS: Record<ContactError["kind"], MessageKey> = {
@@ -15,9 +14,9 @@ const ERROR_KEYS: Record<ContactError["kind"], MessageKey> = {
 };
 
 /**
- * Contact form. The browser validates the fields (required, length and email format) and the
- * API validates everything again; if the API rejects something, a message is shown based on the
- * cause, without repeating the technical detail.
+ * Contact form. The browser validates the fields (required, length and email format) and the API
+ * validates everything again; if the API rejects something, a message is shown based on the cause,
+ * without repeating the technical detail.
  */
 export function ContactForm() {
   const { lang, t } = useLang();
@@ -33,8 +32,7 @@ export function ContactForm() {
       return typeof value === "string" ? value : "";
     };
     setSent(false);
-    // The contact API only stores these two UTM (Urchin Tracking Module) parameters; it rejects
-    // any other field.
+    // The contact API only stores these two UTM parameters; it rejects any other field.
     const { utm_source, utm_campaign } = readUtm();
     send.mutate(
       {

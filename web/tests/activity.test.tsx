@@ -17,10 +17,7 @@ const MESSAGE: ContactMessage = {
   read: false,
 };
 
-/**
- * Fakes the admin panel API (application programming interface) with a session: each route
- * responds with what `routes` says.
- */
+/** Fakes the admin panel API with a session: each route responds with what `routes` says. */
 function stubApi(routes: { messages?: unknown; visits?: unknown; status?: number }) {
   let messages = routes.messages;
   const fetchMock = vi.fn((input: string, init?: RequestInit) => {
@@ -82,7 +79,7 @@ describe("admin panel: messages", () => {
     );
   });
 
-  it("a message without UTM (Urchin Tracking Module) parameters shows as direct", async () => {
+  it("a message without UTM parameters shows as direct", async () => {
     stubApi({ messages: [{ ...MESSAGE, utm_source: null, utm_campaign: null, read: true }] });
     renderWithQuery(<App />, "/admin/messages");
 

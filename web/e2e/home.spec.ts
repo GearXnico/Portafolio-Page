@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("the page loads its content from bootstrap", async ({ page }) => {
-  // The bootstrap response proves the full path: page → proxy → API (application programming
-  // interface) → database.
+  // The bootstrap response proves the full path: page → proxy → API → database.
   const bootstrap = page.waitForResponse("**/api/bootstrap");
   await page.goto("/");
 

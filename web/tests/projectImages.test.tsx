@@ -38,10 +38,7 @@ const NEW_IMAGE: ProjectImage = {
   position: 1,
 };
 
-/**
- * Fakes the admin panel API (application programming interface): `routes` gives the status and
- * body by "METHOD url".
- */
+/** Fakes the admin panel API: `routes` gives the status and body by "METHOD url". */
 function stubApi(routes: Record<string, [number, unknown]>) {
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     const [status, body] = routes[`${init?.method ?? "GET"} ${url}`] ?? [200, {}];

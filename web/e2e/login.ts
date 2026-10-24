@@ -1,8 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
-// Test admin credentials. In CI (continuous integration) each run generates them (ci.yml);
-// locally, it uses the ones in your .env. Without them the test fails with this message instead of
-// being skipped.
+// Test admin credentials. In CI each run generates them (ci.yml); locally, it uses the ones in your
+// .env. Without them the test fails with this message instead of being skipped.
 function adminCredentials(): { email: string; password: string } {
   const email = process.env.E2E_ADMIN_EMAIL;
   const password = process.env.E2E_ADMIN_PASSWORD;
