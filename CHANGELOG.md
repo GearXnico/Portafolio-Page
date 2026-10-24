@@ -6,15 +6,16 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Added
 
-- Dark theme: the public page and the admin panel follow the device's light or dark setting, with the same WCAG (Web Content Accessibility Guidelines) AA contrast as the light theme.
+- Dark theme: the public page and the admin panel follow the device's light or dark setting, with the same WCAG AA contrast as the light theme.
 - Backups: `deploy/backup.sh` encrypts the daily database dump and `/media` with age and uploads them to a private Object Storage bucket with the VM's instance principal (ADR 0010 amended); `deploy-check` restores one on every PR.
 - Deployment: every push to `main` publishes the API and web images to GHCR, and a manual `deploy` workflow runs `deploy/deploy.sh` on the server over SSH for a given SHA; `deploy.sh` backs up, migrates, waits for the health checks and rolls back to the previous version if they fail, which `deploy-check` now tests on every PR.
 
 ### Changed
 
+- Docs: README, architecture, development rules and ADRs rewritten to describe the current system; ADR 0010 is renamed to free-tier deployment, and `deploy/README.md` lists the server requirements.
 - `CLAUDE.md` becomes `AGENTS.md`, a short guide for coding agents with the stack, commands and conventions; `CLAUDE.md` only imports it.
 - Security: Pillow goes from 12.3 to 13.0 and undici from 8.11.2 to 8.12.3 for new advisories, the web image applies Alpine security updates on build, and the Caddy Go `crypto/x509` advisory is accepted until 2026-11-24 while no Caddy image ships the fixed Go.
-- Docs: ADR 0010 picks an Oracle Always Free VM for a free production deployment while job hunting, after comparing free hosts for publishing the portfolio while job hunting (Oracle Always Free VM, Render with Neon, or the planned VPS brought forward), with their limits checked on 2026-10-18; the plan's milestone 5 starts with that free phase, and ADR 0001 and ADR 0008 stay as the target.
+- Docs: ADR 0010 picks an Oracle Always Free VM for a free production deployment, after comparing free hosts (Oracle Always Free, Render with Neon, or a paid VPS); ADR 0001 and ADR 0008 stay as the target.
 - Versioning: PRs add their entry under `[Unreleased]` and the version number is chosen only when a release is cut, so open PRs no longer renumber after every merge. Versions up to 0.20.11 were set per PR under the previous rule.
 - `@tanstack/react-query` goes from 5.104.1 to 5.104.2, a patch release (Dependabot #53).
 - `@tanstack/react-query` goes from 5.104.0 to 5.104.1, a patch release (Dependabot #47).

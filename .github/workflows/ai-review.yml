@@ -90,15 +90,15 @@ jobs:
             The PR branch is already in the working directory.
 
             Context you must read before giving an opinion (if it exists):
-            - `CLAUDE.md` at the root.
-            - The ADRs (architecture decision records) in `docs/adr/` and `docs/architecture.md`.
+            - `AGENTS.md` at the root.
+            - The ADRs in `docs/adr/` and `docs/architecture.md`.
             Read only the sections related to what the PR changes.
 
             How to review:
             1. Use `gh pr view` and `gh pr diff` to see the description and the diff.
             2. Look for, in this order: logic errors, security issues (secrets, injection,
                authentication, personal data), missing tests for what changes, and rules from
-               `docs/` or `CLAUDE.md` that are not followed.
+               `docs/` or `AGENTS.md` that are not followed.
             3. Don't comment on style or formatting that ruff, ESLint or Prettier already check, or on things the PR doesn't touch.
 
             How to respond:
