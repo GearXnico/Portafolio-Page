@@ -68,7 +68,7 @@ docs/                   Project documentation (table below)
   pull_request_template.md
 compose.yml             Local development: db, migrate, api and web
 .env.example            Example environment variables; the real .env is never committed
-CLAUDE.md               Instructions for Claude Code
+AGENTS.md               Guidance for coding agents (CLAUDE.md imports it)
 ```
 
 | Document | Why read it |
@@ -76,12 +76,8 @@ CLAUDE.md               Instructions for Claude Code
 | `docs/api.md` | API reference: routes, validations, protections and database users |
 | `docs/development.md` | Development rules: what gets built, when not to add layers, branches, commits and how it is reviewed |
 | `docs/testing.md` | What is tested, what is not and why each kind of test exists |
-| `docs/brief.md` | What problem the site solves and what is left out |
 | `docs/architecture.md` | Components, data model, security and deployment |
 | `docs/adr/` | The why behind each decision, one ADR (architecture decision record) per file |
-| `docs/plan.md` | Milestones and tasks, with their definition of done |
-| `docs/local-deployment-guide.md` | How to fill in the `.env`, run everything locally and check that it works |
-| `docs/prompts/` and `docs/notes/` | Prompt log per task and closing notes for each milestone |
 
 ## API: tests and lint
 

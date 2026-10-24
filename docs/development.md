@@ -10,9 +10,8 @@ The underlying idea is that the project owner can read any part of the code and 
 
 ## What gets built now
 
-- Only what a task in `docs/plan.md` names, within the scope of `docs/brief.md`.
-- What the brief leaves "Outside the MVP" is not brought forward, even if it looks easy.
-- If a task needs something the plan does not name (a table, a service, a dependency), ask first and, if approved, record it in the plan or in an ADR.
+- Only what the task at hand needs.
+- If it needs something new (a table, a service, a dependency), agree on it first and record the decision in an ADR when it has lasting impact.
 
 ## When not to create a layer
 

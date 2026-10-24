@@ -7,7 +7,6 @@ Production and staging files. The images are `api/Dockerfile` (the API, or appli
 | `compose.prod.yml` | 1.6 | Database, migrations, API and Caddy, without root, without capabilities, with a read-only file system, memory limits and rotating logs |
 | `Caddyfile` | 1.6 | Automatic HTTPS, the page, `/media`, `/api` and the same security headers as `web/security-headers.ts` |
 | `deploy.sh` | 5.3 | Backup, migrations, health check and rollback |
-| `oracle-setup.md` | 5.2 | Step by step to prepare the Oracle VM, the backup bucket and the GitHub secrets (free phase, ADR 0010) |
 | `backup.sh` | 5.4 | Daily `pg_dump` and `/media`, encrypted with age and uploaded to a private bucket |
 
 ## Try it on your machine
@@ -45,7 +44,7 @@ The server never builds images: with 1 GB of memory, building the page there wou
 
 ## Backups and restore (task 5.4)
 
-`backup.sh` runs every day from cron on the server (installing `age`, the `oci` CLI and the cron line is in `oracle-setup.md`). It encrypts the database dump and `/media` with [age](https://age-encryption.org) to the public key in `BACKUP_AGE_RECIPIENT`, keeps the last 3 on the server and uploads each one to the private Object Storage bucket `BACKUP_BUCKET`. The VM (virtual machine) uploads with its own Oracle identity (instance principal), and its policy only allows creating objects and listing their names, so a compromised server can't read, replace or delete the backups. A lifecycle rule in the bucket deletes them after 14 days. The private key is only in Nicolas's password manager (two copies); without it no backup can be read. `deploy-check` makes a backup and restores it on every PR.
+`backup.sh` runs every day from cron on the server, which needs `age` and the `oci` CLI installed. It encrypts the database dump and `/media` with [age](https://age-encryption.org) to the public key in `BACKUP_AGE_RECIPIENT`, keeps the last 3 on the server and uploads each one to the private Object Storage bucket `BACKUP_BUCKET`. The VM (virtual machine) uploads with its own Oracle identity (instance principal), and its policy only allows creating objects and listing their names, so a compromised server can't read, replace or delete the backups. A lifecycle rule in the bucket deletes them after 14 days. The private key is only in Nicolas's password manager (two copies); without it no backup can be read. `deploy-check` makes a backup and restores it on every PR.
 
 To restore, on your machine with the production compose (see "Try it on your machine"):
 
@@ -60,7 +59,7 @@ docker compose -f deploy/compose.prod.yml --env-file deploy/.env exec -T api \
   tar -xf - -C /media < restore/media.tar
 ```
 
-If the VM is replaced, follow the recovery note at the top of `oracle-setup.md` first: the bucket policy is tied to the old VM's OCID. Once a month, download the latest backup to your computer too: if the Oracle account were closed, the bucket would go with it. That monthly look at the bucket is also how a failing cron job is noticed (a missing day, or `~/backup.log` on the server); `backup.sh` exits with an error when the bucket variable is missing or the upload fails.
+If the VM is replaced, update the bucket policy first: it is tied to the old VM's OCID. Once a month, download the latest backup to your computer too: if the Oracle account were closed, the bucket would go with it. That monthly look at the bucket is also how a failing cron job is noticed (a missing day, or `~/backup.log` on the server); `backup.sh` exits with an error when the bucket variable is missing or the upload fails.
 
 `deploy.sh` also leaves an unencrypted dump in `deploy/backups/` before each deploy, readable only by the `deploy` user (`umask 077`). It holds the same data as the database volume on the same disk, so it adds no exposure; it never leaves the server.
 

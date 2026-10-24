@@ -1,4 +1,4 @@
-# Automatic PR (pull request) review with AI (artificial intelligence). ADR (architecture decision record) 0007 and 0009.
+# Automatic PR (pull request) review with AI (artificial intelligence). ADR 0007.
 # It only comments: it never approves or requests changes, and it is not a required check to merge.
 name: ai-review
 
@@ -76,7 +76,7 @@ jobs:
           # include tool outputs, and the Actions logs of a public repo are public.
           show_full_output: false
           display_report: false
-          # Sonnet for the review (ADR 0009); the turn cap limits usage.
+          # The turn cap limits usage.
           claude_args: |
             --model sonnet
             --max-turns 30
