@@ -13,7 +13,7 @@ from app.main import app
 
 
 @pytest.fixture(scope="session", autouse=True)
-def migraciones_aplicadas() -> None:
+def migrated() -> None:
     """Bring the database to the latest migration before running any test."""
     command.upgrade(Config("alembic.ini"), "head")
 

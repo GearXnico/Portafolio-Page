@@ -4,7 +4,7 @@ from app.services.locale import decide_locale, parse_lang
 
 
 @pytest.mark.parametrize(
-    ("accept_language", "esperado"),
+    ("accept_language", "expected"),
     [
         ("es", "es"),
         ("es-CL,es;q=0.9,en;q=0.8", "es"),
@@ -20,8 +20,8 @@ from app.services.locale import decide_locale, parse_lang
         (",,;;", "en"),
     ],
 )
-def test_decide_locale(accept_language: str | None, esperado: str) -> None:
-    assert decide_locale(None, accept_language) == esperado
+def test_decide_locale(accept_language: str | None, expected: str) -> None:
+    assert decide_locale(None, accept_language) == expected
 
 
 def test_country_does_not_change_the_language_yet() -> None:
@@ -29,7 +29,7 @@ def test_country_does_not_change_the_language_yet() -> None:
 
 
 @pytest.mark.parametrize(
-    ("valor", "esperado"), [("es", "es"), ("en", "en"), ("fr", None), ("ES", None), (None, None)]
+    ("value", "expected"), [("es", "es"), ("en", "en"), ("fr", None), ("ES", None), (None, None)]
 )
-def test_parse_lang(valor: str | None, esperado: str | None) -> None:
-    assert parse_lang(valor) == esperado
+def test_parse_lang(value: str | None, expected: str | None) -> None:
+    assert parse_lang(value) == expected

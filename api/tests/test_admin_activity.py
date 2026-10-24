@@ -1,4 +1,4 @@
-"""Contact messages and visits by UTM (Urchin Tracking Module), seen from the panel.
+"""Contact messages and visits by UTM, seen from the panel.
 
 Against the real Postgres: each test runs in a transaction that is rolled back at the end.
 """
@@ -24,49 +24,49 @@ HASH_B = "b" * 64
 
 
 @pytest.fixture(autouse=True)
-def admin_configurado(monkeypatch: pytest.MonkeyPatch) -> None:
+def admin_configured(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "admin_email", "admin@example.com")
     monkeypatch.setattr(settings, "admin_password_hash", SecretStr("$argon2id$no-se-usa"))
     monkeypatch.setattr(settings, "jwt_secret", SecretStr("s" * 48))
 
 
 @pytest.fixture
-def anonimo(db_session: Session) -> Iterator[TestClient]:
+def anonymous(db_session: Session) -> Iterator[TestClient]:
     """Client without a session. The API uses the test's session and starts with empty tables."""
     db_session.execute(delete(ContactMessage))
     db_session.execute(delete(Visit))
 
-    def sesion_del_test() -> Iterator[Session]:
+    def test_session() -> Iterator[Session]:
         yield db_session
 
-    app.dependency_overrides[get_session] = sesion_del_test
+    app.dependency_overrides[get_session] = test_session
     with TestClient(app, base_url="https://testserver") as client:
         yield client
     app.dependency_overrides.clear()
 
 
 @pytest.fixture
-def admin(anonimo: TestClient) -> TestClient:
-    anonimo.cookies.set(COOKIE_NAME, auth.create_session_token())
-    return anonimo
+def admin(anonymous: TestClient) -> TestClient:
+    anonymous.cookies.set(COOKIE_NAME, auth.create_session_token())
+    return anonymous
 
 
-def mensaje(session: Session, nombre: str, creado: datetime, **campos: str) -> ContactMessage:
+def message(session: Session, name: str, created: datetime, **fields: str) -> ContactMessage:
     item = ContactMessage(
-        name=nombre,
+        name=name,
         email="remitente@example.com",
         message="Hola",
         lang="es",
-        created_at=creado,
-        **campos,
+        created_at=created,
+        **fields,
     )
     session.add(item)
     session.flush()
     return item
 
 
-def visita(session: Session, visitante: str, **utm: str) -> None:
-    session.add(Visit(lang="es", visitor_hash=visitante, **utm))
+def visit(session: Session, visitor: str, **utm: str) -> None:
+    session.add(Visit(lang="es", visitor_hash=visitor, **utm))
     session.flush()
 
 
@@ -74,7 +74,7 @@ def visita(session: Session, visitante: str, **utm: str) -> None:
 
 
 @pytest.mark.parametrize(
-    ("metodo", "ruta"),
+    ("method", "route"),
     [
         ("GET", "/api/admin/messages"),
         ("PATCH", "/api/admin/messages/1"),
@@ -82,20 +82,20 @@ def visita(session: Session, visitante: str, **utm: str) -> None:
     ],
 )
 def test_activity_routes_without_session_respond_401(
-    anonimo: TestClient, metodo: str, ruta: str
+    anonymous: TestClient, method: str, route: str
 ) -> None:
-    response = anonimo.request(metodo, ruta, json={})
+    response = anonymous.request(method, route, json={})
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Log in."}
 
 
 def test_without_session_does_not_mark_the_message(
-    anonimo: TestClient, db_session: Session
+    anonymous: TestClient, db_session: Session
 ) -> None:
-    item = mensaje(db_session, "Ana", datetime(2026, 10, 1))
+    item = message(db_session, "Ana", datetime(2026, 10, 1))
 
-    anonimo.patch(f"/api/admin/messages/{item.id}", json={"read": True})
+    anonymous.patch(f"/api/admin/messages/{item.id}", json={"read": True})
 
     db_session.refresh(item)
     assert item.read is False
@@ -105,17 +105,17 @@ def test_without_session_does_not_mark_the_message(
 
 
 def test_lists_messages_from_newest_to_oldest(admin: TestClient, db_session: Session) -> None:
-    mensaje(db_session, "Antiguo", datetime(2026, 10, 1))
-    mensaje(
+    message(db_session, "Antiguo", datetime(2026, 10, 1))
+    message(
         db_session, "Nuevo", datetime(2026, 10, 2), utm_source="portal", utm_campaign="empresa-x"
     )
 
     response = admin.get("/api/admin/messages")
 
     assert response.status_code == 200
-    datos = response.json()
-    assert [m["name"] for m in datos] == ["Nuevo", "Antiguo"]
-    assert datos[0].keys() == {
+    data = response.json()
+    assert [m["name"] for m in data] == ["Nuevo", "Antiguo"]
+    assert data[0].keys() == {
         "id",
         "created_at",
         "name",
@@ -126,17 +126,17 @@ def test_lists_messages_from_newest_to_oldest(admin: TestClient, db_session: Ses
         "utm_campaign",
         "read",
     }
-    assert (datos[0]["utm_source"], datos[0]["utm_campaign"]) == ("portal", "empresa-x")
-    assert datos[0]["read"] is False
+    assert (data[0]["utm_source"], data[0]["utm_campaign"]) == ("portal", "empresa-x")
+    assert data[0]["read"] is False
 
 
 def test_marks_a_message_as_read_and_unread(admin: TestClient, db_session: Session) -> None:
-    item = mensaje(db_session, "Ana", datetime(2026, 10, 1))
+    item = message(db_session, "Ana", datetime(2026, 10, 1))
 
-    leido = admin.patch(f"/api/admin/messages/{item.id}", json={"read": True})
+    read = admin.patch(f"/api/admin/messages/{item.id}", json={"read": True})
     db_session.refresh(item)
-    assert leido.status_code == 200
-    assert leido.json()["read"] is True
+    assert read.status_code == 200
+    assert read.json()["read"] is True
     assert item.read is True
 
     admin.patch(f"/api/admin/messages/{item.id}", json={"read": False})
@@ -151,15 +151,15 @@ def test_marking_a_nonexistent_message_responds_404(admin: TestClient) -> None:
 
 
 @pytest.mark.parametrize(
-    "cuerpo",
+    "body",
     [{}, {"read": "true"}, {"read": 1}, {"read": True, "name": "otro"}],
 )
 def test_marking_with_an_invalid_body_responds_422(
-    admin: TestClient, db_session: Session, cuerpo: dict[str, object]
+    admin: TestClient, db_session: Session, body: dict[str, object]
 ) -> None:
-    item = mensaje(db_session, "Ana", datetime(2026, 10, 1))
+    item = message(db_session, "Ana", datetime(2026, 10, 1))
 
-    response = admin.patch(f"/api/admin/messages/{item.id}", json=cuerpo)
+    response = admin.patch(f"/api/admin/messages/{item.id}", json=body)
 
     assert response.status_code == 422
 
@@ -177,11 +177,11 @@ def test_an_out_of_range_message_id_responds_422(admin: TestClient, message_id: 
 def test_groups_visits_by_utm_source_and_utm_campaign(
     admin: TestClient, db_session: Session
 ) -> None:
-    visita(db_session, HASH_A, utm_source="portal", utm_campaign="empresa-x")
-    visita(db_session, HASH_A, utm_source="portal", utm_campaign="empresa-x")
-    visita(db_session, HASH_B, utm_source="portal", utm_campaign="empresa-x", utm_medium="otro")
-    visita(db_session, HASH_A, utm_source="portal", utm_campaign="empresa-y")
-    visita(db_session, HASH_B)
+    visit(db_session, HASH_A, utm_source="portal", utm_campaign="empresa-x")
+    visit(db_session, HASH_A, utm_source="portal", utm_campaign="empresa-x")
+    visit(db_session, HASH_B, utm_source="portal", utm_campaign="empresa-x", utm_medium="otro")
+    visit(db_session, HASH_A, utm_source="portal", utm_campaign="empresa-y")
+    visit(db_session, HASH_B)
 
     response = admin.get("/api/admin/visits")
 
