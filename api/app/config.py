@@ -30,10 +30,10 @@ class Settings(BaseSettings):
     # If any is missing, login responds 503. Hash with `python -m app.hash_password`.
     admin_email: str | None = None
     admin_password_hash: SecretStr | None = None
-    # Changing it closes all open sessions.
+    # At least 32 random characters; changing it closes all open sessions.
     jwt_secret: SecretStr | None = Field(default=None, min_length=32)
 
-    # Caddy serves this folder at /media.
+    # Caddy serves this folder at /media; in Docker it is a volume mounted at /code/media.
     media_dir: Path = Path("media")
 
 

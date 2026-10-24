@@ -1,4 +1,4 @@
-# Production: database, migrations, API and Caddy.
+# Production and staging: database, migrations, API and Caddy.
 # Reads the variables from deploy/.env, which is never committed to the repo (see deploy/README.md):
 #   docker compose -f deploy/compose.prod.yml --env-file deploy/.env up -d --wait caddy
 name: ${COMPOSE_PROJECT_NAME:-producto}
