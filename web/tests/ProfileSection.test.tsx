@@ -16,6 +16,7 @@ const profile: PublicProfile = {
   about_es: "Construyo APIs.",
   about_en: "I build APIs.",
   links: { github: "https://github.com/ana", bad: "javascript:alert(1)" },
+  palette: null,
 };
 
 function renderHero(device: { reducedMotion?: boolean; wide?: boolean; webgl?: boolean } = {}) {

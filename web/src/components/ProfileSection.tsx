@@ -76,7 +76,8 @@ export function ProfileSection({ profile }: Props) {
         </div>
         {show3D && (
           <Suspense fallback={null}>
-            <Entity />
+            {/* The figure reads its colour once, so a new palette draws a new figure. */}
+            <Entity key={profile?.palette ?? "mint"} />
           </Suspense>
         )}
       </div>

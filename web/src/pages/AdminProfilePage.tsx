@@ -11,9 +11,10 @@ const EMPTY: ProfileInput = {
   about_en: "",
   contact_email: "",
   links: {},
+  palette: null,
 };
 
-/** Profile editing: headline and introduction in both languages, email and links. */
+/** Profile editing: headline and introduction in both languages, email, links and palette. */
 export function AdminProfilePage() {
   const { t } = useLang();
   const { data, isPending, isError } = useAdminProfile();

@@ -22,6 +22,7 @@ class PublicProfile(_FromModel):
     about_es: str
     about_en: str
     links: dict[str, str]
+    palette: str | None
 
 
 class PublicSkill(_FromModel):

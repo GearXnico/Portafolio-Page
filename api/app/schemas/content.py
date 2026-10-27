@@ -71,6 +71,8 @@ Email = Annotated[
 SkillCategory = Literal["language", "framework", "tool"]
 # The same values as PROJECT_STATUSES (a test checks it).
 ProjectStatus = Literal["done", "in_progress"]
+# The same values as PALETTES (a test checks it).
+Palette = Literal["mint", "ice", "neon-blue", "ice-neon", "glacier", "lavender", "crimson", "amber"]
 
 
 class _In(BaseModel):
@@ -134,6 +136,7 @@ class ProfileIn(_In):
     # Only the panel sees it: the public page doesn't show it (contact goes through the form).
     contact_email: Email
     links: dict[LinkKey, Url] = Field(default={}, max_length=10)
+    palette: Palette | None = None
 
 
 class ProfileOut(_Out):
@@ -143,6 +146,7 @@ class ProfileOut(_Out):
     about_en: str
     contact_email: str
     links: dict[str, str]
+    palette: str | None
     updated_at: datetime
 
 

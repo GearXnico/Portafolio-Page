@@ -1,3 +1,5 @@
+import { useLayoutEffect } from "react";
+
 import type { Bootstrap } from "../api/bootstrap";
 import { ContactSection } from "../components/ContactSection";
 import { ExperienceSection } from "../components/ExperienceSection";
@@ -22,6 +24,16 @@ export function HomePage({ data, isError }: Props) {
   const { lang, t } = useLang();
   const profile = data?.profile ?? null;
   const name = profile ? headlineName(localized(profile, "headline", lang)) : t("app.title");
+  const palette = profile?.palette;
+
+  // A layout effect, so the colours are in place before the 3D figure reads them in its own effect.
+  useLayoutEffect(() => {
+    if (!palette) return;
+    document.documentElement.dataset.palette = palette;
+    return () => {
+      delete document.documentElement.dataset.palette;
+    };
+  }, [palette]);
 
   const sections: SectionId[] = [];
   if (data?.projects.length) sections.push("projects");

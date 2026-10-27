@@ -6,6 +6,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Added
 
+- Palette: the profile form in the admin panel offers eight colour palettes with a swatch each (icy mint by default, ice, neon blue, ice + neon blue, glacier blue, icy lavender, crimson and amber); the public page, its 3D figure and its glow follow the one chosen. The migration only adds a nullable column.
 - Projects: an optional status ("done" or "in progress"), set from the admin panel and returned by `bootstrap`, shows as a rubber stamp on the project's frame ("Solved" or "In progress"); without a status there is no stamp. The migration only adds a nullable column.
 - Hero: the name, role, introduction and profile links sit over a night skyline drawn in SVG, and on wide screens a neon 3D figure rotates, leans towards the pointer, glitches and changes shape every few seconds. three.js loads on demand and is skipped on phones, without WebGL and when the device asks for reduced motion (ADR 0011).
 

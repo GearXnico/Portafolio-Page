@@ -47,8 +47,8 @@ export default function Entity() {
     const scene = new Scene();
     const camera = new PerspectiveCamera(45, element.clientWidth / element.clientHeight, 0.1, 20);
     camera.position.z = 4.2;
-    const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
-    const material = new LineBasicMaterial({ color: accent, transparent: true, opacity: 0.85 });
+    const color = getComputedStyle(document.documentElement).getPropertyValue("--figure").trim();
+    const material = new LineBasicMaterial({ color, transparent: true, opacity: 0.85 });
     const figure = new LineSegments(shapes[0]?.(), material);
     scene.add(figure);
 

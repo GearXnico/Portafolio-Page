@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { App } from "../src/App";
@@ -115,6 +115,31 @@ describe("HomePage", () => {
     expect(description()).toMatch(/^Portfolio:/);
   });
 
+  it("applies the chosen palette to the page and removes it on leaving", async () => {
+    const base = bootstrapFixture();
+    stubBootstrap(
+      bootstrapFixture({ profile: base.profile && { ...base.profile, palette: "amber" } }),
+    );
+
+    const { unmount } = renderPage();
+
+    await screen.findByRole("heading", { level: 1 });
+    await waitFor(() => {
+      expect(document.documentElement.dataset.palette).toBe("amber");
+    });
+    unmount();
+    expect(document.documentElement.dataset.palette).toBeUndefined();
+  });
+
+  it("without a palette keeps the default colours", async () => {
+    stubBootstrap(bootstrapFixture());
+
+    renderPage();
+
+    await screen.findByRole("heading", { level: 1, name: "Desarrollador full stack" });
+    expect(document.documentElement.dataset.palette).toBeUndefined();
+  });
+
   it("links the header to the sections that have content", async () => {
     stubBootstrap(
       bootstrapFixture({
@@ -125,6 +150,7 @@ describe("HomePage", () => {
           about_es: "",
           about_en: "",
           links: {},
+          palette: null,
         },
       }),
     );

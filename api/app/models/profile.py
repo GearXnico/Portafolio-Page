@@ -9,6 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import URL_HTTPS_REGEX, Base
 
+# Colour palettes of the page; the frontend defines their colours. Without one it uses "mint".
+PALETTES = ("mint", "ice", "neon-blue", "ice-neon", "glacier", "lavender", "crimson", "amber")
+
 
 class Profile(Base):
     __tablename__ = "profile"
@@ -20,6 +23,9 @@ class Profile(Base):
             f'\'strict $.* ? (@.type() != "string" || !(@ like_regex "{URL_HTTPS_REGEX}"))\')',
             name="links_https",
         ),
+        CheckConstraint(
+            "palette IN ({})".format(", ".join(f"'{p}'" for p in PALETTES)), name="palette"
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False, default=1)
@@ -30,4 +36,5 @@ class Profile(Base):
     contact_email: Mapped[str]
     # External links, for example {"github": "...", "linkedin": "...", "cv": "..."}.
     links: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=text("'{}'::jsonb"))
+    palette: Mapped[str | None]
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
