@@ -213,6 +213,13 @@ h3 {
   -webkit-text-stroke: 1.5px var(--accent);
 }
 
+/* High-contrast modes drop the stroke colour, which would leave the surname invisible. */
+@media (forced-colors: active) {
+  .outline {
+    color: CanvasText;
+  }
+}
+
 /* Terminal lines that type in one after another above the name. */
 .boot {
   margin-bottom: 1.5rem;
