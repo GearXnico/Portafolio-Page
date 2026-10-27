@@ -12,6 +12,9 @@
   --accent-soft: rgb(159 240 216 / 12%);
   --accent-glow: rgb(159 240 216 / 45%);
   --on-accent: #07100d;
+  --accent-haze: rgb(159 240 216 / 10%);
+  --city-near: #0b100e;
+  --city-far: #121a17;
   --error: #f2b8b5;
   --font-display: "Chakra Petch", system-ui, sans-serif;
   --font-body: Barlow, system-ui, sans-serif;
@@ -163,7 +166,147 @@ h3 {
 .page {
   max-width: 72rem;
   margin: 0 auto;
-  padding: 4rem 1.5rem 5rem;
+  padding: 0 1.5rem 5rem;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 75% 45%, var(--accent-haze), transparent 70%), var(--bg);
+}
+
+/* Fades the city into the page below. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 6rem;
+  background: linear-gradient(transparent, var(--bg));
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 13rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+}
+
+.hero-text {
+  flex: 1 1 30rem;
+}
+
+.role {
+  margin: -0.75rem 0 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.875rem;
+  margin: 2rem 0 0;
+}
+
+.button.ghost {
+  background: transparent;
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--control-border);
+}
+
+.city {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 16rem;
+}
+
+.city-far {
+  fill: var(--city-far);
+}
+
+.city-near {
+  fill: var(--city-near);
+}
+
+.city .window {
+  fill: rgb(255 240 220 / 16%);
+}
+
+.city .lit,
+.city .sign {
+  fill: var(--accent);
+}
+
+.city .lit {
+  opacity: 0.55;
+}
+
+.city .sign {
+  filter: drop-shadow(0 0 4px var(--accent));
+  animation: flicker 6s linear infinite;
+}
+
+@keyframes flicker {
+  0%,
+  47%,
+  50%,
+  53%,
+  100% {
+    opacity: 1;
+  }
+
+  48% {
+    opacity: 0.35;
+  }
+
+  52% {
+    opacity: 0.5;
+  }
+}
+
+.entity {
+  flex: 0 0 22rem;
+  height: 22rem;
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.entity.glitching {
+  animation: glitch 360ms steps(3) both;
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(-8px, 2px) skewX(12deg);
+    clip-path: inset(12% 0 45% 0);
+    filter: drop-shadow(-4px 0 var(--accent)) drop-shadow(4px 0 #fff);
+  }
+
+  33% {
+    transform: translate(7px, -3px) skewX(-8deg);
+    clip-path: inset(55% 0 6% 0);
+  }
+
+  66% {
+    transform: translate(-3px, 0);
+    clip-path: inset(0 0 70% 0);
+  }
+
+  100% {
+    transform: none;
+    clip-path: none;
+    filter: none;
+  }
 }
 
 .about {

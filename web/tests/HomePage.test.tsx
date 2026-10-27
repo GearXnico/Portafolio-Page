@@ -23,7 +23,8 @@ describe("HomePage", () => {
     expect(screen.getByText("Portafolio con CI")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Desarrollador · Acme" })).toBeInTheDocument();
     expect(screen.getByText(/actualidad/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "github" })).toHaveAttribute(
+    const contact = screen.getByRole("region", { name: "Contacto" });
+    expect(within(contact).getByRole("link", { name: "github" })).toHaveAttribute(
       "href",
       "https://github.com/ejemplo",
     );
