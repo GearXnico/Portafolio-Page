@@ -20,7 +20,7 @@ export function SkillsSection({ skills }: Props) {
       <h2 id="skills-title">{t("section.skills")}</h2>
       <dl className="skills">
         {[...byCategory].map(([category, names]) => (
-          <div key={category}>
+          <div key={category} className="cut">
             <dt>{t(`skills.${category}`)}</dt>
             <dd>
               <ul className="tags">

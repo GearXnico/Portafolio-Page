@@ -74,6 +74,25 @@ describe("ProjectsSection", () => {
     expect(screen.queryByRole("list", { name: "Stack" })).toBeNull();
   });
 
+  it("numbers each case file and marks only the ones with a demo as live", () => {
+    renderIn("en", [
+      project({ slug: "a", demo_url: "https://demo.example.com" }),
+      project({ slug: "b", demo_url: null }),
+    ]);
+
+    const [first, second] = screen.getAllByRole("article");
+    expect(first).toHaveTextContent("FILE 001");
+    expect(first).toHaveTextContent("Live");
+    expect(second).toHaveTextContent("FILE 002");
+    expect(second).not.toHaveTextContent("Live");
+  });
+
+  it("without a screenshot shows the title in the frame instead", () => {
+    const { container } = renderIn("es", [project({ images: [] })]);
+
+    expect(container.querySelector(".frame-blank")).toHaveTextContent("Este sitio");
+  });
+
   it("doesn't appear if there are no published projects", () => {
     const { container } = renderIn("es", []);
 

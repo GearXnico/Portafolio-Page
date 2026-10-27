@@ -10,6 +10,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Changed
 
+- Sections: projects become numbered case files, with the cover framed like a film still (desaturated until hovered, or the title in outline when there is no screenshot), a "live" mark when there is a demo and a side column with the stack and links; experience shows the dates in a column, then the company and the role; skills and contact sit on angled panels, with the contact heading and links beside the form.
 - Design: the public page and the admin panel switch to a single night theme (mint accent on near-black, angled corners), with Chakra Petch and Barlow served from the site itself; a sticky header links to the sections that have content and a footer links to this site's repository. Animations stop when the device asks for reduced motion.
 
 ### Fixed

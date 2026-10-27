@@ -16,9 +16,6 @@ export function ExperienceSection({ experience }: Props) {
       <ol className="experience">
         {experience.map((job) => (
           <li key={`${job.company}-${job.start_date}`}>
-            <h3>
-              {localized(job, "role", lang)} · {job.company}
-            </h3>
             <p className="dates">
               <time dateTime={job.start_date}>{monthYear(job.start_date, lang)}</time>
               {" – "}
@@ -28,7 +25,11 @@ export function ExperienceSection({ experience }: Props) {
                 t("experience.present")
               )}
             </p>
-            <p>{localized(job, "description", lang)}</p>
+            <div>
+              <h3>{job.company}</h3>
+              <p className="job-role">{localized(job, "role", lang)}</p>
+              <p>{localized(job, "description", lang)}</p>
+            </div>
           </li>
         ))}
       </ol>
