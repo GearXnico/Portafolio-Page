@@ -1,6 +1,7 @@
 import { useState, type SubmitEvent } from "react";
 
 import { useSaveProfile, type ProfileInput } from "../api/adminProfile";
+import { PALETTES } from "../api/bootstrap";
 import { useLang } from "../i18n";
 import { BilingualField } from "./BilingualField";
 import { FormStatus } from "./FormStatus";
@@ -40,7 +41,7 @@ export function ProfileForm({ initial }: { initial: ProfileInput }) {
     setInvalidLinks(parsedLinks === null);
     if (parsedLinks === null) return;
     // Only the fields the API accepts: the response also includes `updated_at`.
-    const { headline_es, headline_en, about_es, about_en, contact_email } = profile;
+    const { headline_es, headline_en, about_es, about_en, contact_email, palette } = profile;
     save.mutate({
       headline_es,
       headline_en,
@@ -48,6 +49,7 @@ export function ProfileForm({ initial }: { initial: ProfileInput }) {
       about_en,
       contact_email,
       links: parsedLinks,
+      palette,
     });
   }
 
@@ -94,6 +96,24 @@ export function ProfileForm({ initial }: { initial: ProfileInput }) {
           }}
         />
       </label>
+      <fieldset className="palettes">
+        <legend>{t("admin.profile.palette")}</legend>
+        {PALETTES.map((palette) => (
+          <label key={palette}>
+            <input
+              type="radio"
+              name="palette"
+              value={palette}
+              checked={(profile.palette ?? "mint") === palette}
+              onChange={() => {
+                setProfile({ ...profile, palette });
+              }}
+            />
+            <span className="swatch" data-palette={palette} aria-hidden="true" />
+            {t(`palette.${palette}`)}
+          </label>
+        ))}
+      </fieldset>
       {invalidLinks ? (
         <p role="alert">{t("admin.form.invalid")}</p>
       ) : (

@@ -58,6 +58,7 @@ erDiagram
         text about_en
         text contact_email
         jsonb links
+        text palette
         timestamptz updated_at
     }
     SKILL {
