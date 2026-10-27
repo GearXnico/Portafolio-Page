@@ -32,6 +32,7 @@ const PROFILE = {
   about_en: "Hi",
   contact_email: "yo@example.com",
   links: { github: "https://github.com/example" },
+  palette: null,
   updated_at: "2026-10-01T00:00:00Z",
 };
 
@@ -82,6 +83,8 @@ describe("admin panel: profile, skills and experience", () => {
       "Enlaces, uno por línea: nombre y URL (github https://github.com/…)",
       "github https://github.com/example\n\n linkedin  https://linkedin.com/in/example",
     );
+    expect(screen.getByRole("radio", { name: "Menta helada" })).toBeChecked();
+    fireEvent.click(screen.getByRole("radio", { name: "Ámbar" }));
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
 
     expect(await screen.findByRole("status")).toHaveTextContent("Guardado");
@@ -90,6 +93,7 @@ describe("admin panel: profile, skills and experience", () => {
     expect(sentBody(fetchMock, "PUT", "/api/admin/profile")).toEqual({
       ...expected,
       headline_en: "Engineer",
+      palette: "amber",
       links: {
         github: "https://github.com/example",
         linkedin: "https://linkedin.com/in/example",

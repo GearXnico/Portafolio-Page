@@ -12,6 +12,7 @@ export function bootstrapFixture(overrides: Partial<Bootstrap> = {}): Bootstrap 
       about_es: "Construyo productos web.",
       about_en: "I build web products.",
       links: { github: "https://github.com/ejemplo" },
+      palette: null,
     },
     skills: [
       { name: "Python", category: "language" },

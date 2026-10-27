@@ -24,10 +24,11 @@ from app.config import settings
 from app.db import get_session
 from app.main import MAX_BODY_BYTES, MAX_UPLOAD_BYTES, app
 from app.models import Experience, Profile, Project, ProjectImage, Skill
+from app.models.profile import PALETTES
 from app.models.project import PROJECT_STATUSES
 from app.models.skill import SKILL_CATEGORIES
 from app.routers.admin import COOKIE_NAME
-from app.schemas.content import ProjectStatus, SkillCategory
+from app.schemas.content import Palette, ProjectStatus, SkillCategory
 from app.services import auth, images
 from app.services.images import MAX_IMAGE_BYTES
 
@@ -343,12 +344,25 @@ def test_without_profile_responds_404(admin: TestClient) -> None:
 def test_first_put_creates_the_profile_and_later_ones_replace_it(admin: TestClient) -> None:
     assert admin.put("/api/admin/profile", json=PROFILE).status_code == 200
 
-    new = PROFILE | {"headline_es": "Desarrollador backend", "links": {}}
+    new = PROFILE | {"headline_es": "Desarrollador backend", "links": {}, "palette": "amber"}
     response = admin.put("/api/admin/profile", json=new)
 
     assert response.status_code == 200
     saved = admin.get("/api/admin/profile").json()
     assert saved == new | {"updated_at": saved["updated_at"]}
+
+
+def test_the_palette_reaches_the_page_and_defaults_to_none(admin: TestClient) -> None:
+    admin.put("/api/admin/profile", json=PROFILE)
+    assert admin.get("/api/bootstrap").json()["profile"]["palette"] is None
+
+    admin.put("/api/admin/profile", json=PROFILE | {"palette": "ice"})
+
+    assert admin.get("/api/bootstrap").json()["profile"]["palette"] == "ice"
+
+
+def test_palettes_match_the_database() -> None:
+    assert get_args(Palette) == PALETTES
 
 
 def test_profile_email_is_not_shown_on_the_page(admin: TestClient) -> None:
@@ -374,6 +388,8 @@ def test_profile_email_is_not_shown_on_the_page(admin: TestClient) -> None:
         {"contact_email": "a@b.cl, c@d.cl"},
         {"about_es": ""},
         {"headline_en": "a" * 201},
+        {"palette": "rojo"},
+        {"palette": ""},
         {"id": 2},
     ],
 )

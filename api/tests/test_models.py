@@ -111,6 +111,11 @@ def test_profile_only_accepts_https_links(db_session: Session, links: object) ->
     rejects(db_session, new_profile(links=links), "ck_profile_links_https")
 
 
+@pytest.mark.parametrize("palette", ["rojo", "", "MINT"])
+def test_profile_rejects_an_unknown_palette(db_session: Session, palette: str) -> None:
+    rejects(db_session, new_profile(palette=palette), "ck_profile_palette")
+
+
 def test_profile_accepts_https_links(db_session: Session) -> None:
     links = {"github": "https://github.com/x", "cv": "https://example.com/cv.pdf"}
     db_session.add(new_profile(links=links))

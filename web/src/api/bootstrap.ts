@@ -4,12 +4,26 @@ import { useQuery } from "@tanstack/react-query";
 import { storedLang, type Lang } from "../i18n";
 import { readUtm } from "../utm";
 
+// The allowed palettes are set by the database (ck_profile_palette); their colours, by styles.css.
+export const PALETTES = [
+  "mint",
+  "ice",
+  "neon-blue",
+  "ice-neon",
+  "glacier",
+  "lavender",
+  "crimson",
+  "amber",
+] as const;
+export type Palette = (typeof PALETTES)[number];
+
 export interface PublicProfile {
   headline_es: string;
   headline_en: string;
   about_es: string;
   about_en: string;
   links: Record<string, string>;
+  palette: Palette | null;
 }
 
 // The allowed categories are set by the database (ck_skill_category).

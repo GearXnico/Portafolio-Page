@@ -9,10 +9,12 @@
   --body: #bcc4c0;
   --muted: #9aa39f;
   --accent: #9ff0d8;
-  --accent-soft: rgb(159 240 216 / 12%);
-  --accent-glow: rgb(159 240 216 / 45%);
+  /* The 3D figure and the glow; only "ice-neon" sets them apart from the accent. */
+  --figure: var(--accent);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-glow: color-mix(in srgb, var(--figure) 45%, transparent);
   --on-accent: #07100d;
-  --accent-haze: rgb(159 240 216 / 10%);
+  --accent-haze: color-mix(in srgb, var(--figure) 10%, transparent);
   --city-near: #0b100e;
   --city-far: #121a17;
   --error: #f2b8b5;
@@ -24,6 +26,73 @@
   line-height: 1.6;
   color: var(--text);
   background: var(--bg);
+}
+
+/* Palettes chosen in the admin panel (profile.palette); without one the page uses mint, above. The
+   same rules colour the swatches in the panel. Every accent keeps at least 4.5:1 on the surface. */
+[data-palette="ice"] {
+  --bg: #08090b;
+  --surface: #0f1114;
+  --accent: #bfe3f2;
+  --on-accent: #08090b;
+  --city-near: #0d0f12;
+  --city-far: #15181c;
+}
+
+[data-palette="neon-blue"] {
+  --bg: #06090c;
+  --surface: #0c1216;
+  --accent: #3be8ff;
+  --on-accent: #06090c;
+  --city-near: #0a0f13;
+  --city-far: #111a20;
+}
+
+[data-palette="ice-neon"] {
+  --bg: #07090b;
+  --surface: #0e1215;
+  --accent: #bfe3f2;
+  --figure: #3be8ff;
+  --on-accent: #07090b;
+  --city-near: #0b0f12;
+  --city-far: #131a1f;
+}
+
+[data-palette="glacier"] {
+  --bg: #07080c;
+  --surface: #0d1017;
+  --accent: #7fb8ff;
+  --on-accent: #07080c;
+  --city-near: #0b0e14;
+  --city-far: #12171f;
+}
+
+[data-palette="lavender"] {
+  --bg: #08080c;
+  --surface: #0f0f16;
+  --accent: #c9c3ff;
+  --on-accent: #08080c;
+  --city-near: #0d0d13;
+  --city-far: #16151d;
+}
+
+/* Lighter than the mockup's #e0394f, which only reaches 4.45:1 on the surface. */
+[data-palette="crimson"] {
+  --bg: #0a0809;
+  --surface: #110e10;
+  --accent: #ff5c70;
+  --on-accent: #0a0809;
+  --city-near: #0f0c0e;
+  --city-far: #171215;
+}
+
+[data-palette="amber"] {
+  --bg: #0b0a08;
+  --surface: #12100c;
+  --accent: #e8963f;
+  --on-accent: #0b0a08;
+  --city-near: #100e0b;
+  --city-far: #181510;
 }
 
 * {
@@ -90,7 +159,7 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgb(7 10 9 / 85%);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
 }
@@ -889,4 +958,38 @@ h3 {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 1.5rem;
+}
+
+/* Palette picker in the admin panel: a swatch of each palette next to its name. */
+.palettes {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.palettes legend {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.form .palettes label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+
+.form .palettes input {
+  width: auto;
+}
+
+.swatch {
+  flex: none;
+  width: 2.25rem;
+  height: 1.25rem;
+  background: linear-gradient(90deg, var(--bg) 50%, var(--accent) 50%);
+  box-shadow: 0 0 0 1px var(--control-border);
 }

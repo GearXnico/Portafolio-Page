@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";
-import type { SkillCategory } from "./bootstrap";
+import type { Palette, SkillCategory } from "./bootstrap";
 
 export interface ProfileInput {
   headline_es: string;
@@ -12,6 +12,7 @@ export interface ProfileInput {
   about_en: string;
   contact_email: string;
   links: Record<string, string>;
+  palette: Palette | null;
 }
 
 export interface SkillInput {

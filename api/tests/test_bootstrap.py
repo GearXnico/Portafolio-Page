@@ -137,6 +137,7 @@ def test_returns_the_visible_content_in_both_languages(api: TestClient) -> None:
         "about_es": "Sobre mí",
         "about_en": "About me",
         "links": {"github": "https://github.com/ejemplo"},
+        "palette": None,
     }
     assert [s["name"] for s in data["skills"]] == ["FastAPI", "Python"]
     assert data["experience"] == [
