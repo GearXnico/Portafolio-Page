@@ -69,6 +69,8 @@ Email = Annotated[
 ]
 # The same values as SKILL_CATEGORIES (a test checks it).
 SkillCategory = Literal["language", "framework", "tool"]
+# The same values as PROJECT_STATUSES (a test checks it).
+ProjectStatus = Literal["done", "in_progress"]
 
 
 class _In(BaseModel):
@@ -90,6 +92,7 @@ class ProjectIn(_In):
     stack: list[Line50] = Field(default=[], max_length=30)
     demo_url: OptionalUrl = None
     repo_url: OptionalUrl = None
+    status: ProjectStatus | None = None
     # Hidden by default: it is published from the panel when it's ready.
     visible: Annotated[bool, Field(strict=True)] = False
     position: Position = 0
@@ -115,6 +118,7 @@ class ProjectOut(_Out):
     stack: list[str]
     demo_url: str | None
     repo_url: str | None
+    status: str | None
     visible: bool
     position: int
     images: list[ImageOut]

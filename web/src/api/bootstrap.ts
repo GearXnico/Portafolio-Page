@@ -36,6 +36,8 @@ export interface PublicImage {
   alt_en: string;
 }
 
+export type ProjectStatus = "done" | "in_progress";
+
 export interface PublicProject {
   slug: string;
   title_es: string;
@@ -47,6 +49,7 @@ export interface PublicProject {
   stack: string[];
   demo_url: string | null;
   repo_url: string | null;
+  status: ProjectStatus | null;
   images: PublicImage[];
 }
 

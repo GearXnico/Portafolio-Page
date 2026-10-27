@@ -41,6 +41,11 @@ export function ProjectsSection({ projects }: Props) {
                   <span className="frame-label" aria-hidden="true">
                     {t("project.file")} {String(i + 1).padStart(3, "0")}
                   </span>
+                  {project.status && (
+                    <span className={`stamp ${project.status}`}>
+                      {t(`project.status.${project.status}`)}
+                    </span>
+                  )}
                   {demo && (
                     <span className="frame-label live">
                       <span aria-hidden="true">● </span>

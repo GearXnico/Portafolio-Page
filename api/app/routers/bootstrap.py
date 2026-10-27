@@ -118,6 +118,7 @@ def _visible_content(session: Session, page_lang: Lang) -> Bootstrap:
                 stack=p.stack,
                 demo_url=p.demo_url,
                 repo_url=p.repo_url,
+                status=p.status,
                 images=[
                     PublicImage(url=f"/media/{i.path}", alt_es=i.alt_es, alt_en=i.alt_en)
                     for i in p.images

@@ -17,6 +17,7 @@ const PROJECT = {
   stack: ["React", "FastAPI"],
   demo_url: null,
   repo_url: "https://github.com/ejemplo/sitio",
+  status: "done",
   visible: false,
   position: 2,
   // Fields the API sends but that aren't edited: they must not come back in the PUT.
@@ -90,7 +91,7 @@ describe("projects in the admin panel", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("No se pudo conectar");
   });
 
-  it("creating sends both languages, the stack and the visibility, and goes back to the list", async () => {
+  it("creating sends both languages, the stack, the status and the visibility, and goes back to the list", async () => {
     const fetchMock = stubApi({
       "POST /api/admin/projects": [201, PROJECT],
       "GET /api/admin/projects": [200, []],
@@ -99,6 +100,9 @@ describe("projects in the admin panel", () => {
     await screen.findByRole("heading", { name: "Nuevo proyecto" });
 
     fillNewProject();
+    fireEvent.change(screen.getByLabelText("Estado (sello en la página)"), {
+      target: { value: "in_progress" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
 
     expect(await screen.findByRole("heading", { name: "Proyectos" })).toBeInTheDocument();
@@ -113,6 +117,7 @@ describe("projects in the admin panel", () => {
       stack: ["Godot", "C#"],
       demo_url: null,
       repo_url: null,
+      status: "in_progress",
       visible: true,
       position: 0,
     });
@@ -159,6 +164,7 @@ describe("projects in the admin panel", () => {
       stack: ["React", "FastAPI"],
       demo_url: null,
       repo_url: "https://github.com/ejemplo/sitio",
+      status: "done",
       visible: false,
       position: 5,
     });
