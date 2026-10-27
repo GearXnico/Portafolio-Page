@@ -30,6 +30,8 @@ flowchart TB
 
 The browser only talks to Caddy, so the page and the API share an origin: no CORS, a strict CSP (`connect-src 'self'`) and a `SameSite=Strict` session cookie.
 
+The public page has a single night theme; its colors are CSS variables in `web/src/styles.css` and its fonts are bundled with the build. The hero's 3D figure is plain three.js in a chunk that loads only on wide screens with WebGL and without reduced motion ([ADR 0011](adr/0011-night-theme-and-3d-hero.md)).
+
 ## Request flow
 
 - **First load:** the page calls `GET /api/bootstrap`, forwarding any `utm_*` parameters. The API records the visit, decides the language and returns the profile, skills, experience and visible projects in one response.
