@@ -32,17 +32,19 @@ export function HomePage({ data, isError }: Props) {
   return (
     <>
       <SiteHeader name={name} sections={sections} />
-      <main id="top" className="page">
+      <main id="top">
         <ProfileSection profile={profile} />
-        {isError && <p role="alert">{t("page.error")}</p>}
-        {data && (
-          <>
-            <ProjectsSection projects={data.projects} />
-            <ExperienceSection experience={data.experience} />
-            <SkillsSection skills={data.skills} />
-            <ContactSection links={profile?.links ?? {}} />
-          </>
-        )}
+        <div className="page">
+          {isError && <p role="alert">{t("page.error")}</p>}
+          {data && (
+            <>
+              <ProjectsSection projects={data.projects} />
+              <ExperienceSection experience={data.experience} />
+              <SkillsSection skills={data.skills} />
+              <ContactSection links={profile?.links ?? {}} />
+            </>
+          )}
+        </div>
       </main>
       <SiteFooter name={name} repoUrl={ownRepoUrl(data?.projects ?? [], window.location.host)} />
     </>

@@ -106,5 +106,6 @@
   "admin.images.invalid": "La imagen está dañada o es demasiado grande (más de 25 megapíxeles).",
   "admin.images.saveFirst": "Guarda el proyecto para poder subirle capturas.",
   "nav.label": "Secciones",
-  "footer.code": "Código de este sitio"
+  "footer.code": "Código de este sitio",
+  "hero.projects": "Ver proyectos"
 }

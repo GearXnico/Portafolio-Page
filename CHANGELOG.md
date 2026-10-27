@@ -4,6 +4,10 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ## [Unreleased]
 
+### Added
+
+- Hero: the name, role, introduction and profile links sit over a night skyline drawn in SVG, and on wide screens a neon 3D figure rotates, leans towards the pointer, glitches and changes shape every few seconds. three.js loads on demand and is skipped on phones, without WebGL and when the device asks for reduced motion (ADR 0011).
+
 ### Changed
 
 - Design: the public page and the admin panel switch to a single night theme (mint accent on near-black, angled corners), with Chakra Petch and Barlow served from the site itself; a sticky header links to the sections that have content and a footer links to this site's repository. Animations stop when the device asks for reduced motion.

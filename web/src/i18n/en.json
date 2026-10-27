@@ -106,5 +106,6 @@
   "admin.images.invalid": "The image is damaged or too large (over 25 megapixels).",
   "admin.images.saveFirst": "Save the project to upload screenshots.",
   "nav.label": "Sections",
-  "footer.code": "Source code of this site"
+  "footer.code": "Source code of this site",
+  "hero.projects": "See projects"
 }
