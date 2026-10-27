@@ -453,11 +453,6 @@ h3 {
   border-top: 1px solid var(--border);
 }
 
-.experience .dates {
-  flex: 0 0 9rem;
-  margin-top: 0.25rem;
-}
-
 .experience li > div {
   flex: 1 1 28rem;
 }
@@ -481,6 +476,8 @@ h3 {
 }
 
 .experience .dates {
+  flex: 0 0 9rem;
+  margin-top: 0.25rem;
   font-family: var(--font-display);
   font-size: 0.8125rem;
   letter-spacing: 0.1em;
