@@ -4,6 +4,10 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ## [Unreleased]
 
+### Changed
+
+- Design: the public page and the admin panel switch to a single night theme (mint accent on near-black, angled corners), with Chakra Petch and Barlow served from the site itself; a sticky header links to the sections that have content and a footer links to this site's repository. Animations stop when the device asks for reduced motion.
+
 ### Fixed
 
 - `python -m app.hash_password` no longer requires `DATABASE_URL`, so it runs in a bare API container on the server before `.env` has the admin hash.

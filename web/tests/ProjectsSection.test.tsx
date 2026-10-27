@@ -4,13 +4,9 @@ import { describe, expect, it } from "vitest";
 import type { PublicProject } from "../src/api/bootstrap";
 import { ProjectsSection } from "../src/components/ProjectsSection";
 import { LangContext, type Lang } from "../src/i18n";
-import { bootstrapFixture } from "./fixtures";
+import { projectFixture } from "./fixtures";
 
-function project(overrides: Partial<PublicProject> = {}): PublicProject {
-  const [base] = bootstrapFixture().projects;
-  if (!base) throw new Error("the fixture has no projects");
-  return { ...base, ...overrides };
-}
+const project = projectFixture;
 
 function renderIn(lang: Lang, projects: PublicProject[]) {
   return render(

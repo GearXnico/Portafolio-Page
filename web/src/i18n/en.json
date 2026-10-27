@@ -104,5 +104,7 @@
   "admin.images.tooLarge": "The image is larger than 5 MB.",
   "admin.images.badType": "The file is not a JPEG, PNG or WebP image.",
   "admin.images.invalid": "The image is damaged or too large (over 25 megapixels).",
-  "admin.images.saveFirst": "Save the project to upload screenshots."
+  "admin.images.saveFirst": "Save the project to upload screenshots.",
+  "nav.label": "Sections",
+  "footer.code": "Source code of this site"
 }

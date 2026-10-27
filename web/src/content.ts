@@ -1,4 +1,5 @@
 // Helpers to display the content that comes from `bootstrap`.
+import type { PublicProject } from "./api/bootstrap";
 import type { Lang } from "./i18n";
 
 /**
@@ -21,4 +22,18 @@ export function monthYear(isoDate: string, lang: Lang): string {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(isoDate));
+}
+
+/** The name at the start of a headline like `Ana Pérez · Backend developer`. */
+export function headlineName(headline: string): string {
+  return (headline.split(" · ")[0] ?? headline).trim();
+}
+
+/** The repository of the project whose demo is this same site, for the footer link. */
+export function ownRepoUrl(projects: PublicProject[], host: string): string | null {
+  const own = projects.find((project) => {
+    const demo = httpsUrl(project.demo_url);
+    return demo !== null && new URL(demo).host === host;
+  });
+  return httpsUrl(own?.repo_url);
 }
