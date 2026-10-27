@@ -18,20 +18,22 @@ export function ContactSection({ links }: Props) {
   });
 
   return (
-    <section id="contact" aria-labelledby="contact-title">
-      <h2 id="contact-title">{t("section.contact")}</h2>
-      {safeLinks.length > 0 && (
-        <ul className="links">
-          {safeLinks.map(({ label, href }) => (
-            <li key={label}>
-              <a href={href} target="_blank" rel="noopener noreferrer">
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p>{t("contact.intro")}</p>
+    <section id="contact" aria-labelledby="contact-title" className="contact cut">
+      <div>
+        <h2 id="contact-title">{t("section.contact")}</h2>
+        <p>{t("contact.intro")}</p>
+        {safeLinks.length > 0 && (
+          <ul className="links">
+            {safeLinks.map(({ label, href }) => (
+              <li key={label}>
+                <a href={href} target="_blank" rel="noopener noreferrer">
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <ContactForm />
     </section>
   );
