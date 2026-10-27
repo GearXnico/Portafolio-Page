@@ -39,8 +39,9 @@ export function ProjectsSection({ projects }: Props) {
                     {t("project.file")} {String(i + 1).padStart(3, "0")}
                   </span>
                   {demo && (
-                    <span className="frame-label live" aria-hidden="true">
-                      ● {t("project.live")}
+                    <span className="frame-label live">
+                      <span aria-hidden="true">● </span>
+                      {t("project.live")}
                     </span>
                   )}
                 </div>
