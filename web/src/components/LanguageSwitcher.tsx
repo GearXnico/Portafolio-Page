@@ -5,7 +5,7 @@ export function LanguageSwitcher() {
   const { lang, setLang, t } = useLang();
 
   return (
-    <div role="group" aria-label={t("lang.label")}>
+    <div className="lang" role="group" aria-label={t("lang.label")}>
       {LANGS.map((option) => (
         <button
           key={option}
