@@ -2,12 +2,13 @@
 
 Usage: `python -m app.hash_password`. Asks for the password without echoing it and prints the
 line for `.env`, in single quotes so Docker Compose doesn't interpret the `$` in the hash.
+It doesn't import the API configuration, so it runs in a bare container before `.env` is complete.
 """
 
 import getpass
 import sys
 
-from app.services.auth import hash_password
+from argon2 import PasswordHasher
 
 MIN_LENGTH = 12
 MAX_LENGTH = 256  # The same cap the login accepts.
@@ -21,7 +22,8 @@ def main() -> int:
     if getpass.getpass("Repeat it: ") != password:
         print("The passwords don't match.", file=sys.stderr)
         return 1
-    print(f"ADMIN_PASSWORD_HASH='{hash_password(password)}'")
+    # The same Argon2 defaults that app.services.auth verifies with.
+    print(f"ADMIN_PASSWORD_HASH='{PasswordHasher().hash(password)}'")
     return 0
 
 

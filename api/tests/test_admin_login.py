@@ -1,9 +1,13 @@
 """Admin login: credentials, cookie, per-IP limit and access without a session."""
 
 import getpass
+import os
 import re
+import subprocess
+import sys
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any, cast
 
 import jwt
@@ -296,6 +300,21 @@ def test_command_rejects_short_or_mismatched_passwords(
 
     assert hash_password.main() == 1
     assert capsys.readouterr().out == ""
+
+
+def test_command_runs_without_the_api_configuration(tmp_path: Path) -> None:
+    # On the server it runs in a bare container, before .env has the hash.
+    env = {k: v for k, v in os.environ.items() if not k.endswith("DATABASE_URL")}
+    result = subprocess.run(
+        [sys.executable, "-c", "import app.hash_password"],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_empty_variables_count_as_undefined(monkeypatch: pytest.MonkeyPatch) -> None:
