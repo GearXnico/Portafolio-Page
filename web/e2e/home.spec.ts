@@ -21,15 +21,15 @@ test("on a phone the page doesn't overflow the screen", async ({ page }) => {
   expect(overflow).toBe(0);
 });
 
-test("the page follows the device's light or dark theme", async ({ page }) => {
+test("the page keeps the night theme whatever the device's colour setting", async ({ page }) => {
   const background = () =>
     page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
 
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  expect(await background()).toBe("rgb(255, 255, 255)");
+  expect(await background()).toBe("rgb(7, 10, 9)");
 
   await page.emulateMedia({ colorScheme: "dark" });
-  expect(await background()).toBe("rgb(22, 23, 26)");
+  expect(await background()).toBe("rgb(7, 10, 9)");
 });
