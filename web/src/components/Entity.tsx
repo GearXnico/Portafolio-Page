@@ -32,7 +32,14 @@ export default function Entity() {
     const element = host.current;
     if (!element) return;
 
-    const renderer = new WebGLRenderer({ antialias: true, alpha: true });
+    let renderer: WebGLRenderer;
+    // The probe in canShow3D can pass and the real context still fail (GPU limits, lost
+    // context); the figure is decoration, so the hero just shows without it.
+    try {
+      renderer = new WebGLRenderer({ antialias: true, alpha: true });
+    } catch {
+      return;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(element.clientWidth, element.clientHeight);
     element.append(renderer.domElement);
