@@ -27,6 +27,11 @@
   box-sizing: border-box;
 }
 
+/* Section links land below the sticky header instead of under it. */
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+
 body {
   margin: 0;
 }
@@ -230,11 +235,11 @@ h3 {
   white-space: pre-line;
 }
 
-.dates {
+.experience .dates {
   font-family: var(--font-display);
   font-size: 0.8125rem;
   letter-spacing: 0.1em;
-  color: var(--accent) !important;
+  color: var(--accent);
 }
 
 .skills {
