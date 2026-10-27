@@ -41,7 +41,7 @@ describe("ProfileSection", () => {
 
     expect(screen.getByRole("heading", { level: 1, name: "Ana Pérez" })).toBeInTheDocument();
     expect(screen.getByText("Ingeniera backend")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Ver proyectos" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Abrir expedientes" })).toHaveAttribute(
       "href",
       "#projects",
     );
@@ -50,6 +50,15 @@ describe("ProfileSection", () => {
       "https://github.com/ana",
     );
     expect(screen.queryByRole("link", { name: "bad" })).not.toBeInTheDocument();
+  });
+
+  it("opens with the case file lines and the surname in outline", () => {
+    const { container } = renderHero();
+
+    expect(container.querySelector(".boot")).toHaveTextContent(
+      "> abriendo expediente: sujeto 01> ocupación: Ingeniera backend> estado: disponible para el próximo caso",
+    );
+    expect(container.querySelector("h1 .outline")).toHaveTextContent("Pérez");
   });
 
   it("loads the 3D figure on a wide screen with WebGL", async () => {

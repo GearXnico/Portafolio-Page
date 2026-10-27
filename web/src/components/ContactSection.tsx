@@ -20,7 +20,7 @@ export function ContactSection({ links }: Props) {
   return (
     <section id="contact" aria-labelledby="contact-title" className="contact cut">
       <div>
-        <h2 id="contact-title">{t("section.contact")}</h2>
+        <h2 id="contact-title">{t("contact.title")}</h2>
         <p>{t("contact.intro")}</p>
         {safeLinks.length > 0 && (
           <ul className="links">

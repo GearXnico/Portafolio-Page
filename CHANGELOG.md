@@ -10,6 +10,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Changed
 
+- Texts: the public page speaks the case-file language of the night theme. The sections become Case files, Record and Arsenal with small `[ Archive ]`-style labels, the contact heading asks "Got a case for me?", the hero opens with three terminal lines (file, occupation from the headline, status) and draws the surname in outline. Spanish and English.
 - Sections: projects become numbered case files, with the cover framed like a film still (desaturated until hovered, or the title in outline when there is no screenshot), a "live" mark when there is a demo and a side column with the stack and links; experience shows the dates in a column, then the company and the role; skills and contact sit on angled panels, with the contact heading and links beside the form.
 - Design: the public page and the admin panel switch to a single night theme (mint accent on near-black, angled corners), with Chakra Petch and Barlow served from the site itself; a sticky header links to the sections that have content and a footer links to this site's repository. Animations stop when the device asks for reduced motion.
 

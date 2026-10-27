@@ -201,14 +201,58 @@ h3 {
   flex: 1 1 30rem;
 }
 
-.role {
-  margin: -0.75rem 0 1.5rem;
+.hero h1 {
+  font-size: clamp(3rem, 8vw, 6.25rem);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent);
+}
+
+/* Terminal lines that type in one after another above the name. */
+.boot {
+  margin-bottom: 1.5rem;
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.boot p {
+  margin: 0 0 0.125rem;
+  animation: boot 0.4s ease backwards;
+}
+
+.boot p:nth-child(2) {
+  animation-delay: 0.35s;
+}
+
+.boot p:nth-child(3) {
+  animation-delay: 0.7s;
+}
+
+@keyframes boot {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+}
+
+.kicker {
+  margin: 6rem 0 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+.kicker + h2 {
+  margin-top: 0;
 }
 
 .actions {
