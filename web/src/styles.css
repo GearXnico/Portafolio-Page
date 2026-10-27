@@ -354,6 +354,18 @@ h3 {
   box-shadow: 0 0 22px var(--accent-glow);
 }
 
+/* clip-path also cuts away outlines and shadows, so a cut button draws its focus ring inside its
+   edge and brightens on hover instead of glowing. */
+.button.cut:focus-visible {
+  outline: 2px solid var(--on-accent);
+  outline-offset: -6px;
+}
+
+.button.cut:hover {
+  box-shadow: none;
+  filter: brightness(1.12);
+}
+
 .contact-form button:disabled {
   opacity: 0.6;
   cursor: wait;
