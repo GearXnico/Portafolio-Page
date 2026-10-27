@@ -24,7 +24,7 @@ describe("HomePage", () => {
     expect(screen.getByRole("heading", { name: "Acme" })).toBeInTheDocument();
     expect(screen.getByText("Desarrollador")).toBeInTheDocument();
     expect(screen.getByText(/actualidad/)).toBeInTheDocument();
-    const contact = screen.getByRole("region", { name: "Contacto" });
+    const contact = screen.getByRole("region", { name: "¿Tienes un caso para mí?" });
     expect(within(contact).getByRole("link", { name: "github" })).toHaveAttribute(
       "href",
       "https://github.com/ejemplo",
@@ -40,7 +40,7 @@ describe("HomePage", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Full stack developer" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Projects" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Case files" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "This site" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Acme" })).toBeInTheDocument();
     expect(screen.getByText("Developer")).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe("HomePage", () => {
 
     renderPage();
 
-    const skills = await screen.findByRole("region", { name: "Habilidades" });
+    const skills = await screen.findByRole("region", { name: "Arsenal" });
     const backend = within(skills).getByText("Lenguajes").parentElement as HTMLElement;
     expect(
       within(backend)
@@ -72,7 +72,7 @@ describe("HomePage", () => {
     // The contact form doesn't depend on the content, so it is the only section.
     const regions = screen.getAllByRole("region");
     expect(regions).toHaveLength(1);
-    expect(regions[0]).toHaveAccessibleName("Contacto");
+    expect(regions[0]).toHaveAccessibleName("¿Tienes un caso para mí?");
   });
 
   it("shows a project's text as text, without interpreting HTML", async () => {
@@ -140,7 +140,7 @@ describe("HomePage", () => {
       within(nav)
         .getAllByRole("listitem")
         .map((li) => li.textContent),
-    ).toEqual(["Proyectos", "Experiencia", "Contacto"]);
+    ).toEqual(["Expedientes", "Historial", "Contacto"]);
   });
 
   it("links the footer to this site's repository", async () => {

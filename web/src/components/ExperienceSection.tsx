@@ -12,6 +12,9 @@ export function ExperienceSection({ experience }: Props) {
 
   return (
     <section id="experience" aria-labelledby="experience-title">
+      <p className="kicker" aria-hidden="true">
+        {t("section.kicker.experience")}
+      </p>
       <h2 id="experience-title">{t("section.experience")}</h2>
       <ol className="experience">
         {experience.map((job) => (
