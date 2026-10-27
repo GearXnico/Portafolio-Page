@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, type ComponentType } from "react";
 
 import type { PublicProfile } from "../api/bootstrap";
 import { headlineName, httpsUrl } from "../content";
@@ -6,8 +6,9 @@ import { localized, useLang } from "../i18n";
 import { canShow3D } from "../motion";
 import { City } from "./City";
 
-// three.js is only downloaded when the figure is shown, after the page content.
-const Entity = lazy(() => import("./Entity"));
+// three.js is only downloaded when the figure is shown, after the page content. If the download
+// fails (for example, after a deploy replaced the chunk), the hero shows without the figure.
+const Entity = lazy<ComponentType>(() => import("./Entity").catch(() => ({ default: () => null })));
 
 interface Props {
   profile: PublicProfile | null;

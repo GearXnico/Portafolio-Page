@@ -31,5 +31,5 @@ The site has a single dark theme. The colors are CSS variables in `web/src/style
 ## Consequences
 
 - A visitor on a wide screen downloads about 133 kB more, after the content. Phones and reduced-motion visitors don't download it at all.
-- jsdom has no WebGL, so unit tests replace the figure and check only when it is loaded; the figure itself is checked by eye.
+- jsdom has no WebGL, so unit tests replace three.js with stand-ins: they check when the figure loads, that it swaps shapes and releases its resources, and that a WebGL failure leaves the hero without the figure instead of breaking the page. How it looks is checked by eye.
 - The light theme is gone. Adding one later means a second set of the same variables.
