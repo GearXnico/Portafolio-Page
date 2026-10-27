@@ -21,7 +21,8 @@ describe("HomePage", () => {
     expect(screen.getByText("Construyo productos web.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Este sitio" })).toBeInTheDocument();
     expect(screen.getByText("Portafolio con CI")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Desarrollador · Acme" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Acme" })).toBeInTheDocument();
+    expect(screen.getByText("Desarrollador")).toBeInTheDocument();
     expect(screen.getByText(/actualidad/)).toBeInTheDocument();
     const contact = screen.getByRole("region", { name: "Contacto" });
     expect(within(contact).getByRole("link", { name: "github" })).toHaveAttribute(
@@ -41,7 +42,8 @@ describe("HomePage", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Projects" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "This site" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Developer · Acme" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Acme" })).toBeInTheDocument();
+    expect(screen.getByText("Developer")).toBeInTheDocument();
     expect(screen.getByText(/present/)).toBeInTheDocument();
     expect(screen.queryByText("Este sitio")).not.toBeInTheDocument();
     expect(document.documentElement.lang).toBe("en");
@@ -82,7 +84,9 @@ describe("HomePage", () => {
 
     const { container } = renderPage();
 
-    expect(await screen.findByText('<img src=x onerror="alert(1)">')).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: '<img src=x onerror="alert(1)">' }),
+    ).toBeInTheDocument();
     expect(container.querySelector("img")).toBeNull();
   });
 
