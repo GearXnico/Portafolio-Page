@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first. New changes go under `[Unreleased]`, and they get a version number only when a release is cut. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [Unreleased]
+
+### Fixed
+
+- `python -m app.hash_password` no longer requires `DATABASE_URL`, so it runs in a bare API container on the server before `.env` has the admin hash.
+
 ## [0.21.0] - 2026-10-27
 
 ### Added
