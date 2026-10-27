@@ -17,6 +17,9 @@ export function SkillsSection({ skills }: Props) {
 
   return (
     <section id="skills" aria-labelledby="skills-title">
+      <p className="kicker" aria-hidden="true">
+        {t("section.kicker.skills")}
+      </p>
       <h2 id="skills-title">{t("section.skills")}</h2>
       <dl className="skills">
         {[...byCategory].map(([category, names]) => (

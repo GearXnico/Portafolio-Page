@@ -16,6 +16,9 @@ export function ProjectsSection({ projects }: Props) {
 
   return (
     <section id="projects" aria-labelledby="projects-title">
+      <p className="kicker" aria-hidden="true">
+        {t("section.kicker.projects")}
+      </p>
       <h2 id="projects-title">{t("section.projects")}</h2>
       <ol className="projects">
         {projects.map((project, i) => {
