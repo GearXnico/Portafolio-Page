@@ -104,5 +104,7 @@
   "admin.images.tooLarge": "La imagen pesa más de 5 MB.",
   "admin.images.badType": "El archivo no es una imagen JPEG, PNG o WebP.",
   "admin.images.invalid": "La imagen está dañada o es demasiado grande (más de 25 megapíxeles).",
-  "admin.images.saveFirst": "Guarda el proyecto para poder subirle capturas."
+  "admin.images.saveFirst": "Guarda el proyecto para poder subirle capturas.",
+  "nav.label": "Secciones",
+  "footer.code": "Código de este sitio"
 }

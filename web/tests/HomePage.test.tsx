@@ -2,7 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { App } from "../src/App";
-import { bootstrapFixture, stubBootstrap } from "./fixtures";
+import { bootstrapFixture, projectFixture, stubBootstrap } from "./fixtures";
 import { renderWithQuery } from "./render";
 
 function renderPage() {
@@ -108,5 +108,48 @@ describe("HomePage", () => {
 
     expect(document.title).toBe("Full stack developer · Portfolio");
     expect(description()).toMatch(/^Portfolio:/);
+  });
+
+  it("links the header to the sections that have content", async () => {
+    stubBootstrap(
+      bootstrapFixture({
+        skills: [],
+        profile: {
+          headline_es: "Ana Pérez · Backend",
+          headline_en: "Ana Pérez · Backend",
+          about_es: "",
+          about_en: "",
+          links: {},
+        },
+      }),
+    );
+
+    renderPage();
+
+    const nav = await screen.findByRole("navigation", { name: "Secciones" });
+    expect(await within(nav).findByRole("link", { name: "Ana Pérez" })).toHaveAttribute(
+      "href",
+      "#top",
+    );
+    expect(
+      within(nav)
+        .getAllByRole("listitem")
+        .map((li) => li.textContent),
+    ).toEqual(["Proyectos", "Experiencia", "Contacto"]);
+  });
+
+  it("links the footer to this site's repository", async () => {
+    const own = projectFixture({
+      demo_url: `https://${window.location.host}/`,
+      repo_url: "https://github.com/ejemplo/sitio",
+    });
+    stubBootstrap(bootstrapFixture({ projects: [own] }));
+
+    renderPage();
+
+    const footer = await screen.findByRole("contentinfo");
+    expect(
+      await within(footer).findByRole("link", { name: "Código de este sitio" }),
+    ).toHaveAttribute("href", "https://github.com/ejemplo/sitio");
   });
 });

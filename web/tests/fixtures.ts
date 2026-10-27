@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-import type { Bootstrap } from "../src/api/bootstrap";
+import type { Bootstrap, PublicProject } from "../src/api/bootstrap";
 
 /** A `bootstrap` response with a bit of everything, in both languages. */
 export function bootstrapFixture(overrides: Partial<Bootstrap> = {}): Bootstrap {
@@ -46,6 +46,12 @@ export function bootstrapFixture(overrides: Partial<Bootstrap> = {}): Bootstrap 
     ],
     ...overrides,
   };
+}
+
+export function projectFixture(overrides: Partial<PublicProject> = {}): PublicProject {
+  const [base] = bootstrapFixture().projects;
+  if (!base) throw new Error("the fixture has no projects");
+  return { ...base, ...overrides };
 }
 
 export function stubBootstrap(body: Bootstrap) {
