@@ -192,6 +192,7 @@ def test_does_not_expose_internal_data(api: TestClient) -> None:
         "stack",
         "demo_url",
         "repo_url",
+        "status",
         "images",
     }
 

@@ -25,6 +25,7 @@ const PROJECT = {
   stack: [],
   demo_url: null,
   repo_url: null,
+  status: null,
   visible: true,
   position: 0,
   images: [COVER],

@@ -24,7 +24,7 @@ Response:
   "profile": {"headline_es": "", "headline_en": "", "about_es": "", "about_en": "", "links": {"github": "https://…"}},
   "skills": [{"name": "Python", "category": "language"}],
   "experience": [{"company": "", "role_es": "", "role_en": "", "description_es": "", "description_en": "", "start_date": "2024-01-01", "end_date": null}],
-  "projects": [{"slug": "", "title_es": "", "title_en": "", "summary_es": "", "summary_en": "", "body_es": "", "body_en": "", "stack": [], "demo_url": null, "repo_url": null, "images": [{"url": "/media/…", "alt_es": "", "alt_en": ""}]}]
+  "projects": [{"slug": "", "title_es": "", "title_en": "", "summary_es": "", "summary_en": "", "body_es": "", "body_en": "", "stack": [], "demo_url": null, "repo_url": null, "status": null, "images": [{"url": "/media/…", "alt_es": "", "alt_en": ""}]}]
 }
 ```
 
@@ -80,6 +80,7 @@ Routes to edit what the page shows. All of them require the administrator sessio
 | Experience | `GET` and `POST /api/admin/experience`; `PUT` and `DELETE /api/admin/experience/{id}` |
 
 - **Order and visibility:** each item has a `position` (the lowest goes first). A new project stays hidden (`visible: false`) until it is published with a `PUT`. The panel also sees the hidden ones.
+- **Project status:** optional `status`, `"done"` or `"in_progress"`; the page shows it as a stamp on the project, and without it shows none.
 - **`PUT` replaces everything:** send the full object; whatever is missing takes its default value.
 - **Validation:** extra fields (such as `id`), control characters, lengths over the maximum and links that are not `https://` respond 422. A repeated slug responds 409 and an id that does not exist, 404.
 - **Screenshots:** JPEG, PNG or WebP up to 5 MB, recognized by their content and not by the extension. The API re-encodes them as WebP (at most 2560 px per side, without metadata such as a photo's GPS or the color profile: a Display P3 screenshot will look slightly less saturated), with a random name, in `MEDIA_DIR/projects/` (`media/` by default, a Docker volume). Each project returns them in `images`, with their `url` under `/media/...`. Responds 413 if it is larger than 5 MB, 415 if it is not an accepted image and 422 if it is corrupted or exceeds 25 megapixels. Without a session, the upload responds 401 before reading the file.

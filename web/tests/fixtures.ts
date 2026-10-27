@@ -41,6 +41,7 @@ export function bootstrapFixture(overrides: Partial<Bootstrap> = {}): Bootstrap 
         stack: ["React"],
         demo_url: null,
         repo_url: null,
+        status: null,
         images: [],
       },
     ],

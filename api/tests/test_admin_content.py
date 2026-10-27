@@ -24,9 +24,10 @@ from app.config import settings
 from app.db import get_session
 from app.main import MAX_BODY_BYTES, MAX_UPLOAD_BYTES, app
 from app.models import Experience, Profile, Project, ProjectImage, Skill
+from app.models.project import PROJECT_STATUSES
 from app.models.skill import SKILL_CATEGORIES
 from app.routers.admin import COOKIE_NAME
-from app.schemas.content import SkillCategory
+from app.schemas.content import ProjectStatus, SkillCategory
 from app.services import auth, images
 from app.services.images import MAX_IMAGE_BYTES
 
@@ -158,6 +159,7 @@ def test_creating_a_project_leaves_it_hidden_with_default_values(admin: TestClie
         "stack": [],
         "demo_url": None,
         "repo_url": None,
+        "status": None,
         "visible": False,
         "position": 0,
         "images": [],
@@ -197,6 +199,20 @@ def test_editing_a_project_replaces_all_its_fields(admin: TestClient) -> None:
     assert (edited["visible"], edited["position"]) == (True, 3)
     # Whatever isn't sent takes its default value.
     assert (edited["stack"], edited["repo_url"]) == ([], None)
+
+
+def test_the_status_is_saved_and_shown_on_the_page(admin: TestClient) -> None:
+    created = create(admin, "/api/admin/projects", PROJECT, status="in_progress", visible=True)
+    assert admin.get("/api/bootstrap").json()["projects"][0]["status"] == "in_progress"
+
+    # Like any other field, editing without a status clears it.
+    admin.put(f"/api/admin/projects/{created['id']}", json=PROJECT | {"visible": True})
+
+    assert admin.get("/api/bootstrap").json()["projects"][0]["status"] is None
+
+
+def test_project_statuses_match_the_database() -> None:
+    assert get_args(ProjectStatus) == PROJECT_STATUSES
 
 
 def test_publishing_a_project_shows_it_on_the_page(admin: TestClient) -> None:
@@ -265,6 +281,8 @@ def test_an_empty_link_is_saved_as_null(admin: TestClient) -> None:
         {"position": 1_000_001},
         {"position": "1"},
         {"visible": "true"},
+        {"status": "finished"},
+        {"status": ""},
         {"id": 5},
         {"created_at": "2020-01-01T00:00:00Z"},
     ],

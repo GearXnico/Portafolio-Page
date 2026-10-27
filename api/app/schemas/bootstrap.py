@@ -56,6 +56,7 @@ class PublicProject(BaseModel):
     stack: list[str]
     demo_url: str | None
     repo_url: str | None
+    status: str | None
     images: list[PublicImage]
 
 

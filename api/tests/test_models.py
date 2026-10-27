@@ -287,6 +287,17 @@ def test_project_only_accepts_https_links(db_session: Session, field: str, url: 
     rejects(db_session, new_project(**{field: url}), f"ck_project_{field}")
 
 
+@pytest.mark.parametrize("status", ["finished", "", "DONE"])
+def test_project_rejects_an_unknown_status(db_session: Session, status: str) -> None:
+    rejects(db_session, new_project(status=status), "ck_project_status")
+
+
+@pytest.mark.parametrize("status", [None, "done", "in_progress"])
+def test_project_accepts_its_statuses(db_session: Session, status: str | None) -> None:
+    db_session.add(new_project(status=status))
+    db_session.flush()
+
+
 def test_project_accepts_https_links(db_session: Session) -> None:
     db_session.add(
         new_project(demo_url="https://demo.example.com", repo_url="https://github.com/x/y")

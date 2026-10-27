@@ -8,6 +8,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import URL_HTTPS_REGEX, URL_MAX_LENGTH, Base
 
+# Values stored in the database; the frontend shows them as a stamp in each language.
+PROJECT_STATUSES = ("done", "in_progress")
+
 
 class Project(Base):
     __tablename__ = "project"
@@ -15,6 +18,10 @@ class Project(Base):
         # The slug goes in the URL: lowercase letters, digits and single hyphens.
         CheckConstraint("slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'", name="slug_format"),
         CheckConstraint("position >= 0", name="position"),
+        CheckConstraint(
+            "status IN ({})".format(", ".join(f"'{s}'" for s in PROJECT_STATUSES)),
+            name="status",
+        ),
         CheckConstraint(
             f"char_length(demo_url) <= {URL_MAX_LENGTH} AND demo_url ~ '{URL_HTTPS_REGEX}'",
             name="demo_url",
@@ -36,6 +43,8 @@ class Project(Base):
     stack: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
     demo_url: Mapped[str | None]
     repo_url: Mapped[str | None]
+    # Without a status the page shows no stamp.
+    status: Mapped[str | None]
     # A new project stays hidden until it is published from the panel.
     visible: Mapped[bool] = mapped_column(server_default=text("false"))
     position: Mapped[int] = mapped_column(server_default="0")
