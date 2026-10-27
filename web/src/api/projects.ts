@@ -4,6 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "./admin";
+import type { ProjectStatus } from "./bootstrap";
 
 /** What the API accepts on create or edit (ProjectIn); it rejects extra fields. */
 export interface ProjectInput {
@@ -17,6 +18,7 @@ export interface ProjectInput {
   stack: string[];
   demo_url: string | null;
   repo_url: string | null;
+  status: ProjectStatus | null;
   visible: boolean;
   position: number;
 }

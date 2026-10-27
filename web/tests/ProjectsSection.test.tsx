@@ -87,6 +87,19 @@ describe("ProjectsSection", () => {
     expect(second).not.toHaveTextContent("Live");
   });
 
+  it("stamps the frame with the status, and without a status shows no stamp", () => {
+    const { container } = renderIn("es", [
+      project({ slug: "a", status: "done" }),
+      project({ slug: "b", status: "in_progress" }),
+      project({ slug: "c", status: null }),
+    ]);
+
+    expect([...container.querySelectorAll(".stamp")].map((s) => s.textContent)).toEqual([
+      "Resuelto",
+      "En curso",
+    ]);
+  });
+
   it("without a screenshot shows the title in the frame instead", () => {
     const { container } = renderIn("es", [project({ images: [] })]);
 

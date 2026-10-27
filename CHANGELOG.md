@@ -6,6 +6,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ### Added
 
+- Projects: an optional status ("done" or "in progress"), set from the admin panel and returned by `bootstrap`, shows as a rubber stamp on the project's frame ("Solved" or "In progress"); without a status there is no stamp. The migration only adds a nullable column.
 - Hero: the name, role, introduction and profile links sit over a night skyline drawn in SVG, and on wide screens a neon 3D figure rotates, leans towards the pointer, glitches and changes shape every few seconds. three.js loads on demand and is skipped on phones, without WebGL and when the device asks for reduced motion (ADR 0011).
 
 ### Changed

@@ -89,6 +89,7 @@ erDiagram
         text[] stack
         text demo_url
         text repo_url
+        text status
         bool visible
         int position
         timestamptz created_at

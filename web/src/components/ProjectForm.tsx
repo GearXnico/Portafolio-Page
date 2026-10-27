@@ -1,8 +1,11 @@
 import { useState, type SubmitEvent } from "react";
 
 import { ApiError } from "../api/admin";
+import type { ProjectStatus } from "../api/bootstrap";
 import { useSaveProject, type AdminProject, type ProjectInput } from "../api/projects";
 import { LANGS, useLang, type MessageKey } from "../i18n";
+
+const STATUSES: ProjectStatus[] = ["done", "in_progress"];
 
 const EMPTY: ProjectInput = {
   slug: "",
@@ -15,6 +18,7 @@ const EMPTY: ProjectInput = {
   stack: [],
   demo_url: null,
   repo_url: null,
+  status: null,
   visible: false,
   position: 0,
 };
@@ -146,6 +150,22 @@ export function ProjectForm({ project, onSaved }: Props) {
             set("repo_url", e.target.value || null);
           }}
         />
+      </label>
+      <label>
+        {t("admin.projects.status")}
+        <select
+          value={values.status ?? ""}
+          onChange={(e) => {
+            set("status", (e.target.value || null) as ProjectStatus | null);
+          }}
+        >
+          <option value="">{t("admin.projects.noStatus")}</option>
+          {STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {t(`project.status.${status}`)}
+            </option>
+          ))}
+        </select>
       </label>
       <label>
         {t("admin.projects.position")}

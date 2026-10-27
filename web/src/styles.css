@@ -445,6 +445,28 @@ h3 {
   color: var(--accent);
 }
 
+/* Rubber stamp on the frame: solid and tilted when solved, fainter and the other way in progress. */
+.stamp {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 2.75rem;
+  padding: 0.25rem 0.75rem;
+  border: 2px solid var(--accent);
+  background: rgb(0 0 0 / 75%);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+  transform: rotate(-6deg);
+}
+
+.stamp.in_progress {
+  border-style: dashed;
+  transform: rotate(4deg);
+}
+
 .case {
   display: flex;
   flex-wrap: wrap;
