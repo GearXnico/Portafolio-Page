@@ -4,12 +4,11 @@
 # Trivy checks the production images (api/Dockerfile and web/Dockerfile), which don't include pip
 # or npm. Reviewed: 2026-10-12.
 
-# Caddy 2.11.7 (web/Dockerfile), built with Go 1.26.8 and golang.org/x/net 0.59.0. They are
-# denial-of-service issues in HTTP/2 and TLS; the next Caddy release fixes them, and the
-# image picks it up on its own when rebuilt because it uses the 2.11-alpine tag.
-CVE-2026-78667 exp:2026-11-12
-CVE-2026-78669 exp:2026-11-12
-CVE-2026-97031 exp:2026-11-12
+# Caddy 2.11.9 (web/Dockerfile) ships golang.org/x/net 0.60.0; 0.62.0 fixes a denial of service
+# in its HTML parser. In Caddy that parser is reached through the `templates` directive, which
+# the Caddyfile doesn't use. No Caddy image ships x/net 0.62 yet; the 2.11-alpine tag picks it up
+# when rebuilt. Reviewed: 2026-11-11.
+CVE-2026-78661 exp:2026-11-25
 
 # Go 1.26.8 crypto/x509 in the same Caddy binary: fixed in Go 1.26.10, which no Caddy 2.11 image
 # ships yet. Caddy only verifies certificate chains as a client when it talks to the ACME CA.
