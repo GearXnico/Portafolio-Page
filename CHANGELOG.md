@@ -2,6 +2,13 @@
 
 Every pull request merged into `dev` is listed here, newest first. New changes go under `[Unreleased]`, and they get a version number only when a release is cut. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [Unreleased]
+
+### Security
+
+- API image: `apt-get upgrade` in the final stage picks up Debian fixes released after the base image, such as the two high `zlib` advisories (CVE-2026-85091, CVE-2026-76844) that turned the weekly Trivy scan red.
+- `.trivyignore`: the Caddy 2.11.7 entries that expired on 2026-11-12 are removed, since the image now ships Caddy 2.11.9. CVE-2026-78661 (`golang.org/x/net` HTML parser in Caddy 2.11.9) is accepted until 2026-11-25: the Caddyfile doesn't use `templates`, and no Caddy image ships the fix yet.
+
 ## [1.0.0] - 2026-10-27
 
 ### Changed
