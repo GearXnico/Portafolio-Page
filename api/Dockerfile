@@ -22,7 +22,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH=/opt/venv/bin:$PATH
 
 # No pip in the final image. /media stores the screenshots (volume shared with Caddy).
-RUN python -m pip uninstall -y pip \
+# `apt-get upgrade` picks up Debian security fixes released after the base image.
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall -y pip \
     && useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin app \
     && mkdir -p /media \
     && chown app:app /media
