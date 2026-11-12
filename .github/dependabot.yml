@@ -4,11 +4,13 @@
 # each, because they can break things and are best reviewed one by one.
 # cooldown: waits 7 days after a version is released before proposing it, in case it was malicious
 # and gets pulled. Dependabot security alerts don't wait.
+# target-branch: PRs go to `dev`, like any other change; Dependabot reads this file from `main`.
 version: 2
 
 updates:
   - package-ecosystem: pip
     directory: /api
+    target-branch: dev
     schedule:
       interval: weekly
     cooldown:
@@ -21,6 +23,7 @@ updates:
 
   - package-ecosystem: npm
     directory: /web
+    target-branch: dev
     schedule:
       interval: weekly
     cooldown:
@@ -34,6 +37,7 @@ updates:
   # Base images of the Dockerfiles.
   - package-ecosystem: docker
     directories: [/api, /web]
+    target-branch: dev
     schedule:
       interval: weekly
     cooldown:
@@ -55,6 +59,7 @@ updates:
   # Keeps the SHAs pinned in .github/workflows/ up to date.
   - package-ecosystem: github-actions
     directory: /
+    target-branch: dev
     schedule:
       interval: weekly
     cooldown:
