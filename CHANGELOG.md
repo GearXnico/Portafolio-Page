@@ -4,6 +4,10 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ## [Unreleased]
 
+### Security
+
+- Visits: `bootstrap` records at most 10 visits per minute from the same IP. Above that the page still loads, but a script can no longer inflate the statistics or fill the `visit` table.
+
 ### Changed
 
 - `python-multipart` goes from 0.0.32 to 0.0.33, a patch release (Dependabot #89).
