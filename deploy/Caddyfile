@@ -42,6 +42,10 @@
 	handle {
 		root * /srv/web
 		try_files {path} /index.html
+		# Writes the site's address into the link preview tags of index.html, which apps need absolute.
+		templates {
+			mime text/html
+		}
 		file_server
 	}
 }
