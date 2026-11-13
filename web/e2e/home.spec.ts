@@ -33,3 +33,13 @@ test("the page keeps the night theme whatever the device's colour setting", asyn
   await page.emulateMedia({ colorScheme: "dark" });
   expect(await background()).toBe("rgb(7, 10, 9)");
 });
+
+test("on a phone the header links to every section", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  const links = page.getByRole("navigation").getByRole("listitem").getByRole("link");
+  expect(await links.count()).toBeGreaterThan(0);
+  for (const link of await links.all()) await expect(link).toBeVisible();
+});
