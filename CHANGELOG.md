@@ -2,6 +2,14 @@
 
 Every pull request merged into `dev` is listed here, newest first. New changes go under `[Unreleased]`, and they get a version number only when a release is cut. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [Unreleased]
+
+### Changed
+
+- `python-multipart` goes from 0.0.32 to 0.0.33, a patch release (Dependabot #89).
+- Workflows: `actions/setup-python` goes from 7.0.0 to 7.1.0, `github/codeql-action` from 4.39.0 to 4.39.3 and `anthropics/claude-code-action` from 1.0.255 to 1.0.268 (Dependabot #88).
+- Web: 13 minor and patch updates, among them `@tanstack/react-query` 5.106.1, `react-router` 8.5.1, `three` 0.187.0, `vite` 8.3.6, `vitest` 5.1.0 and `@playwright/test` 1.65.0 (Dependabot #96).
+
 ## [1.0.1] - 2026-11-12
 
 ### Security
