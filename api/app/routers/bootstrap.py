@@ -20,6 +20,7 @@ from app.schemas.bootstrap import (
     PublicSkill,
 )
 from app.services.locale import Lang, decide_locale, parse_lang
+from app.services.rate_limit import SlidingWindowLimiter, client_key
 from app.services.visits import (
     UTM_MAX_LENGTH,
     clean_text,
@@ -31,6 +32,10 @@ from app.services.visits import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["bootstrap"])
+
+# Above this, the page still loads but the visit isn't recorded, so a script can't inflate the
+# statistics or fill the table. A person reloading or switching language stays well below it.
+visit_limiter = SlidingWindowLimiter(limit=10, window_seconds=60)
 
 
 # No length limits on purpose: odd UTM values are cleaned and trimmed instead of
@@ -58,6 +63,10 @@ def bootstrap(
     country = None
     page_lang = parse_lang(lang) or decide_locale(country, accept_language)
     content = _visible_content(session, page_lang)
+    # Each load is a visit: no intermediate cache must store this response.
+    response.headers["Cache-Control"] = "no-store"
+    if visit_limiter.hit(client_key(request)) is not None:
+        return content
 
     try:
         with session.begin_nested():
@@ -82,8 +91,6 @@ def bootstrap(
         # visit and the session closes when the request ends. The log carries no visitor data.
         logger.exception("Could not record the visit")
 
-    # Each load is a visit: no intermediate cache must store this response.
-    response.headers["Cache-Control"] = "no-store"
     return content
 
 
