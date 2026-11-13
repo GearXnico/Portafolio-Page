@@ -4,6 +4,10 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ## [Unreleased]
 
+### Added
+
+- On a phone the header shows the sections as a second row of buttons that scrolls sideways if they don't fit; until now the links only appeared on wide screens. CSS only, no JavaScript.
+
 ### Changed
 
 - `python-multipart` goes from 0.0.32 to 0.0.33, a patch release (Dependabot #89).
