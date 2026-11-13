@@ -29,3 +29,14 @@ test("the page shows no console errors", async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+test("the link preview image has an absolute address", async ({ page, baseURL }) => {
+  test.skip(
+    process.env.E2E_BASE_URL === undefined,
+    "Only Caddy fills in the address; the Vite dev server serves the template as written.",
+  );
+  await page.goto("/");
+
+  const image = page.locator('meta[property="og:image"]');
+  await expect(image).toHaveAttribute("content", new URL("/og.png", baseURL).href);
+});
