@@ -7,6 +7,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 ### Added
 
 - The site has a favicon (a cube inside a cube, in the palette's mint) and a link preview: sharing the address in WhatsApp, LinkedIn or Slack shows a 1200×630 image with a generic title and description. Caddy writes the image's absolute address into `index.html` when it serves it.
+- On a phone the header shows the sections as a second row of buttons that scrolls sideways if they don't fit; until now the links only appeared on wide screens. CSS only, no JavaScript.
 
 ### Security
 
