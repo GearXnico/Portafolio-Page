@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.db import get_session
 from app.main import app
 from app.models import Experience, Profile, Project, ProjectImage, Skill, Visit, VisitorSalt
+from app.routers.bootstrap import visit_limiter
 
 
 @pytest.fixture
@@ -20,6 +21,7 @@ def api(client: TestClient, db_session: Session) -> TestClient:
     """
     for model in (Visit, ProjectImage, Project, Skill, Experience, Profile):
         db_session.execute(delete(model))
+    visit_limiter.reset()
 
     def test_session() -> Iterator[Session]:
         yield db_session
@@ -296,3 +298,12 @@ def test_if_recording_fails_the_page_still_loads(
 
     assert response.status_code == 200
     assert visits(db_session) == []
+
+
+def test_records_at_most_ten_visits_per_minute_from_one_ip(
+    api: TestClient, db_session: Session
+) -> None:
+    for _ in range(12):
+        assert api.get("/api/bootstrap").status_code == 200
+
+    assert len(visits(db_session)) == 10
