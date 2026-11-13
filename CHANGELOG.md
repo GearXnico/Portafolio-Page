@@ -4,6 +4,10 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 
 ## [Unreleased]
 
+### Added
+
+- The site has a favicon (a cube inside a cube, in the palette's mint) and a link preview: sharing the address in WhatsApp, LinkedIn or Slack shows a 1200×630 image with a generic title and description. Caddy writes the image's absolute address into `index.html` when it serves it.
+
 ### Security
 
 - Visits: `bootstrap` records at most 10 visits per minute from the same IP. Above that the page still loads, but a script can no longer inflate the statistics or fill the `visit` table.
