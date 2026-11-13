@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.db import get_session
 from app.main import app
 from app.models import Experience, Profile, Project, ProjectImage, Skill, Visit, VisitorSalt
+from app.routers.bootstrap import visit_limiter
 
 
 @pytest.fixture
@@ -20,6 +21,7 @@ def api(client: TestClient, db_session: Session) -> TestClient:
     """
     for model in (Visit, ProjectImage, Project, Skill, Experience, Profile):
         db_session.execute(delete(model))
+    visit_limiter.reset()
 
     def test_session() -> Iterator[Session]:
         yield db_session
