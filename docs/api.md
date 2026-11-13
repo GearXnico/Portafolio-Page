@@ -8,6 +8,8 @@ The interactive documentation, generated from the code, is at http://localhost:8
 
 The page calls `GET /api/bootstrap` when it opens. The API records the visit, decides the language and returns all the visible content in a single response, with `Cache-Control: no-store`.
 
+**Per-IP limit:** at most 10 recorded visits per minute. Above that it still responds 200 with the content, but doesn't record the visit. It uses the same in-memory limit and `TRUSTED_PROXIES` as the contact form.
+
 Parameters (all optional). The page passes the UTM parameters in its URL, `document.referrer` and the saved language; it passes `utm_source` and `utm_campaign` to the contact form (`web/src/utm.ts`):
 
 | Parameter | What it is | How it is stored |
