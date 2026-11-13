@@ -14,7 +14,7 @@ dependencies = [
     "argon2-cffi==25.1.*",
     "pyjwt==2.15.*",
     # Project screenshots: read the form (multipart) and convert to WebP.
-    "python-multipart==0.0.32",
+    "python-multipart==0.0.33",
     "pillow==13.0.*",
 ]
 
