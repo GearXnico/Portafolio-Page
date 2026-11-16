@@ -6,10 +6,7 @@
 
 # Caddy 2.11.9 (web/Dockerfile) ships golang.org/x/net 0.60.0; 0.62.0 fixes a denial of service
 # in its HTML parser. In Caddy that parser is reached through the `templates` directive, which
-# the Caddyfile doesn't use. No Caddy image ships x/net 0.62 yet; the 2.11-alpine tag picks it up
-# when rebuilt. Reviewed: 2026-11-11.
+# the Caddyfile only applies to our own index.html (link preview address, 1.1.0): no visitor
+# input reaches it. No Caddy image ships x/net 0.62 yet; the 2.11-alpine tag picks it up when
+# rebuilt. Reviewed: 2026-11-16.
 CVE-2026-78661 exp:2026-11-25
-
-# Go 1.26.8 crypto/x509 in the same Caddy binary: fixed in Go 1.26.10, which no Caddy 2.11 image
-# ships yet. Caddy only verifies certificate chains as a client when it talks to the ACME CA.
-CVE-2026-111943 exp:2026-11-24
