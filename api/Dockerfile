@@ -1,7 +1,7 @@
 # Production image of the API (deploy/compose.prod.yml). The development one is Dockerfile.dev.
 
 # 1. Install only the production dependencies in a virtual environment.
-FROM python:3.14-slim AS build
+FROM python:3.15-slim AS build
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
@@ -15,7 +15,7 @@ RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip uninstall -y pip
 
 # 2. Final image: the virtual environment, the migrations and an unprivileged user.
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
