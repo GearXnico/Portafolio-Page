@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first. New changes go under `[Unreleased]`, and they get a version number only when a release is cut. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [Unreleased]
+
+### Security
+
+- `.trivyignore`: the Go `crypto/x509` finding in Caddy (CVE-2026-111943) is no longer accepted, since the rebuilt `caddy:2.11-alpine` image ships a fixed Go. The `x/net` note now says the `templates` directive only parses our own `index.html`.
+
 ## [1.1.0] - 2026-11-14
 
 ### Added
