@@ -7,6 +7,6 @@
 # Caddy 2.11.9 (web/Dockerfile) ships golang.org/x/net 0.60.0; 0.62.0 fixes a denial of service
 # in its HTML parser. In Caddy that parser is reached through the `templates` directive, which
 # the Caddyfile only applies to our own index.html (link preview address, 1.1.0): no visitor
-# input reaches it. No Caddy image ships x/net 0.62 yet; the 2.11-alpine tag picks it up when
-# rebuilt. Reviewed: 2026-11-16.
-CVE-2026-78661 exp:2026-11-25
+# input reaches it. Caddy's main branch has x/net 0.62, but no release (2.11.9 is the latest) ships
+# it yet; the 2.11-alpine tag picks it up with the next release. Reviewed: 2026-11-23.
+CVE-2026-78661 exp:2026-12-23

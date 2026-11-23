@@ -7,7 +7,7 @@ Every pull request merged into `dev` is listed here, newest first. New changes g
 ### Security
 
 - The web lint tools (`eslint` 10.15.0 and `typescript-eslint` 8.74.0) now use `minimatch` 11.0.1 or later, which fixes a denial of service in glob matching (GHSA-g3hv-75wg-m249). Only development tooling used it; the built site is unchanged.
-- `.trivyignore`: the Go `crypto/x509` finding in Caddy (CVE-2026-111943) is no longer accepted, since the rebuilt `caddy:2.11-alpine` image ships a fixed Go. The `x/net` note now says the `templates` directive only parses our own `index.html`.
+- `.trivyignore`: the Go `crypto/x509` finding in Caddy (CVE-2026-111943) is no longer accepted, since the rebuilt `caddy:2.11-alpine` image ships a fixed Go. The `x/net` finding stays accepted until 2026-12-23, because no Caddy release ships the fix yet; its note now says the `templates` directive only parses our own `index.html`.
 
 ## [1.1.0] - 2026-11-14
 
