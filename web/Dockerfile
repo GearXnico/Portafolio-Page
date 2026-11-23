@@ -3,7 +3,7 @@
 #   docker build --build-context deploy=deploy web
 
 # 1. Static build of the page.
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /code
 COPY package.json package-lock.json .npmrc ./
