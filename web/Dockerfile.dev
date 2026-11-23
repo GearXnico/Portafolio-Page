@@ -1,5 +1,5 @@
 # Image for local development only (compose.yml). The production one is Dockerfile (Caddy).
-FROM node:24-alpine
+FROM node:26-alpine
 
 # Runs as the unprivileged user that ships with the image, not as root.
 WORKDIR /code
