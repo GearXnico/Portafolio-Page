@@ -2,6 +2,12 @@
 
 Every pull request merged into `dev` is listed here, newest first. New changes go under `[Unreleased]`, and they get a version number only when a release is cut. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The [guide](#guide-how-to-read-and-update-this-file) at the end explains how the version numbers work and how to add an entry.
 
+## [Unreleased]
+
+### Security
+
+- The web lint tools (`eslint` 10.15.0 and `typescript-eslint` 8.74.0) now use `minimatch` 11.0.1 or later, which fixes a denial of service in glob matching (GHSA-g3hv-75wg-m249). Only development tooling used it; the built site is unchanged.
+
 ## [1.1.0] - 2026-11-14
 
 ### Added
